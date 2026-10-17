@@ -1,35 +1,127 @@
-// STUB (L0) — owner: L4. Replace freely; keep the signature.
-// Reading signals (ARCHITECTURE §9.4, §9.7). Events are queued and POSTed to /api/events in batches
-// of at most 50: every 2 s, on visibilitychange, and with sendBeacon on pagehide. Each successful
-// flush sets lastResult and publishes the streak to the live channel, so StreakChip updates at once.
+// Reading signals (ARCHITECTURE §9.4, §9.7). L0 created this hook; L4 owns it (same signature).
+// Events are queued and POSTed to /api/events in batches of at most 50: every 2 s, at once (keepalive)
+// when the tab is hidden, and with sendBeacon on pagehide. Every flush that returns a valid
+// EventsResult sets lastResult and publishes the streak on the live channel, so StreakChip updates.
 import { useEffect, useMemo, useState } from 'react';
-import { ROUTES } from '@/contracts/api';
+import { EventsResultSchema, ROUTES } from '@/contracts/api';
 import type { EventsResult, SignalEvent } from '@/contracts/signals';
 import { publishStreak } from '@/components/streak/live';
 
 type DwellMode = 'sheet' | 'bytes';
+export type FlushMode = 'fetch' | 'keepalive' | 'beacon';
 
 const FLUSH_MS = 2000;
 const MAX_BATCH = 50; // SignalBatchSchema accepts at most 50 events per request
-const MAX_QUEUE = 500; // offline guard: past this the oldest events are dropped
+const MAX_QUEUE = 200; // offline guard: past this the oldest events are dropped
 const IMPRESSION_MS = 1000; // at least 1 s in view…
 const IMPRESSION_RATIO = 0.5; // …with at least half of the card visible
 const JSON_HEADERS = { 'Content-Type': 'application/json' };
+
+export interface SignalQueue {
+  push(e: SignalEvent): void;
+  flush(mode?: FlushMode): Promise<void>;
+  dispose(): void;
+  setEditionId(id: string | null): void;
+}
+
+/**
+ * The batching queue on its own (no React). Its 2 s timer starts with the first push, so nothing runs
+ * on the server or before anything is tracked; dispose() stops it (a later push re-arms it).
+ */
+export function createSignalQueue(opts: {
+  editionId: string | null;
+  endpoint?: string;
+  intervalMs?: number;
+  onResult?: (r: EventsResult) => void;
+}): SignalQueue {
+  const endpoint = opts.endpoint ?? ROUTES.events;
+  const intervalMs = opts.intervalMs ?? FLUSH_MS;
+  let editionId = opts.editionId;
+  let queue: SignalEvent[] = [];
+  let timer: ReturnType<typeof setInterval> | null = null;
+
+  const cap = () => {
+    if (queue.length > MAX_QUEUE) queue.splice(0, queue.length - MAX_QUEUE);
+  };
+
+  const take = (): SignalEvent[][] => {
+    const batches: SignalEvent[][] = [];
+    for (let i = 0; i < queue.length; i += MAX_BATCH) batches.push(queue.slice(i, i + MAX_BATCH));
+    queue = [];
+    return batches;
+  };
+
+  const send = async (events: SignalEvent[], keepalive: boolean) => {
+    let res: Response;
+    try {
+      res = await fetch(endpoint, { method: 'POST', keepalive, headers: JSON_HEADERS, body: JSON.stringify({ events }) });
+    } catch {
+      queue = [...events, ...queue]; // network error: retry on the next tick
+      cap();
+      return;
+    }
+    if (!res.ok) return; // rejected (401 in the preview, 400 on a bad batch): drop it rather than retry forever
+    let body: unknown;
+    try {
+      body = await res.json();
+    } catch {
+      return;
+    }
+    const parsed = EventsResultSchema.safeParse(body);
+    if (parsed.success) opts.onResult?.(parsed.data);
+  };
+
+  const flush = async (mode: FlushMode = 'fetch') => {
+    const batches = take();
+    if (batches.length === 0) return;
+    if (mode === 'beacon') {
+      for (const events of batches) {
+        const body = JSON.stringify({ events });
+        const queued =
+          typeof navigator !== 'undefined' &&
+          typeof navigator.sendBeacon === 'function' &&
+          navigator.sendBeacon(endpoint, new Blob([body], { type: 'application/json' }));
+        if (!queued) void fetch(endpoint, { method: 'POST', keepalive: true, headers: JSON_HEADERS, body }).catch(() => undefined);
+      }
+      return;
+    }
+    await Promise.all(batches.map((events) => send(events, mode === 'keepalive')));
+  };
+
+  const push = (e: SignalEvent) => {
+    queue.push(e.editionId || !editionId ? e : { ...e, editionId });
+    cap();
+    if (timer === null && intervalMs > 0) timer = setInterval(() => void flush('fetch'), intervalMs);
+  };
+
+  const dispose = () => {
+    if (timer !== null) clearInterval(timer);
+    timer = null;
+  };
+
+  return {
+    push,
+    flush,
+    dispose,
+    setEditionId: (id) => {
+      editionId = id;
+    },
+  };
+}
 
 interface SignalsEngine {
   track: (e: SignalEvent) => void;
   observeImpression: (el: Element | null, articleId: string) => void;
   startDwell: (articleId: string, mode?: DwellMode) => () => void;
   setEditionId: (id: string | null) => void;
-  /** Starts the flush timer and page listeners; returns the teardown (which flushes what is left). */
+  /** Adds the page listeners; returns the teardown (which flushes what is left). */
   start: () => () => void;
 }
 
 // All mutable state lives here, outside React, so the hook's functions are stable across renders.
 // Nothing touches window or document until a method is called, so creating it during SSR is safe.
 function createSignalsEngine(onResult: (r: EventsResult) => void, initialEditionId: string | null): SignalsEngine {
-  let editionId = initialEditionId;
-  let queue: SignalEvent[] = [];
+  const queue = createSignalQueue({ editionId: initialEditionId, onResult });
   const dwells = new Set<() => void>(); // stop() of every running dwell
   const seen = new Set<string>(); // article ids that already have an impression
   const watched = new Map<string, Element>(); // article id → observed element
@@ -39,55 +131,10 @@ function createSignalsEngine(onResult: (r: EventsResult) => void, initialEdition
 
   const isHidden = () => typeof document !== 'undefined' && document.visibilityState === 'hidden';
   const now = () => performance.now();
-
-  const track = (e: SignalEvent) => {
-    queue.push(e.editionId || !editionId ? e : { ...e, editionId });
-    if (queue.length > MAX_QUEUE) queue.splice(0, queue.length - MAX_QUEUE);
-  };
-
-  const takeBatches = (): SignalEvent[][] => {
-    const batches: SignalEvent[][] = [];
-    for (let i = 0; i < queue.length; i += MAX_BATCH) batches.push(queue.slice(i, i + MAX_BATCH));
-    queue = [];
-    return batches;
-  };
-
-  const send = async (events: SignalEvent[]) => {
-    let res: Response;
-    try {
-      res = await fetch(ROUTES.events, { method: 'POST', keepalive: true, headers: JSON_HEADERS, body: JSON.stringify({ events }) });
-    } catch {
-      queue = [...events, ...queue].slice(-MAX_QUEUE); // network error: retry on the next tick
-      return;
-    }
-    if (!res.ok) return; // the server rejected the batch: drop it rather than retry forever
-    let result: EventsResult;
-    try {
-      result = (await res.json()) as EventsResult;
-    } catch {
-      return;
-    }
-    if (!result || typeof result !== 'object') return;
-    onResult(result);
-    if (result.streak) publishStreak(result.streak);
-  };
-
-  const flush = () => {
-    for (const batch of takeBatches()) void send(batch);
-  };
+  const track = (e: SignalEvent) => queue.push(e);
 
   const stopAllDwells = () => {
     for (const stop of [...dwells]) stop();
-  };
-
-  // pagehide: close open dwells, then hand the queue to sendBeacon (keepalive fetch if it refuses).
-  const beacon = () => {
-    stopAllDwells();
-    for (const events of takeBatches()) {
-      const body = JSON.stringify({ events });
-      const queued = typeof navigator.sendBeacon === 'function' && navigator.sendBeacon(ROUTES.events, new Blob([body], { type: 'application/json' }));
-      if (!queued) void fetch(ROUTES.events, { method: 'POST', keepalive: true, headers: JSON_HEADERS, body }).catch(() => undefined);
-    }
   };
 
   const clearTimer = (el: Element) => {
@@ -183,13 +230,16 @@ function createSignalsEngine(onResult: (r: EventsResult) => void, initialEdition
   };
 
   const start = () => {
-    const interval = setInterval(flush, FLUSH_MS);
-    const onVisibility = () => flush();
-    const onPageHide = () => beacon();
+    const onVisibility = () => {
+      if (isHidden()) void queue.flush('keepalive');
+    };
+    const onPageHide = () => {
+      stopAllDwells();
+      void queue.flush('beacon');
+    };
     document.addEventListener('visibilitychange', onVisibility);
     window.addEventListener('pagehide', onPageHide);
     return () => {
-      clearInterval(interval);
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('pagehide', onPageHide);
       stopAllDwells();
@@ -200,19 +250,12 @@ function createSignalsEngine(onResult: (r: EventsResult) => void, initialEdition
       watched.clear();
       ids.clear();
       detaching.clear();
-      flush(); // keepalive lets this last batch outlive the page
+      void queue.flush('keepalive'); // keepalive lets this last batch outlive the page
+      queue.dispose();
     };
   };
 
-  return {
-    track,
-    observeImpression,
-    startDwell,
-    setEditionId: (id) => {
-      editionId = id;
-    },
-    start,
-  };
+  return { track, observeImpression, startDwell, setEditionId: queue.setEditionId, start };
 }
 
 export function useSignals(editionId: string | null): {
@@ -222,7 +265,12 @@ export function useSignals(editionId: string | null): {
   startDwell: (articleId: string, mode?: 'sheet' | 'bytes') => () => void; // default 'sheet'; stop() emits 'dwell' {value: ms, meta.mode} (paused while hidden)
 } {
   const [lastResult, setLastResult] = useState<EventsResult | null>(null);
-  const [engine] = useState(() => createSignalsEngine(setLastResult, editionId));
+  const [engine] = useState(() =>
+    createSignalsEngine((r) => {
+      setLastResult(r);
+      publishStreak(r.streak);
+    }, editionId),
+  );
 
   useEffect(() => {
     engine.setEditionId(editionId);

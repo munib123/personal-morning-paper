@@ -203,7 +203,7 @@ export function StoryCard(p: StoryCardProps) {
     <article className={cx('mw-story', 'mw-story--' + v, p.read && 'is-read')}>
       {p.imageUrl && (v === 'lead' || v === 'standard') ? (
         <figure className="mw-story__figure">
-          <img src={p.imageUrl} alt={p.imageAlt || ''} loading="lazy" />
+          <img src={p.imageUrl} alt={p.imageAlt || ''} loading="lazy" referrerPolicy="no-referrer" />
           {p.caption && v === 'lead' ? <figcaption className="ui-meta">{p.caption}</figcaption> : null}
         </figure>
       ) : null}
