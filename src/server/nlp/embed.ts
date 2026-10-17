@@ -5,9 +5,11 @@
 //
 // Jobs-only module: the Next.js app never imports it (the app reaches @/server/enrich and
 // @/server/nlp/topics, which stay free of transformers.js).
-import { createGoogle } from '@ai-sdk/google';
 import type { FeatureExtractionPipeline } from '@huggingface/transformers';
 import { embedMany } from 'ai';
+import { classifyError } from '@/server/ai/errors';
+import { sleep } from '@/server/ai/limiter';
+import { embeddingModel, embeddingModelIdForGemini } from '@/server/ai/models';
 import { createSupabaseAdminClient } from '@/server/db/admin';
 import { toPgVector } from '@/server/db/vector';
 import { loadTopics } from './topics';
@@ -64,20 +66,31 @@ export async function embedLocal(texts: string[]): Promise<Float32Array[]> {
   return out;
 }
 
-function geminiEmbedModelId(): string {
-  return process.env.GEMINI_EMBED_MODEL || 'gemini-embedding-2';
+const geminiEmbedModelId = embeddingModelIdForGemini;
+
+/** One embedMany call; on a 429 it waits the body's retryDelay once (cap 60 s), then gives up. */
+async function embedChunk(model: ReturnType<typeof embeddingModel>, values: string[]): Promise<number[][]> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      const { embeddings } = await embedMany({ model, values, dimensions: EMBED_DIM, maxRetries: 0 });
+      return embeddings;
+    } catch (err) {
+      const { kind, retryDelayMs } = classifyError(err);
+      if (attempt > 1 || kind !== 'rate_limit') throw err; // a per-day 429 or any other error: give up
+      await sleep(Math.min(retryDelayMs ?? 2_000, 60_000));
+    }
+  }
 }
 
 /** Gemini embeddings at 384 dims (outputDimensionality), in chunks of 100, re-normalized. */
 export async function embedGemini(texts: string[]): Promise<Float32Array[]> {
   if (texts.length === 0) return [];
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error('GEMINI_API_KEY missing (EMBEDDINGS_PROVIDER=gemini)');
+  if (!process.env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY missing (EMBEDDINGS_PROVIDER=gemini)');
   const modelId = geminiEmbedModelId();
-  const model = createGoogle({ apiKey }).embedding(modelId);
+  const model = embeddingModel();
   const out: Float32Array[] = [];
   for (let i = 0; i < texts.length; i += GEMINI_CHUNK) {
-    const { embeddings } = await embedMany({ model, values: texts.slice(i, i + GEMINI_CHUNK), dimensions: EMBED_DIM, maxRetries: 0 });
+    const embeddings = await embedChunk(model, texts.slice(i, i + GEMINI_CHUNK));
     for (const e of embeddings) {
       if (e.length !== EMBED_DIM) throw new Error(`${modelId} returned ${e.length}-d vectors, expected ${EMBED_DIM}`);
       out.push(normalize(Float32Array.from(e)));
