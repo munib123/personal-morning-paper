@@ -40,9 +40,9 @@ Run from the lane worktree on top of `e4bfb24` plus the docs commits:
 - `npm run typecheck`: exit 0.
 - `npm run lint`: exit 0 (1 warning, pre-existing, not in this lane's files).
 - `npm test`: 120 files passed, 2 skipped (the gated model and DB integration tests), 1,030 tests passed.
-- `npm run build`: see the note below.
+- `npm run build`: exit 0 ("Compiled successfully in 39.2s") after a clean install.
 
-`next build` fails under the node_modules **junction** the lane setup prescribes: Turbopack resolves `next/package.json` through the junction to a path outside the worktree and refuses it ("files outside of the workspace root are not compiled"). It is a property of the junction, not of these docs commits, which touch no code. The prescribed remedy (remove the junction, `PUPPETEER_SKIP_DOWNLOAD=1 ONNXRUNTIME_NODE_INSTALL=skip npm ci`, `npm run build`) was started; the result is recorded in the PR description.
+Note for other lanes: `next build` fails under the node_modules **junction** the lane setup prescribes. Turbopack resolves `next/package.json` through the junction to a path outside the worktree and refuses it ("files outside of the workspace root are not compiled"). The prescribed remedy works: remove the junction (it is a reparse point; delete the link, not its target), then `PUPPETEER_SKIP_DOWNLOAD=1 ONNXRUNTIME_NODE_INSTALL=skip npm ci` (909 packages, 14 minutes on the loaded machine) and `npm run build`.
 
 ## Integration patches
 
