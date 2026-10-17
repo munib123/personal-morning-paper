@@ -21,12 +21,12 @@ function cluster(over: Partial<ClusterState> = {}): ClusterState {
 }
 
 describe('assignCluster', () => {
-  it('joins at exactly 0.82', () => {
-    expect(assignCluster(angle(0.82), [cluster()], at)).toBe(0);
+  it('joins at exactly 0.90 (tuned for gte-small)', () => {
+    expect(assignCluster(angle(0.9), [cluster()], at)).toBe(0);
   });
 
-  it('does not join at 0.81', () => {
-    expect(assignCluster(angle(0.81), [cluster()], at)).toBe(-1);
+  it('does not join at 0.89', () => {
+    expect(assignCluster(angle(0.89), [cluster()], at)).toBe(-1);
   });
 
   it('ignores clusters last seen more than 36h before at', () => {
@@ -40,7 +40,7 @@ describe('assignCluster', () => {
   });
 
   it('picks the most similar of two eligible clusters', () => {
-    const a = cluster({ id: 'a', centroid: angle(0.85) });
+    const a = cluster({ id: 'a', centroid: angle(0.92) });
     const b = cluster({ id: 'b', centroid: angle(0.97) });
     expect(assignCluster(Float32Array.from([1, 0]), [a, b], at)).toBe(1);
   });

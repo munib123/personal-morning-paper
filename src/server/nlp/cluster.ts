@@ -1,6 +1,7 @@
 // Leader clustering and importance (ARCHITECTURE §10.2, §9.7). Pure, no I/O.
-// An article joins the most similar cluster with cos ≥ 0.82 that was last seen within 36 h and holds
-// fewer than 12 articles; otherwise it starts a new one. The centroid is a running mean, re-normalized.
+// An article joins the most similar cluster with cos ≥ CLUSTER_THRESHOLD that was last seen within 36 h
+// and holds fewer than 12 articles; otherwise it starts a new one. The centroid is a running mean,
+// re-normalized.
 import { cosine, normalize } from './vector';
 
 export interface ClusterState {
@@ -15,7 +16,11 @@ export interface ClusterState {
   touched: boolean;
 }
 
-export const CLUSTER_THRESHOLD = 0.82;
+// Tuned on the first real corpus (1,676 articles, 1.3 M pairs within 36 h, gte-small): pairs at
+// 0.80–0.88 are mostly different stories on one topic, 0.90–0.92 are mostly the same story, ≥ 0.92 almost
+// always. The spec's starting value 0.82 chained unrelated stories into 117 clusters of 12. Re-tune if the
+// embedding model changes (MiniLM and Gemini have different cosine ranges).
+export const CLUSTER_THRESHOLD = 0.9;
 export const CLUSTER_WINDOW_HOURS = 36;
 export const CLUSTER_MAX_SIZE = 12;
 // Vectors are Float32: a cos of exactly 0.82 computes as 0.8199999…, and must still join.
