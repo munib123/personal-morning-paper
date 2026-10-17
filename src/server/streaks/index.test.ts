@@ -41,7 +41,7 @@ describe('recordActivityWith', () => {
     const view = await recordActivityWith(repo, U, readEvents, MORNING, TZ);
     expect(view).toMatchObject({ state: 'done_today', current: 1, todayStoriesRead: 1, todayQualified: true });
     expect(repo.days.find((d) => d.date === '2026-10-17')).toMatchObject({ qualifyingReads: 1, storiesRead: 1 });
-    expect(repo.streakRow).toMatchObject({ current: 1, longest: 1, totalDays: 1, lastStreakDate: '2026-10-17', freezesAvailable: 0 });
+    expect(repo.streakRow).toMatchObject({ current: 1, longest: 1, totalDays: 1, lastStreakDate: '2026-10-17', freezesAvailable: 1, freezeProgress: 1 });
   });
 
   it('02:30 PKT counts for the previous day', async () => {
@@ -112,6 +112,42 @@ describe('recordActivityWith', () => {
 
     vi.stubEnv('DEMO_FALLBACK', '1');
     expect(await recordActivityWith(broken, U, readEvents, MORNING, TZ)).toEqual(FIXTURE_STREAK);
+  });
+});
+
+describe('freezes and repair', () => {
+  it('recall answer repairs yesterday', async () => {
+    const frozen: DayRecord = { date: '2026-10-15', status: 'frozen', qualifyingReads: 0, storiesRead: 0, editionComplete: false };
+    const repo = memoryStreakRepo({ days: [...reads(10, 14), frozen] });
+    const view = await recordActivityWith(repo, U, [{ type: 'recall_answer', articleId: 'a2', value: 1, meta: { chosen: 0 } }], MORNING, TZ);
+    expect(repo.days.find((d) => d.date === '2026-10-16')?.status).toBe('repaired');
+    expect(view).toMatchObject({ state: 'done_today', current: 7, milestone: 7 });
+    expect(repo.streakRow?.lastRepairAt).toBe(MORNING.toISOString());
+  });
+
+  it('a repair later in the day still brings the milestone it completes', async () => {
+    // Read today first (state stays repairable), then answer the recall: the repair makes it day 7.
+    const frozen: DayRecord = { date: '2026-10-15', status: 'frozen', qualifyingReads: 0, storiesRead: 0, editionComplete: false };
+    const repo = memoryStreakRepo({ days: [...reads(10, 14), frozen] });
+    const first = await recordActivityWith(repo, U, readEvents, MORNING, TZ);
+    expect(first).toMatchObject({ state: 'repairable', milestone: null });
+    insertLikeL3(repo, '2026-10-17', readEvents);
+    const repaired = await recordActivityWith(repo, U, [{ type: 'recall_answer', articleId: 'a2', value: 1, meta: { chosen: 0 } }], MORNING, TZ);
+    expect(repaired).toMatchObject({ state: 'done_today', current: 7, milestone: 7 });
+  });
+
+  it('a recall answer repairs nothing when no day is repairable', async () => {
+    const repo = memoryStreakRepo({ days: reads(15, 16) });
+    await recordActivityWith(repo, U, [{ type: 'recall_answer', articleId: 'a2', value: 0, meta: { chosen: 1 } }], MORNING, TZ);
+    expect(repo.days.some((d) => d.status === 'repaired')).toBe(false);
+    expect(repo.streakRow?.lastRepairAt).toBeNull();
+  });
+
+  it('getStreak persists auto-frozen days', async () => {
+    const repo = memoryStreakRepo({ days: reads(10, 15) });
+    const view = await getStreakWith(repo, U, MORNING, TZ);
+    expect(view.state).toBe('frozen');
+    expect(repo.days.find((d) => d.date === '2026-10-16')?.status).toBe('frozen');
   });
 });
 
