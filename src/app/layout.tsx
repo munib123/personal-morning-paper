@@ -31,8 +31,13 @@ const unifraktur = localFont({
 export const metadata: Metadata = {
   title: { default: BRAND.nameplate, template: `%s · ${BRAND.name}` },
   description: BRAND.tagline,
+  applicationName: BRAND.nameplate,
+  // Installed from the iOS share sheet: full screen, named "Morrow", paper-coloured status bar.
+  appleWebApp: { capable: true, title: BRAND.name, statusBarStyle: 'default' },
+  formatDetection: { telephone: false },
 };
 
+// Browser chrome follows the Morrow paper token (tokens.css --paper, light and dark).
 export const viewport: Viewport = {
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#f5f0e6' },
