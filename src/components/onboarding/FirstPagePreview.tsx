@@ -1,7 +1,7 @@
 'use client';
 // The end of onboarding: a live preview of the reader's first front page, then "Build my paper".
-// No confetti, no typesetting animation: while the paper is set, the stories become quiet skeleton
-// blocks and a dateline status counts up ("Setting today's paper · 8 of 20 stories").
+// No celebration screen and no typesetting animation: while the paper is set, the stories become
+// quiet skeleton blocks and a dateline status counts up ("Setting today's paper · 8 of 20 stories").
 import { Button, Masthead, StoryCard } from '@/components/morrow';
 import type { TasteCard } from '@/contracts/profile';
 import { buildStatus } from './lib/finish';
