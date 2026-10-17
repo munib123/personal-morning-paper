@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { makeCandidate } from '@/server/rank/__fixtures__/factory';
-import { diversity, ndcgAt10, precisionAt20 } from './metrics';
+import { baseRate, diversity, ndcgAt10, precisionAt20, randomNdcgAt10 } from './metrics';
 import { AYESHA, trueAffinityOf } from './persona';
 
 describe('simulator metrics', () => {
@@ -43,5 +43,29 @@ describe('persona', () => {
   it('Ayesha onboards with broad picks only', () => {
     expect(AYESHA.picks).toEqual(['sports', 'technical']);
     expect(AYESHA.trueAffinity['science.space']).toBe(0.8);
+  });
+
+  it('her self-report is imperfect: a hidden interest she never picked, and a picked topic she rarely reads', () => {
+    const picked = (s: string) => AYESHA.picks.some((p) => s === p || s.startsWith(`${p}.`));
+    expect(picked('science.space')).toBe(false); // hidden interest
+    expect(trueAffinityOf(AYESHA, makeCandidate({ labels: [{ slug: 'science.space', conf: 1 }] }))).toBeGreaterThanOrEqual(0.6);
+    expect(picked('sports.football')).toBe(true); // she picked Sports for the cricket…
+    expect(trueAffinityOf(AYESHA, makeCandidate({ labels: [{ slug: 'sports.football', conf: 1 }] }))).toBeLessThan(AYESHA.defaultAffinity); // …and rarely reads the rest
+    expect(trueAffinityOf(AYESHA, makeCandidate({ labels: [{ slug: 'sports.cricket.leagues', conf: 1 }] }))).toBeCloseTo(0.95, 9);
+  });
+});
+
+describe('base rates (what a paper picked at random would score)', () => {
+  it('baseRate = share of the pool she truly likes', () => {
+    expect(baseRate([0.9, 0.3, 0.3, 0.6])).toBe(0.5);
+    expect(baseRate([])).toBe(0);
+  });
+
+  it('randomNdcgAt10 = mean affinity × Σ 1/log2(k+1) over 10 slots ÷ the ideal DCG', () => {
+    const pool = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    const h10 = Array.from({ length: 10 }, (_, k) => 1 / Math.log2(k + 2)).reduce((a, b) => a + b, 0);
+    expect(randomNdcgAt10(pool)).toBeCloseTo((0.1 * h10) / 1, 9);
+    expect(randomNdcgAt10([0.5, 0.5])).toBeCloseTo(1, 9); // fewer than 10 stories: every order is ideal
+    expect(randomNdcgAt10([0, 0])).toBe(0);
   });
 });
