@@ -40,6 +40,8 @@ describe('scraped boilerplate', () => {
     'Want to stay on top of the science and politics driving biotech today?',
     'Get your daily dose of health and medicine every weekday with our free Morning Rounds newsletter.',
     'Photo: (dcr).',
+    'Cover image: © France 24 01:44 Issued on: 17/10/2026 - 12:41.',
+    'Sign up to get it delivered in your inbox every Tuesday and Thursday.',
   ];
 
   it('never uses a consent, cookie or subscribe banner as the key fact or summary', () => {
