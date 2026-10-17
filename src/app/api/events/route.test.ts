@@ -9,7 +9,7 @@ const ED = '22222222-2222-4222-8222-222222222222';
 const NOW = new Date('2026-10-17T03:00:00Z');
 const item = (n: number) => `33333333-3333-4333-8333-${String(n).padStart(12, '0')}`;
 
-const h = vi.hoisted(() => ({ calls: [] as Query[], signedIn: true }));
+const h = vi.hoisted(() => ({ calls: [] as Query[], signedIn: true, noProfile: false }));
 
 vi.mock(import('@/server/auth/session'), () => ({
   getSessionUser: vi.fn(async () => (h.signedIn ? { userId: U, isAnonymous: false } : null)),
@@ -46,6 +46,7 @@ const sportsPriors = [
 ];
 
 function resolve(q: Query): Result | undefined {
+  if (q.table === 'profiles' && q.op === 'select' && q.columns?.includes('onboarded_at') && h.noProfile) return { data: null };
   if (q.table === 'profiles' && q.op === 'select' && q.columns?.includes('onboarded_at'))
     return { data: { user_id: U, display_name: 'Sara', paper_name: 'The Morrow', tz: 'Asia/Karachi', city: 'Lahore', time_budget: 15, depth: 'basics', lang: 'en', delivery_hour: 7, is_demo: false, onboarded_at: '2026-10-10T03:00:00Z' } };
   if (q.table === 'profiles' && q.op === 'select') return { data: { pos_emb: null, neg_emb: null, n_engaged: 0, depth_pref: 0, time_budget: 15, depth: 'basics', lang: 'en' } };
@@ -143,6 +144,17 @@ describe('POST /api/events (the one signal pipeline)', () => {
     const body = EventsResultSchema.parse(await (await post({ events: [{ type: 'skip', articleId: A1, meta: { reason: 'not_today' } }] })).json());
     expect(body.deltas).toEqual([]);
     expect(body.toast).toBeNull();
+  });
+
+  it('a signed-in reader with no profile yet (mid-onboarding): accepted, nothing written, no 500', async () => {
+    h.noProfile = true;
+    const res = await post({ events: [{ type: 'open', articleId: A1 }] });
+    h.noProfile = false;
+    expect(res.status).toBe(200);
+    const body = EventsResultSchema.parse(await res.json());
+    expect(body).toMatchObject({ accepted: 1, deltas: [], toast: null });
+    expect(inserted()).toEqual([]);
+    expect(vi.mocked(streaks.recordActivity)).not.toHaveBeenCalled();
   });
 
   it('an editionId that is not the reader’s is stored as null', async () => {
