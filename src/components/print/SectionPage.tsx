@@ -3,12 +3,13 @@
 import { PullQuote } from '@/components/morrow';
 import { pickSummary, sectionName } from '@/server/pdf/layout';
 import type { InnerPage, PrintModel } from '@/server/pdf/types';
-import { BriefStrip, hrefOf, ImageOrFallback, kickerOf, PageFoot, RunningHead, SectionHead, StoryBlock, StorySource } from './parts';
+import { BriefStrip, hrefOf, ImageOrFallback, kickerOf, PageFoot, pullQuoteOf, RunningHead, SectionHead, StoryBlock, StorySource } from './parts';
 
 export function SectionPage({ model, page, number }: { model: PrintModel; page: InnerPage; number: number }) {
   const { edition, layout } = model;
   const [lead, ...rest] = page.items;
-  const quote = lead.article.whyItMatters ?? lead.article.keyFact;
+  const body = pickSummary(lead, 'section-lead', layout.budgets);
+  const quote = pullQuoteOf(lead, body);
   const cols = Math.min(5, Math.max(3, page.items.length));
   return (
     <section className="page page--section" id={`page-${number}`}>
@@ -26,7 +27,7 @@ export function SectionPage({ model, page, number }: { model: PrintModel; page: 
       </div>
       <div className={`cols cols--${cols}`}>
         <article className="story story--section-lead">
-          <p className="print-body">{pickSummary(lead, 'section-lead', layout.budgets)}</p>
+          <p className="print-body">{body}</p>
           <StorySource model={model} item={lead} />
         </article>
         {rest.map((item) => (

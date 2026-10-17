@@ -127,8 +127,15 @@ export function firstSentence(text: string): string {
   return m ? m[0] : t;
 }
 
+// Page 1's lead summary steps down from the default budget to LEAD_SHORT, then (after the rail story) LEAD_SHORTEST.
+const LEAD_SHORT = 120;
+const LEAD_SHORTEST = 60;
+
 /**
- * One step of the overflow guard. Pages are 1-indexed; null means nothing could move.
+ * One step of the overflow guard per overflowing page. Pages are 1-indexed; null means nothing could move.
+ * Page 1: shorter lead, then the rail story to the briefs, then an even shorter lead. Inner page: its brief strip
+ * back to the last page, then its last story. Last page: shorter briefs, then drop the last brief, then the last
+ * "Beyond your usual" story.
  * An inner page keeps at least its section lead, so a page never prints empty.
  */
 export function shrinkLayout(layout: PrintLayout, overflowingPages: number[]): PrintLayout | null {
@@ -144,11 +151,14 @@ export function shrinkLayout(layout: PrintLayout, overflowingPages: number[]): P
   let changed = false;
   for (const p of [...new Set(overflowingPages)].sort((a, b) => a - b)) {
     if (p === 1) {
-      if (next.budgets.lead > 120) {
-        next.budgets.lead = 120;
+      if (next.budgets.lead > LEAD_SHORT) {
+        next.budgets.lead = LEAD_SHORT;
         changed = true;
       } else if (next.rail.length > 0) {
         next.briefs.unshift(next.rail.pop()!);
+        changed = true;
+      } else if (next.budgets.lead > LEAD_SHORTEST) {
+        next.budgets.lead = LEAD_SHORTEST;
         changed = true;
       }
     } else if (p === last) {
@@ -158,11 +168,14 @@ export function shrinkLayout(layout: PrintLayout, overflowingPages: number[]): P
       } else if (next.briefs.length > 0) {
         next.briefs.pop();
         changed = true;
+      } else if (next.beyond.length > 0) {
+        next.beyond.pop();
+        changed = true;
       }
     } else if (p >= 2 && p < last) {
       const page = next.inner[p - 2];
       if (page?.briefs?.length) {
-        next.briefs.unshift(page.briefs.pop()!);
+        next.briefs.unshift(...page.briefs.splice(0));
         changed = true;
       } else if (page && page.items.length > 1) {
         next.briefs.unshift(page.items.pop()!);
