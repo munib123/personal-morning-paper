@@ -11,6 +11,7 @@ import { sectionLabel, takeawaysOf, type CardVariant } from '@/components/story/
 import type { Edition, EditionItem } from '@/contracts/edition';
 import { useEdition } from './EditionContext';
 import { layoutFrontPage } from './layout';
+import { FadeSlot } from './FadeSlot';
 import { PaperMasthead } from './PaperMasthead';
 
 export interface FrontPageProps {
@@ -29,22 +30,27 @@ function chunk<T>(list: T[], size: number): T[][] {
   return rows;
 }
 
-/** Only the lead's wide column has room for the labelled FeedbackBar; columns use the icon-only one. */
+/**
+ * One story position. Callers key it by position (not by article), so when a skip promotes a reserve
+ * story into the slot the FadeSlot stays and only its content fades. Only the lead's wide column has
+ * room for the labelled FeedbackBar; the columns use the icon-only one.
+ */
 function Story({ item, variant, withDeck }: { item: EditionItem; variant: CardVariant; withDeck?: boolean }) {
-  return <PaperStory item={item} variant={variant} withDeck={withDeck} compactFeedback={variant !== 'lead'} />;
+  return (
+    <FadeSlot id={item.article.id}>
+      <PaperStory item={item} variant={variant} withDeck={withDeck} compactFeedback={variant !== 'lead'} />
+    </FadeSlot>
+  );
 }
 
 /** Rows of three standard stories with a rule between columns (one column, ruled, on phones). */
 function StoryColumns({ items }: { items: EditionItem[] }) {
   return (
     <div className="flex flex-col divide-y divide-rule">
-      {chunk(items, 3).map((row) => (
-        <div
-          key={row.map((i) => i.article.id).join('|')}
-          className="grid divide-y divide-rule py-6 first:pt-0 last:pb-0 md:grid-cols-3 md:divide-x md:divide-y-0"
-        >
-          {row.map((item) => (
-            <div key={item.article.id} className="py-6 first:pt-0 last:pb-0 md:px-3 md:py-0 md:first:pl-0 md:last:pr-0">
+      {chunk(items, 3).map((row, r) => (
+        <div key={r} className="grid divide-y divide-rule py-6 first:pt-0 last:pb-0 md:grid-cols-3 md:divide-x md:divide-y-0">
+          {row.map((item, c) => (
+            <div key={c} className="py-6 first:pt-0 last:pb-0 md:px-3 md:py-0 md:first:pl-0 md:last:pr-0">
               <Story item={item} variant="standard" />
             </div>
           ))}
@@ -109,8 +115,8 @@ export function FrontPage({ readerName, city, end, onHowMade }: FrontPageProps) 
             {layout.briefs.length > 0 ? (
               <section aria-labelledby="section-in-brief" className={both ? 'md:pr-3' : undefined}>
                 <SectionHeader id="section-in-brief" title="In brief" />
-                {layout.briefs.map((item) => (
-                  <Story key={item.article.id} item={item} variant="brief" />
+                {layout.briefs.map((item, i) => (
+                  <Story key={i} item={item} variant="brief" />
                 ))}
               </section>
             ) : null}
