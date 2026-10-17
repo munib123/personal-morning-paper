@@ -1,6 +1,6 @@
 # W2 "Tell your editor": handoff
 
-Status: ready for merge (branch `lane/W2-tell-editor`). The two mounts (L7's /me interest editor, optionally L4's end of paper) are patches below, not applied.
+Status: ready for merge (branch `lane/W2-tell-editor`, PR [#57](https://github.com/munib123/personal-morning-paper/pull/57)). The two mounts (L7's /me interest editor, optionally L4's end of paper) are patches below, not applied.
 
 The reader types what should change ("more on cricket and AI policy, less showbiz, and I'm curious about astronomy"), sees a proposed diff on their interests (topic, before → after, one line quoting their words), confirms, and today's paper is rebuilt with the change. PLAN §5a calls it the best 20-second Loom moment.
 
