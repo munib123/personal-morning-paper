@@ -1,19 +1,22 @@
-// STUB (L0) — owner: L4. Replace freely; keep the props.
+'use client';
+// The editor's pen on a story (§9.6): the strongest reason, shown inside a Morrow WhyTag. StoryCard
+// already wraps `why` in its WhyTag, so this renders the content only; callers outside a StoryCard
+// (the story sheet) wrap it in <WhyTag> themselves.
 import type { Reason, ScoreBreakdown } from '@/contracts/edition';
-import { WhyTag } from '@/components/morrow';
+import { topReasons } from './format';
+
+export type WhyAction = 'more' | 'less' | 'hide_source';
 
 export interface WhyChipProps {
   reasons: Reason[];
   breakdown?: ScoreBreakdown;
-  onAction?: (a: 'more' | 'less' | 'hide_source') => void;
+  onAction?: (a: WhyAction) => void;
 }
 
-// The editor's pen on a story: the first reason as a Morrow WhyTag. L4 adds the score popover
-// (breakdown) and the More / Less / Hide source actions (onAction).
 export function WhyChip({ reasons }: WhyChipProps) {
-  const top = reasons[0];
+  const top = topReasons(reasons, 1)[0];
   if (!top) return null;
-  return <WhyTag>{top.text}</WhyTag>;
+  return <span>{top.text}</span>;
 }
 
 export default WhyChip;

@@ -1,0 +1,16 @@
+
+
+  <?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/">
+<channel>
+  <title>Dezeen</title>
+  <link>https://www.dezeen.com</link>
+  <description>architecture and design magazine</description>
+  <item>
+    <title>Timber tower rises in Copenhagen</title>
+    <link>https://www.dezeen.com/2026/10/17/timber-tower-copenhagen/</link>
+    <dc:creator><![CDATA[Jane Englefield]]></dc:creator>
+    <pubDate>Sat, 17 Oct 2026 05:00:00 +0000</pubDate>
+    <description><![CDATA[<img src="https://static.dezeen.com/uploads/2026/10/timber-tower.jpg" width="468" height="263"/><p>A 12-storey timber tower has completed in Copenhagen.</p>]]></description>
+  </item>
+</channel>
+</rss>
