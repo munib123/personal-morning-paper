@@ -22,7 +22,8 @@ export default async function LandingPage() {
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-(--page-max) flex-col gap-12 bg-paper px-4 pt-6 pb-10 md:gap-16 md:px-6 md:pt-10">
       <div className="flex flex-col">
-        <Masthead title={BRAND.nameplate} date={date} tagline="Every morning" reader="you" storyCount={20} readingTime="Web and PDF" />
+        {/* Two strip items only: a third wraps at 390 px and starts the second line with a stray "·". */}
+        <Masthead title={BRAND.nameplate} date={date} tagline="Every morning" reader="you" storyCount={20} />
         <section aria-label="Get your paper" className="mx-auto flex w-full max-w-(--measure) flex-col items-center gap-5 pt-10 text-center md:pt-14">
           <h2 className="headline-lg text-balance text-ink">{BRAND.tagline}.</h2>
           <p className="deck text-ink-soft">

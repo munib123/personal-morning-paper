@@ -125,11 +125,15 @@ export function WhatsDifferent() {
               In a simulated week, the learning paper scored 0.52 nDCG@10 on day 7, against 0.34 for the same reader&rsquo;s
               profile left as onboarding set it.
             </p>
-            <p className="mt-2 flex flex-wrap items-baseline gap-x-6 gap-y-1">
-              <span className="headline-lg text-ink">0.52</span>
-              <span className="ui-meta text-ink-muted">learning, day 7</span>
-              <span className="headline-lg text-ink-muted">0.34</span>
-              <span className="ui-meta text-ink-muted">static profile</span>
+            <p className="mt-2 flex flex-wrap items-baseline gap-x-8 gap-y-2">
+              <span className="inline-flex items-baseline gap-2">
+                <span className="headline-lg text-ink">0.52</span>
+                <span className="ui-meta text-ink-muted">learning, day 7</span>
+              </span>
+              <span className="inline-flex items-baseline gap-2">
+                <span className="headline-lg text-ink-muted">0.34</span>
+                <span className="ui-meta text-ink-muted">static profile</span>
+              </span>
             </p>
           </article>
           <article className="mt-6 flex flex-col gap-2 border-t border-rule pt-6">
