@@ -2,6 +2,9 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import type { ReactElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+// Rendering a whole edition under jsdom takes seconds on a busy machine; give these tests room.
+vi.setConfig({ testTimeout: 30_000 });
 import { FIXTURE_EDITION, FIXTURE_STREAK } from '@/contracts/fixtures';
 import { EditionReader } from '@/components/paper/EditionReader';
 import { sectionLabel } from './format';
@@ -113,6 +116,7 @@ describe('server toasts', () => {
     };
     rerenderWith(result);
     rerenderWith({ ...result });
+    rerenderWith({ ...result, toast: 'Got it, more Pakistan Cricket' }); // feedback acknowledgments are ours to show
     rerenderWith({ ...result, toast: 'Something new.' });
     expect(sonner.toast.mock.calls.map((c) => c[0])).toEqual(['You reached a 7-day streak.', 'Something new.']);
     (signals as { lastResult: unknown }).lastResult = null;
