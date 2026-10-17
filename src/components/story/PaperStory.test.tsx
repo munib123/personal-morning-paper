@@ -64,19 +64,21 @@ describe('PaperStory', () => {
     expect(container.querySelectorAll('.mw-why')).toHaveLength(0);
   });
 
-  it('faithfulness line on lead and standard', async () => {
+  it('faithfulness line on the lead: muted, with the guardrail popover', async () => {
     renderStory(<PaperStory item={withArticle(lead, { aiProvider: 'gemini' })} variant="lead" />);
     const trigger = screen.getByRole('button', { name: /AI summary · facts checked against source/ });
     expect(trigger).toHaveClass('ui-meta', 'text-ink-muted');
     expect(trigger.className).not.toMatch(/text-pen/);
     fireEvent.click(trigger);
     expect(await screen.findByText(faithfulnessBadge('gemini').tooltip)).toBeInTheDocument();
-    cleanup();
+  });
 
+  it("faithfulness line on a standard card: Publisher's excerpt", () => {
     renderStory(<PaperStory item={withArticle(standard, { aiProvider: 'extractive' })} variant="standard" />);
     expect(screen.getByRole('button', { name: /Publisher's excerpt/ })).toHaveClass('ui-meta', 'text-ink-muted');
-    cleanup();
+  });
 
+  it('no faithfulness line on brief and compact cards', () => {
     for (const variant of ['brief', 'compact'] as const) {
       renderStory(<PaperStory item={withArticle(standard, { aiProvider: 'gemini' })} variant={variant} />);
       expect(screen.queryByText(/AI summary · facts checked against source|Publisher's excerpt/)).toBeNull();

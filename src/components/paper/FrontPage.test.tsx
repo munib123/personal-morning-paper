@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, cleanup, render, screen, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { FIXTURE_EDITION, FIXTURE_STREAK } from '@/contracts/fixtures';
 import { sectionLabel } from '@/components/story/format';
@@ -151,9 +151,8 @@ describe('FrontPage', () => {
     const read = FIXTURE_EDITION.items[6].article;
     localStorage.setItem(memoryKey(FIXTURE_EDITION.id), JSON.stringify({ read: [read.id], skipped: [lead.id] }));
     const { container } = renderFront();
-    await act(async () => {});
-    expect(screen.queryByText(lead.headline)).toBeNull();
-    expect(container.querySelectorAll('article')).toHaveLength(20);
+    await waitFor(() => expect(screen.queryByText(lead.headline)).toBeNull()); // after its 150 ms fade
+    await waitFor(() => expect(container.querySelectorAll('article')).toHaveLength(20));
     const readCard = container.querySelector(`[data-article-id="${read.id}"] article`);
     expect(readCard).toHaveClass('is-read');
   });
