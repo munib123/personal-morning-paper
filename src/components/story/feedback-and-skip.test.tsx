@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
-import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, configure, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import type { ReactElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Rendering a whole edition under jsdom takes seconds on a busy machine; give these tests room.
 vi.setConfig({ testTimeout: 30_000 });
+configure({ asyncUtilTimeout: 5000 }); // waitFor covers the 150 ms fades even under load
 import { FIXTURE_EDITION, FIXTURE_STREAK } from '@/contracts/fixtures';
 import { EditionReader } from '@/components/paper/EditionReader';
 import { sectionLabel } from './format';
