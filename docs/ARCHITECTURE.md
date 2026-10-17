@@ -899,8 +899,8 @@ Server: everything in §9.3.
 
 | Event | Reward |
 |---|---|
-| impression (seen, not opened) | −0.05 |
-| open | +0.30 |
+| impression (every story shown; Beta only, never `pos`/`neg`) | −0.25 (was −0.05; Ruling W3) |
+| open | 0 (was +0.30; Ruling W3: the dwell after it carries the evidence) |
 | dwell | +0.70 · min(1, ms / expected), where expected = max(8 s, words / 230 wpm). Dwell < 3 s = −0.10 |
 | read_original | +0.60 |
 | qr_scan | +0.60 |
@@ -912,7 +912,9 @@ Server: everything in §9.3.
 | pdf_download | +0.05 to every edition item |
 | taste_more / taste_less | ±1.50 |
 
-**Embeddings:** `pos ← normalize((1−ηr)·pos + ηr·e)` with η = 0.10 for r > 0; `neg` uses η = 0.15 with |r| for r < 0.
+Net per story shown (Ruling W3): scrolled past −0.25 · skimmed (≈ 36% of the expected time) ≈ 0 · read to the end +0.45 · skipped −0.75 · "less" −1.75.
+
+**Embeddings:** `pos ← normalize((1−ηr)·pos + ηr·e)` with η = 0.10 for r > 0; `neg` uses η = 0.15 with |r| for r < 0. Impressions update the Beta only (`RANK_V1_FIXED.betaOnlyTypes`).
 
 **Decay:** the nightly refold weights each event by `0.5^(ageDays/14)` and decays toward the prior, not toward zero.
 
@@ -922,6 +924,12 @@ s(u,i) = 0.40·T + c_u·0.25·cos(pos,e_i) − 0.15·max(0,cos(neg,e_i)) + 0.15�
 T = Σ_labels conf·θ̂(label)      c_u = min(1, nEngaged/10)      fresh = exp(−ageHours/24)
 ```
 Muted topics or sources → excluded. Pinned → +0.10. Items seen in the last 7 editions or in dismissed clusters → excluded.
+Every cosine the ranker takes (score, MMR, serendipity band, 'similar' chip) is between vectors centred on the pool's mean embedding (`rank/center.ts`, pools of ≥ 20 embedded stories; Ruling W3).
+
+**Rulings (W3, 2026-10-17)**, measured on the live pool (1000 articles) with `scripts/simulate.ts`; results in `docs/handoff/W3-learning.md`:
+- **Ruling (W3): rank in a pool-mean-centred embedding space.** Evidence: gte-small vectors share one large direction; the mean pairwise cosine on the pool was 0.751 (centred: 0.010), so on a simulated day 7 `similarity` was 0.205–0.221 and `negative` −0.126 to −0.133 for *every* story, the MMR penalty was a constant and no story fell in the serendipity band. Cosine to the centroid of the stories she likes: liked 0.877 vs rest 0.852 raw (gap 0.025), 0.253 vs −0.023 centred (gap 0.276). Cost if wrong: about 2 ms per 1000-story build, and the mean is noisy for a small or single-topic pool (hence the ≥ 20 guard). The `similarChipMinCos` 0.55 and `serendipityCos` [0.25, 0.45] thresholds now read centred cosines, so the "Because you read" chip fires less often and only for closer matches.
+- **Ruling (W3): `rewards.impression` −0.05 → −0.25 and `rewards.open` +0.30 → 0.** Evidence: with the old values a story she only skims (affinity 0.3, opened 1 in 3, 36% of the reading time) still earned its topic +0.55 per open against −0.05 per scroll-past, so a topic's Beta mean converged to about 0.77 for *anything we showed*. The seeded demo persona's top movers were Global Affairs and Pakistan Economy, topics she is indifferent to. With these values alone (single seed, raw embeddings), days 4–7 simulated p@20 went from 0.063 to 0.112. Cost if wrong: a real reader who scrolls past many stories they would have liked loses that topic faster (bounded by the refold's decay toward the prior). If the client fails to send a dwell, an open alone no longer teaches anything.
+- **Ruling (W3): impressions move the topic Beta only, never `pos`/`neg`.** Evidence: every shown story gets an impression, the loved ones too, so `neg` was being pulled toward the centroid of the paper itself; in the centred space that would penalise exactly what she reads. Cost if wrong: `neg` now learns only from explicit negatives (less, skip, taste_less, a < 3 s bounce), so it forms later.
 
 **Selection (seeded RNG = hash(userId|date)):**
 1. One item per cluster (the best `s`). Shortlist the top 200.
@@ -974,8 +982,9 @@ The top 2 by contribution go on the card. The full breakdown goes in the "Why th
 - **Snapshots:** `interest_snapshots(user, date)` is written at every edition build. `/me/learning` compares today with N days ago for the movers, and builds a **change summary** from a template ("More Cricket and AI policy, less Celebrity: you read 3 cricket stories to the end and skipped 2 celebrity pieces.").
 - **Editor's note:** Gemini, via `after()` (FAST ladder; SMART only when `preferSmart`, i.e. demo personas). Its input includes the top movers. The template fallback is the exact copy in §9.7.
 - **Fast-forward 7 days** (`scripts/simulate.ts` + `/api/demo/fast-forward`):
-  - The persona has a hidden true-affinity vector (e.g. loves cricket + AI, a latent interest in Space, dislikes Celebrity) but onboards with only broad picks.
-  - Each day: build an edition from the pool split into 7 pseudo-days by `published_at` (seeded). She opens with probability `σ(4·(true−0.5))`, dwells in proportion to true affinity, and says "less" on true < 0.2.
+  - The persona has a hidden true-affinity vector (loves cricket + AI, a hidden interest in Space, dislikes Pakistani showbiz). She onboards with broad picks only, and the self-report is imperfect: Science is never picked, and she picked Sports for the cricket but rarely reads the rest (0.15).
+  - Each day: build an edition from the pool split into 7 pseudo-days by `published_at`. She opens with probability `σ(4·(true−0.5))` and reads `1.2·true` of the expected time × a lognormal factor (σ 0.35, cap 1.5×). She skips unopened stories with p = `0.25·(1−true)` and taps "less" on true < 0.2 with p = 0.3 (W3).
+  - Fair comparison (W3): the arms share the pool, days, persona and seed. Her reaction to a story is drawn from (seed, story) only (common random numbers). Only the learning arm updates its model. `runSimulation` returns the mean of 5 seeded weeks (`SIM_SEEDS`).
   - Metrics per day: precision@20 (share with true ≥ 0.6), nDCG@10, intra-list diversity, explore hits.
   - It is compared with **onboarding-only** (no updates) and **popularity** (importance + freshness only) baselines.
   - Results (with weight snapshots) feed the learning chart and the time-lapse. **Report only the measured numbers.**
