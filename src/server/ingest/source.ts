@@ -1,3 +1,4 @@
+import { ARXIV_MIN_WINDOW_HOURS, fetchArxiv } from './adapters/arxiv';
 import { fetchDevto } from './adapters/devto';
 import { fetchHackerNews } from './adapters/hn';
 import { errorMessage, fetchFeed } from './http';
@@ -12,6 +13,8 @@ export interface SourceOptions {
 
 /** 5 tags × 15 = up to 75 Dev.to articles, capped at maxPerSource by filterAndCap. */
 export const DEVTO_PER_TAG = 15;
+/** The newest 10 per arXiv category (§10.1). */
+export const ARXIV_PER_CATEGORY = 10;
 
 const emptyCache = (src: IngestSource, now: Date): FeedCache => ({
   httpStatus: null,
@@ -62,8 +65,7 @@ export async function processSource(src: IngestSource, now: Date, o: SourceOptio
       return processApi(src, now, o, () => fetchHackerNews(o.maxPerSource, src.id));
     case 'devto':
       return processApi(src, now, o, () => fetchDevto(DEVTO_PER_TAG, src.id));
-    default:
-      // The arXiv adapter lands in Task 7.
-      return { sourceId: src.id, items: [], fetched: 0, skippedOld: 0, ok: true, cache: emptyCache(src, now) };
+    case 'arxiv':
+      return processApi(src, now, { ...o, sinceHours: Math.max(o.sinceHours, ARXIV_MIN_WINDOW_HOURS) }, () => fetchArxiv(ARXIV_PER_CATEGORY, undefined, src.id));
   }
 }
