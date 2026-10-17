@@ -1,15 +1,19 @@
-// STUB (L0) — owner: L7. Replace freely; keep the signature.
+// POST /api/demo/clock (DEMO_MODE only, owner L7). { now: string | null } → { now: string }.
+// A date-time sets the demo clock; null resets it to real time. §9.7: the `subah_now` cookie holds an
+// ISO 8601 UTC string, and requestNow() reads it on every page and route when DEMO_MODE=1.
 import { NextResponse } from 'next/server';
 import { DemoClockRequestSchema } from '@/contracts/api';
 
-// §9.7: the demo clock cookie holds an ISO 8601 UTC string; requestNow() reads it when DEMO_MODE=1.
 const DEMO_COOKIE = 'subah_now';
 // Site-wide, so every page and route sees it. Clearing must repeat the path, or the browser keeps the old cookie.
 const COOKIE_PATH = '/';
+const MAX_AGE_S = 60 * 60 * 24 * 30;
 
-// POST { now: string | null } (DEMO_MODE only) → { now }. A string sets the demo clock; null resets to real time.
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request): Promise<Response> {
-  if (process.env.DEMO_MODE !== '1') return Response.json({ error: 'demo mode is off' }, { status: 403 });
+  if (process.env.DEMO_MODE !== '1') return NextResponse.json({ error: 'not found' }, { status: 404 });
+
   const parsed = DemoClockRequestSchema.safeParse(await readJson(request));
   if (!parsed.success) return invalid(parsed.error.issues);
 
@@ -20,13 +24,11 @@ export async function POST(request: Request): Promise<Response> {
     return res;
   }
 
-  const at = new Date(parsed.data.now);
-  if (Number.isNaN(at.getTime())) {
-    return invalid([{ code: 'custom', path: ['now'], message: 'Expected an ISO 8601 date-time' }]);
-  }
-  const now = at.toISOString();
+  const at = Date.parse(parsed.data.now);
+  if (Number.isNaN(at)) return invalid([{ code: 'custom', path: ['now'], message: 'Expected an ISO 8601 date-time' }]);
+  const now = new Date(at).toISOString();
   const res = NextResponse.json({ now });
-  res.cookies.set(DEMO_COOKIE, now, { path: COOKIE_PATH, sameSite: 'lax', httpOnly: true });
+  res.cookies.set(DEMO_COOKIE, now, { path: COOKIE_PATH, httpOnly: true, sameSite: 'lax', maxAge: MAX_AGE_S });
   return res;
 }
 
@@ -41,5 +43,5 @@ async function readJson(request: Request): Promise<unknown> {
 }
 
 function invalid(issues: unknown): Response {
-  return Response.json({ error: 'invalid', issues }, { status: 400 });
+  return NextResponse.json({ error: 'invalid', issues }, { status: 400 });
 }
