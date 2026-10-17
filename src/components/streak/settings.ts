@@ -13,6 +13,11 @@ export const depthOptions: SegmentedOption[] = [
   { value: 'expert', label: 'Expert' },
 ];
 
+export const streakOptions: SegmentedOption[] = [
+  { value: 'show', label: 'Show' },
+  { value: 'hide', label: 'Hide' },
+];
+
 export const themeOptions: SegmentedOption[] = [
   { value: 'morning', label: 'Morning' },
   { value: 'night', label: 'Night edition' },

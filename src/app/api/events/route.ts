@@ -1,27 +1,13 @@
-// STUB (L0) — owner: L3. Replace freely; keep the signature.
-import { SignalBatchSchema } from '@/contracts/api';
-import { FIXTURE_USER_ID } from '@/contracts/fixtures';
+// POST /api/events (L3, §9.2) { events: SignalEvent[] } (≤ 50, sendBeacon text/plain OK) → EventsResult.
+import { EventsResultSchema, SignalBatchSchema } from '@/contracts/api';
+import { requireUser } from '@/server/auth/session';
+import { readJson, route } from '@/server/edition/http';
 import { processSignals } from '@/server/learn';
 import { requestNow } from '@/server/time';
 
-// POST { events: SignalEvent[] } (1..50, sendBeacon-friendly) → EventsResult.
-// Everything goes through the one signal pipeline (processSignals). Stub: no auth, the fixture reader.
-export async function POST(request: Request): Promise<Response> {
-  const parsed = SignalBatchSchema.safeParse(await readJson(request));
-  if (!parsed.success) return invalid(parsed.error.issues);
-  return Response.json(await processSignals(FIXTURE_USER_ID, parsed.data.events, await requestNow()));
-}
-
-// Reads JSON whatever the content type (sendBeacon posts text/plain). Empty → {}, malformed → undefined (fails validation).
-async function readJson(request: Request): Promise<unknown> {
-  try {
-    const text = await request.text();
-    return text.trim() ? (JSON.parse(text) as unknown) : {};
-  } catch {
-    return undefined;
-  }
-}
-
-function invalid(issues: unknown): Response {
-  return Response.json({ error: 'invalid', issues }, { status: 400 });
-}
+export const POST = route(async (request: Request) => {
+  const { userId } = await requireUser();
+  const { events } = SignalBatchSchema.parse(await readJson(request));
+  const result = await processSignals(userId, events, await requestNow());
+  return Response.json(EventsResultSchema.parse(result));
+});

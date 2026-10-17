@@ -1,24 +1,14 @@
-// STUB (L0) — owner: L3. Replace freely; keep the signature.
+// GET /api/editions?limit=60 (L3, §9.2) → ArchiveEntry[], newest first.
 import { ArchiveQuerySchema } from '@/contracts/api';
-import { FIXTURE_USER_ID } from '@/contracts/fixtures';
+import { requireUser } from '@/server/auth/session';
 import { listArchive } from '@/server/edition';
+import { route } from '@/server/edition/http';
 
-const MAX_LIMIT = 365;
+const MAX_LIMIT = 120;
 
-// GET ?limit=60 → ArchiveEntry[], newest first. Stub: no auth; listArchive serves the fixture archive.
-export async function GET(request: Request): Promise<Response> {
-  const parsed = ArchiveQuerySchema.safeParse(queryOf(request));
-  if (!parsed.success) return invalid(parsed.error.issues);
-  // The schema only coerces; clamping the range is the handler's job.
-  const limit = Math.min(Math.max(parsed.data.limit, 1), MAX_LIMIT);
-  return Response.json(await listArchive(FIXTURE_USER_ID, limit));
-}
-
-// Query params as a plain object. An empty value (?limit=) counts as absent, so the schema default applies.
-function queryOf(request: Request): Record<string, string> {
-  return Object.fromEntries([...new URL(request.url).searchParams].filter(([, v]) => v.trim() !== ''));
-}
-
-function invalid(issues: unknown): Response {
-  return Response.json({ error: 'invalid', issues }, { status: 400 });
-}
+export const GET = route(async (request: Request) => {
+  const { userId } = await requireUser();
+  const raw = new URL(request.url).searchParams.get('limit');
+  const { limit } = ArchiveQuerySchema.parse({ limit: raw?.trim() ? raw : undefined });
+  return Response.json(await listArchive(userId, Math.min(Math.max(limit, 1), MAX_LIMIT)));
+});

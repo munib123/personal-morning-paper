@@ -17,7 +17,7 @@ const demoFallback = () => process.env.DEMO_FALLBACK === '1';
 /** A neutral view for when storage fails: a new reader today (or the fixture with DEMO_FALLBACK=1). */
 function fallbackView(now: Date, tz: string): StreakView {
   if (demoFallback()) return FIXTURE_STREAK;
-  return computeStreak([], localDate(now, tz)).view;
+  return { ...computeStreak([], localDate(now, tz)).view, freezesAvailable: 0 }; // unknown, so claim none
 }
 
 /** Replace today's row in `days` with the freshly upserted one (what loadDays would return now). */
@@ -29,9 +29,18 @@ export async function recordActivityWith(repo: StreakRepo, userId: string, event
   try {
     const date = localDate(now, tz);
     const hour = localHour(now, tz);
-    const days = await repo.loadDays(userId);
+    let days = await repo.loadDays(userId);
     const prior = computeStreak(days, date, hour);
     if (!events.some((e) => READING_TYPES.has(e.type))) return { ...prior.view, milestone: null };
+
+    // Repair: with one missed day still open (no freeze left, within 48 h), a recall answer catches it up.
+    let lastRepairAt: string | null = null;
+    if (prior.repairableDate && events.some((e) => e.type === 'recall_answer')) {
+      await repo.upsertStatusDays(userId, [prior.repairableDate], 'repaired');
+      const missed = days.find((d) => d.date === prior.repairableDate);
+      days = withDay(days, { date: prior.repairableDate, qualifyingReads: 0, storiesRead: 0, editionComplete: false, ...missed, status: 'repaired' });
+      lastRepairAt = now.toISOString();
+    }
 
     const [stored, recallCount] = await Promise.all([repo.loadDayEvents(userId, date), repo.loadRecallCount(userId, date)]);
     const summary = summarizeDay([...stored, ...events.map(toDayEvent)]);
@@ -51,9 +60,10 @@ export async function recordActivityWith(repo: StreakRepo, userId: string, event
       date,
       hour,
     );
-    await repo.upsertStreakRow(userId, next);
-    // The milestone is news only on the read that crossed it.
-    return { ...next.view, milestone: !prior.view.todayQualified && next.view.todayQualified ? next.view.milestone : null };
+    await repo.upsertStatusDays(userId, next.autoFrozen, 'frozen');
+    await repo.upsertStreakRow(userId, next, lastRepairAt);
+    // The milestone is news only on the call that made today a streak day (a read, or a repair).
+    return { ...next.view, milestone: prior.view.state !== 'done_today' && next.view.state === 'done_today' ? next.view.milestone : null };
   } catch (err) {
     console.error('[streaks] recordActivity failed', err);
     return fallbackView(now, tz);
@@ -63,6 +73,10 @@ export async function recordActivityWith(repo: StreakRepo, userId: string, event
 export async function getStreakWith(repo: StreakRepo, userId: string, now: Date, tz: string): Promise<StreakView> {
   try {
     const c = computeStreak(await repo.loadDays(userId), localDate(now, tz), localHour(now, tz));
+    if (c.autoFrozen.length > 0) {
+      // Keep the covered days on record; a failure here must not hide the streak.
+      await repo.upsertStatusDays(userId, c.autoFrozen, 'frozen').catch((err: unknown) => console.error('[streaks] persisting frozen days failed', err));
+    }
     return { ...c.view, milestone: null };
   } catch (err) {
     console.error('[streaks] getStreak failed', err);
