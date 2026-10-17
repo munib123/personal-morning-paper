@@ -7,7 +7,9 @@ const PREVIEW = '/today/preview';
 async function fresh(page: Page, view: 'front' | 'bytes') {
   await page.goto(`${PREVIEW}?view=${view}`);
   await page.evaluate(() => localStorage.clear()); // skips and reads persist per edition
-  await page.reload();
+  await page.reload({ waitUntil: 'networkidle' });
+  // Hydrated: the key handlers are attached. (In Bytes the root has no height: the deck is fixed.)
+  await page.locator('[data-reader-ready]').waitFor({ state: 'attached' });
 }
 
 test('Bytes: j, x + Undo, o + Escape, b', async ({ page }) => {
