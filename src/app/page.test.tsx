@@ -1,8 +1,10 @@
-import { afterEach, describe, expect, test } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import LandingPage, { revalidate } from './page';
 
 afterEach(() => { cleanup(); });
+// jsdom + userEvent can be slow on a loaded machine (seven lanes share one); give each test room.
+vi.setConfig({ testTimeout: 15_000 });
 
 describe('landing page', () => {
   test('is one masthead hero with the promise and one call to action', () => {

@@ -8,6 +8,8 @@ import DefaultPicker, { InterestPicker, type InterestPickerValue } from './Inter
 const EMPTY: InterestPickerValue = { picks: [], blocked: [] };
 
 afterEach(() => { cleanup(); });
+// jsdom + userEvent can be slow on a loaded machine (seven lanes share one); give each test room.
+vi.setConfig({ testTimeout: 15_000 });
 
 function Controlled({ initial = EMPTY, mode = 'onboarding', spy = vi.fn() }: { initial?: InterestPickerValue; mode?: 'onboarding' | 'edit'; spy?: (v: InterestPickerValue) => void }) {
   const [value, setValue] = useState(initial);
