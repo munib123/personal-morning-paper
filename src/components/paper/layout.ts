@@ -17,6 +17,7 @@ export interface FrontPageLayout {
 
 const BEYOND = new Set<EditionItem['slot']>(['bigstory', 'explore', 'serendipity']);
 const LONG_READ_MIN_MINUTES = 6;
+const BRIEFS_MAX = 6;
 
 export function layoutFrontPage(items: EditionItem[], sectionOrder: TopicSlug[], leadArticleId: string): FrontPageLayout {
   const ranked = [...items].sort((a, b) => a.rank - b.rank);
@@ -26,8 +27,11 @@ export function layoutFrontPage(items: EditionItem[], sectionOrder: TopicSlug[],
 
   const beyond = rest.filter((i) => BEYOND.has(i.slot));
   const regular = rest.filter((i) => !BEYOND.has(i.slot));
-  const briefs = regular.filter((i) => i.tier === 'brief');
-  const full = regular.filter((i) => i.tier !== 'brief');
+  // "In brief" is a short column: the lowest-ranked brief-tier stories. When most of a paper is
+  // brief-tier (a reader with few strong interests yet), the others stay in their sections.
+  const briefTier = regular.filter((i) => i.tier === 'brief');
+  const briefs = briefTier.slice(Math.max(0, briefTier.length - BRIEFS_MAX));
+  const full = regular.filter((i) => !briefs.includes(i));
 
   let longRead: EditionItem | null = null;
   for (const item of full) {
