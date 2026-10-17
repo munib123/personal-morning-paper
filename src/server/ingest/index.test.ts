@@ -135,7 +135,7 @@ describe('runIngest', () => {
     const stats = await runIngest();
     expect(stats.failedSources).toEqual(['al-jazeera']);
     expect(insertedRows().map((r) => r.sourceId)).toContain('dawn-home');
-  });
+  }, 15_000); // includes the real 2 s retry delay after a network error
 
   it('a bot wall answering 403 or an empty 202 marks the source failed', async () => {
     serve({ ...served, 'https://espn.example/rss': { status: 403, body: 'Forbidden' }, 'https://akamai.example/rss': { status: 202, body: '' } });
