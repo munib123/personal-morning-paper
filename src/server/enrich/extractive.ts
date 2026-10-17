@@ -20,9 +20,11 @@ const SLACK = 1.15;
 const ENDS_SENTENCE = /[.!?][)\]"'”’]*$/;
 // Page furniture the scraper keeps: consent walls, cookie notices, script warnings, footers, CTAs.
 const BOILERPLATE =
-  /(^(©|\(c\)|copyright)\s)|\b(advertisement tracking|audience measurement|enable (javascript|cookies)|we use cookies|cookie (policy|settings|preferences)|accept (all )?cookies|your (browser|ad blocker)|all rights reserved|click here|subscribe (to|now)|sign up for (our|the) newsletter|to display this content|this content is (not available|blocked)|log ?in to (continue|read))\b/i;
+  /(^(©|\(c\)|copyright)\s)|\b(advertisement tracking|audience measurement|enable (javascript|cookies)|we use cookies|cookie (policy|settings|preferences)|accept (all )?cookies|your (browser|ad blocker)|all rights reserved|click here|subscribe (to|now)|sign up for (our|the) newsletter|to display this content|this content is (not available|blocked)|log ?in to (continue|read)|to watch this content|disable it on this site|ad ?blocker|newsletter|web edition of|today[’']s edition of|daily dose of|want to stay on top of|cover image|issued on|sign up (to|here|now)|in your inbox)\b|©/i;
+// A "sentence" under four words is a scraping leftover such as "(dcr)" or a photo credit.
+const MIN_WORDS = 4;
 
-export const isBoilerplate = (sentence: string): boolean => BOILERPLATE.test(sentence);
+export const isBoilerplate = (sentence: string): boolean => BOILERPLATE.test(sentence) || wordCount(sentence) < MIN_WORDS;
 
 /** The article's sentences minus page boilerplate and a trailing fragment the publisher cut off (when others remain). */
 function completeSentences(text: string): string[] {
