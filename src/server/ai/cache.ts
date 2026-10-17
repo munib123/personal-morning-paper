@@ -16,16 +16,25 @@ export function cacheKeyFor(step: LlmStep, modelId: string, key: string): string
   return sha256(`${step}|${modelId}|${key}`);
 }
 
+// A slow database must never stall a call: a cache read or write gives up after a few seconds.
+const DB_TIMEOUT_MS = 2_500;
+
 const supabaseStore: CacheStore = {
   async get(key) {
-    const { data, error } = await createSupabaseAdminClient().from('llm_cache').select('output').eq('key', key).maybeSingle();
+    const { data, error } = await createSupabaseAdminClient()
+      .from('llm_cache')
+      .select('output')
+      .eq('key', key)
+      .abortSignal(AbortSignal.timeout(DB_TIMEOUT_MS))
+      .maybeSingle();
     if (error) throw new Error(error.message);
     return data ? (data.output as unknown) : undefined;
   },
   async put(key, step, provider, output) {
     const { error } = await createSupabaseAdminClient()
       .from('llm_cache')
-      .upsert({ key, step, provider, output: output as Json });
+      .upsert({ key, step, provider, output: output as Json })
+      .abortSignal(AbortSignal.timeout(DB_TIMEOUT_MS));
     if (error) throw new Error(error.message);
   },
 };

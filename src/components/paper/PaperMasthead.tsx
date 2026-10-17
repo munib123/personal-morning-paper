@@ -41,6 +41,25 @@ export function PaperMasthead({ readerName, city, compactOnly = false, onHowMade
     persistView(next);
   };
 
+  const compactBar = (
+    <div className="mx-auto max-w-(--page-max)">
+      <Masthead
+        variant="compact"
+        title={BRAND.nameplate}
+        date={date}
+        actions={
+          // On a phone the Front page keeps its toggle in the full masthead; Bytes has only this one.
+          <div role="group" aria-label="View" className={compactOnly ? undefined : 'hidden sm:block'}>
+            <Segmented name="view-compact" options={VIEW_OPTIONS} value={view} onChange={choose} />
+          </div>
+        }
+      />
+      <div className="px-6 pt-1 pb-2">
+        <ReadingProgress value={progress.total > 0 ? progress.read / progress.total : 0} label={progressLabel(progress)} />
+      </div>
+    </div>
+  );
+
   return (
     <>
       {compactOnly ? null : (
@@ -65,7 +84,7 @@ export function PaperMasthead({ readerName, city, compactOnly = false, onHowMade
         </div>
       )}
       <AnimatePresence initial={false}>
-        {compactOnly || scrolledPast ? (
+        {!compactOnly && scrolledPast ? (
           <motion.div
             key="compact-masthead"
             data-masthead="compact"
@@ -75,25 +94,16 @@ export function PaperMasthead({ readerName, city, compactOnly = false, onHowMade
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
           >
-            <div className="mx-auto max-w-(--page-max)">
-              <Masthead
-                variant="compact"
-                title={BRAND.nameplate}
-                date={date}
-                actions={
-                  // On a phone the Front page keeps its toggle in the full masthead; Bytes has only this one.
-                  <div role="group" aria-label="View" className={compactOnly ? undefined : 'hidden sm:block'}>
-                    <Segmented name="view-compact" options={VIEW_OPTIONS} value={view} onChange={choose} />
-                  </div>
-                }
-              />
-              <div className="px-6 pt-1 pb-2">
-                <ReadingProgress value={progress.total > 0 ? progress.read / progress.total : 0} label={progressLabel(progress)} />
-              </div>
-            </div>
+            {compactBar}
           </motion.div>
         ) : null}
       </AnimatePresence>
+      {/* Bytes: the compact masthead sits at the top of the deck, in flow. */}
+      {compactOnly ? (
+        <div data-masthead="compact" className="relative z-10 bg-paper-raised shadow-floating">
+          {compactBar}
+        </div>
+      ) : null}
     </>
   );
 }

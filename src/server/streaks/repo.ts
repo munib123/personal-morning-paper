@@ -11,7 +11,10 @@ export interface StreakRepo {
   loadDayEvents(userId: string, date: string): Promise<DayEvent[]>;
   loadRecallCount(userId: string, date: string): Promise<number>; // editions.recall length for that edition_date
   upsertDay(userId: string, date: string, s: DaySummary & { editionComplete: boolean }): Promise<void>;
-  upsertStreakRow(userId: string, c: StreakComputation): Promise<void>; // freezes 0, last_repair_at null in wave 1
+  /** Store the freeze bookkeeping; lastRepairAt is written only when given (a repair happened now). */
+  upsertStreakRow(userId: string, c: StreakComputation, lastRepairAt?: string | null): Promise<void>;
+  /** Mark days 'frozen' (never overwriting a stored day) or 'repaired' (overwrites the status only). */
+  upsertStatusDays(userId: string, dates: string[], status: 'frozen' | 'repaired'): Promise<void>;
 }
 
 /** The cached streaks row, as written by upsertStreakRow. */
@@ -30,15 +33,15 @@ const MAX_DAY_EVENTS = 2000;
 
 const toStatus = (s: string): DayRecord['status'] => (s === 'frozen' || s === 'repaired' ? s : 'read');
 
-export function streakRowOf(c: StreakComputation): StreakRow {
+export function streakRowOf(c: StreakComputation, lastRepairAt: string | null = null): StreakRow {
   return {
     current: c.view.current,
     longest: c.view.longest,
     totalDays: c.view.totalDays,
     lastStreakDate: c.lastStreakDate,
-    freezesAvailable: 0,
-    freezeProgress: 0,
-    lastRepairAt: null,
+    freezesAvailable: c.freeze.available,
+    freezeProgress: c.freeze.progress,
+    lastRepairAt,
   };
 }
 
@@ -102,8 +105,8 @@ export function supabaseStreakRepo(): StreakRepo {
       if (error) throw new Error(`daily_activity upsert: ${error.message}`);
     },
 
-    async upsertStreakRow(userId, c) {
-      const row = streakRowOf(c);
+    async upsertStreakRow(userId, c, lastRepairAt) {
+      const row = streakRowOf(c, lastRepairAt ?? null);
       const { error } = await db().from('streaks').upsert(
         {
           user_id: userId,
@@ -113,12 +116,23 @@ export function supabaseStreakRepo(): StreakRepo {
           last_streak_date: row.lastStreakDate,
           freezes_available: row.freezesAvailable,
           freeze_progress: row.freezeProgress,
-          last_repair_at: row.lastRepairAt,
+          ...(lastRepairAt ? { last_repair_at: lastRepairAt } : {}),
           updated_at: new Date().toISOString(), // bookkeeping wall-clock time, not streak logic
         },
         { onConflict: 'user_id' },
       );
       if (error) throw new Error(`streaks upsert: ${error.message}`);
+    },
+
+    async upsertStatusDays(userId, dates, status) {
+      if (dates.length === 0) return;
+      const { error } = await db()
+        .from('daily_activity')
+        .upsert(
+          dates.map((d) => ({ user_id: userId, local_date: d, status })),
+          { onConflict: 'user_id,local_date', ignoreDuplicates: status === 'frozen' },
+        );
+      if (error) throw new Error(`daily_activity status upsert: ${error.message}`);
     },
   };
 }
@@ -158,8 +172,18 @@ export function memoryStreakRepo(seed?: { days?: DayRecord[]; events?: Record<st
       if (i >= 0) repo.days[i] = row;
       else repo.days.push(row);
     },
-    async upsertStreakRow(_userId, c) {
-      repo.streakRow = streakRowOf(c);
+    async upsertStreakRow(_userId, c, lastRepairAt) {
+      repo.streakRow = streakRowOf(c, lastRepairAt ?? repo.streakRow?.lastRepairAt ?? null);
+    },
+    async upsertStatusDays(_userId, dates, status) {
+      for (const date of dates) {
+        const i = repo.days.findIndex((d) => d.date === date);
+        if (i >= 0) {
+          if (status === 'repaired') repo.days[i] = { ...repo.days[i], status }; // 'frozen' never overwrites
+        } else {
+          repo.days.push({ date, status, qualifyingReads: 0, storiesRead: 0, editionComplete: false });
+        }
+      }
     },
   };
   return repo;

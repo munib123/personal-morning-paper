@@ -1,5 +1,15 @@
-// STUB (L0) — owner: L3. Replace freely; keep the signature.
-// npm run job:editions → buildEdition(force=false) for every onboarded profile, then renderAndStoreEditionPdf (§12).
-console.log('job:editions: not implemented (owner L3)');
+// npm run job:editions → buildEdition (force=false, editor note awaited) for every onboarded profile,
+// then renderAndStoreEditionPdf (§12). Writes one job_runs row with job='editions' (§9.7).
+import './lib/env';
 
-export {};
+import { runEditionsJob } from '@/server/edition/job';
+
+runEditionsJob(new Date(), { job: 'editions' })
+  .then((stats) => {
+    console.log(JSON.stringify(stats));
+    process.exit(stats.failed.length > 0 ? 1 : 0);
+  })
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });

@@ -3,7 +3,7 @@ import { Masthead } from '@/components/morrow';
 import type { Edition, EditionItem } from '@/contracts/edition';
 import type { WeightDelta } from '@/contracts/signals';
 import { BRAND } from '@/lib/brand';
-import { clampWords, countSources, formatPaperDate, pickSummary, sectionName, storyHref } from '@/server/pdf/layout';
+import { clampWords, countSources, firstSentence, formatPaperDate, pickSummary, sectionName, storyHref } from '@/server/pdf/layout';
 import type { PrintModel, StoryRole } from '@/server/pdf/types';
 
 /** The printed link of a story (headline, QR): through /r, so it is a learning signal. */
@@ -14,6 +14,37 @@ export function hrefOf(model: PrintModel, item: EditionItem): string {
 /** A story's kicker: its most specific topic, by the edition's display names. */
 export function kickerOf(edition: Edition, item: EditionItem): string {
   return sectionName(edition, item.article.labels[0]?.slug ?? item.sectionSlug);
+}
+
+// A line set large (deck, pull quote, takeaway) stays one short sentence: the TakeawayBox asks for under 25 words,
+// and extractive summaries can start with a 40-word lede.
+const LINE_MAX_WORDS = 30;
+// The TakeawayBox asks for one sentence under 25 words.
+const TAKEAWAY_MAX_WORDS = 25;
+const wordCount = (t: string) => t.split(/\s+/).filter(Boolean).length;
+const squash = (t: string) => t.replace(/\s+/g, ' ').trim().toLowerCase();
+
+/** The text when it is short enough to set large and is not already in the story's printed text, else null. */
+export function freshLine(text: string | null | undefined, body: string): string | null {
+  const line = text?.trim();
+  if (!line || wordCount(line) > LINE_MAX_WORDS) return null;
+  return squash(body).includes(squash(line)) ? null : line;
+}
+
+/** One sentence a reader can carry away: the key fact, else the brief's first sentence, else the headline. */
+export function takeawayOf(item: EditionItem): string {
+  const short = (t: string | null | undefined) => (t?.trim() && wordCount(t) <= TAKEAWAY_MAX_WORDS ? t.trim() : null);
+  return short(item.article.keyFact) ?? short(firstSentence(item.article.summary.brief)) ?? item.article.headline;
+}
+
+/** The lead's deck: why it matters, else the brief's first sentence, unless it would repeat the lead text. */
+export function deckOf(item: EditionItem, body: string): string | null {
+  return freshLine(item.article.whyItMatters, body) ?? freshLine(firstSentence(item.article.summary.brief), body);
+}
+
+/** A section lead's pull quote: why it matters, else the key fact, when short and not already in the text. */
+export function pullQuoteOf(item: EditionItem, body: string): string | null {
+  return freshLine(item.article.whyItMatters, body) ?? freshLine(item.article.keyFact, body);
 }
 
 /** "Prepared for {first name}" uses the first word of the display name. */
@@ -171,7 +202,7 @@ export function MoverBars({ movers }: { movers: WeightDelta[] }) {
               <rect className="bar-track" x="0" y="7" width="100" height="5" />
               <rect className="bar--after" x="0" y="7" width={(after * 100).toFixed(1)} height="5" />
             </svg>
-            <span className="ui-meta mover__delta">{m.after >= m.before ? 'More in your paper' : 'Less in your paper'}</span>
+            <span className="ui-meta mover__delta">{m.after >= m.before ? 'More' : 'Less'}</span>
           </li>
         );
       })}

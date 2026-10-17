@@ -57,7 +57,8 @@ export async function renderAndStoreEditionPdf(edition: Edition): Promise<string
   const extras = await loadPrintExtras(edition, now);
   // Loaded on demand: the renderer (React DOM server + Puppeteer) stays out of bundles that never render.
   const { renderEditionPdf } = await import('./render');
-  const { pdf } = await renderEditionPdf(edition, extras);
+  const { pdf, overflow, attempts } = await renderEditionPdf(edition, extras);
+  if (overflow.length > 0) console.warn('[pdf] pages still overflow after the guard', { editionId: edition.id, overflow, attempts });
 
   const path = pdfObjectPath(edition);
   const uploaded = await admin.storage.from(PAPERS_BUCKET).upload(path, pdf, { contentType: 'application/pdf', upsert: true });
