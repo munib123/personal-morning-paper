@@ -50,6 +50,27 @@ describe('draft storage', () => {
     expect(loadDraft(null)).toEqual(DEFAULT_DRAFT);
   });
 
+  test('a draft with over-long text is kept, with the text cut to fit', () => {
+    const s = fakeStorage({});
+    const long = {
+      ...DEFAULT_DRAFT,
+      step: 3 as const,
+      picks: [{ slug: 'sports.cricket', via: 'chip' as const }],
+      name: 'n'.repeat(300),
+      words: 'w'.repeat(6000),
+      avoidSources: 'a'.repeat(2000),
+      city: 'c'.repeat(300),
+    };
+    expect(saveDraft(long, s)).toBe(true);
+    const d = loadDraft(s);
+    expect(d.step).toBe(3);
+    expect(d.picks).toEqual([{ slug: 'sports.cricket', via: 'chip' }]);
+    expect(d.name).toHaveLength(200);
+    expect(d.words).toHaveLength(5000);
+    expect(d.avoidSources).toHaveLength(1000);
+    expect(d.city).toHaveLength(200);
+  });
+
   test('loadDraft ignores a v1 draft under the old key', () => {
     const s = fakeStorage({ 'subah:onboarding-draft:v1': JSON.stringify({ ...DEFAULT_DRAFT, name: 'Old' }) });
     expect(loadDraft(s)).toEqual(DEFAULT_DRAFT);

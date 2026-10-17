@@ -51,16 +51,20 @@ export const DEFAULT_DRAFT: OnboardingDraft = {
   skipped: { picks: false, words: false },
 };
 
+// Text the reader typed is cut to fit rather than rejected: one long paste must not cost them the
+// whole draft (their picks included) on the next reload.
+const text = (max: number) => z.string().transform((s) => s.slice(0, max));
+
 const DraftSchema = z.object({
   step: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5)]),
-  name: z.string().max(200),
+  name: text(200),
   picks: z.array(InterestPickSchema).max(100),
   blocked: z.array(TopicSlugSchema).max(100),
-  words: z.string().max(5000),
-  avoidSources: z.string().max(1000),
+  words: text(5000),
+  avoidSources: text(1000),
   presentation: PresentationSchema,
   deliveryHour: z.union([z.literal(6), z.literal(7), z.literal(8)]),
-  city: z.string().max(200),
+  city: text(200),
   skipped: z.object({ picks: z.boolean(), words: z.boolean() }),
 });
 
