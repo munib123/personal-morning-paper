@@ -94,12 +94,12 @@ export async function persistEdition(i: PersistInput & { existingId?: string }):
   return id;
 }
 
-/** θ̂ moves of at least 0.02 between two snapshots, biggest first, named from the taxonomy. */
-export function moversBetween(before: Record<TopicSlug, number> | null, after: Record<TopicSlug, number>, taxonomy: TopicNode[], max = 5): WeightDelta[] {
+/** θ̂ moves of at least `minMove` (0.02) between two snapshots, biggest first, named from the taxonomy. */
+export function moversBetween(before: Record<TopicSlug, number> | null, after: Record<TopicSlug, number>, taxonomy: TopicNode[], max = 5, minMove = MIN_MOVE): WeightDelta[] {
   if (!before) return [];
   const names = new Map(taxonomy.map((t) => [t.slug, t.name]));
   return Object.keys(after)
-    .filter((s) => typeof before[s] === 'number' && Math.abs(after[s] - before[s]) >= MIN_MOVE)
+    .filter((s) => typeof before[s] === 'number' && Math.abs(after[s] - before[s]) >= minMove && after[s] !== before[s])
     .map((s) => ({ slug: s, name: names.get(s) ?? s, before: before[s], after: after[s] }))
     .sort((a, b) => Math.abs(b.after - b.before) - Math.abs(a.after - a.before) || (a.slug < b.slug ? -1 : 1))
     .slice(0, max);

@@ -1,11 +1,15 @@
-// STUB (L0) — owner: L3. Replace freely; keep the signature.
-import { FIXTURE_USER_ID } from '@/contracts/fixtures';
+// GET /api/editions/[date] (L3, §9.2) → that day's Edition, 404 when there is none.
+import { requireUser } from '@/server/auth/session';
 import { getEdition } from '@/server/edition';
+import { route } from '@/server/edition/http';
 
-// GET → the reader's Edition for {date} ('YYYY-MM-DD'), or 404. Stub: no auth; only the fixture date exists.
-export async function GET(_request: Request, { params }: { params: Promise<{ date: string }> }): Promise<Response> {
+const isDate = (s: string) => /^\d{4}-\d{2}-\d{2}$/.test(s) && new Date(`${s}T00:00:00Z`).toISOString().slice(0, 10) === s;
+
+export const GET = route(async (_request: Request, { params }: { params: Promise<{ date: string }> }) => {
+  const { userId } = await requireUser();
   const { date } = await params;
-  const edition = await getEdition(FIXTURE_USER_ID, date);
-  if (!edition) return Response.json({ error: 'not found' }, { status: 404 });
+  if (!isDate(date)) return Response.json({ error: 'invalid', issues: [{ message: 'Expected a YYYY-MM-DD date' }] }, { status: 400 });
+  const edition = await getEdition(userId, date);
+  if (!edition) return Response.json({ error: 'not_found' }, { status: 404 });
   return Response.json(edition);
-}
+});
