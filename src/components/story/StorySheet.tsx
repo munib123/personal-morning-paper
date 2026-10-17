@@ -12,6 +12,7 @@ import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/
 import type { EditionItem } from '@/contracts/edition';
 import { FaithfulnessBadge } from './FaithfulnessBadge';
 import { outboundHref, readingTimeLabel, sectionLabel, timeAgo } from './format';
+import { ShareButton } from './ShareButton';
 import { WhyChip } from './WhyChip';
 
 export interface StorySheetProps {
@@ -97,9 +98,13 @@ export function StorySheet({ item, editionId, open, onOpenChange }: StorySheetPr
             </p>
           ) : null}
           <PerspectivesPanel clusterId={a.clusterId} sourceCount={a.alsoCoveredBy.length + 1} editionId={editionId} />
-          <Button variant="primary" full href={outboundHref(a.id, editionId)} iconRight="external" {...NEW_TAB}>
-            Read on {a.sourceDomain}
-          </Button>
+          {/* Share sits beside the way out; on a narrow screen with a long domain it wraps below, full width. */}
+          <div className="flex flex-wrap gap-2">
+            <Button variant="primary" className="grow-3" href={outboundHref(a.id, editionId)} iconRight="external" {...NEW_TAB}>
+              Read on {a.sourceDomain}
+            </Button>
+            <ShareButton className="grow" title={a.headline || a.title} url={a.url} />
+          </div>
           {ctx ? (
             <FeedbackBar
               value={ctx.state.feedback[a.id] ?? null}
