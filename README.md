@@ -34,7 +34,15 @@ The five-minute walkthrough in [`docs/DEMO.md`](docs/DEMO.md), in the order of t
 
 ## Architecture
 
-![Architecture diagram: sources, worker, Supabase, Next.js app and the learning loop](docs/architecture-diagram.svg)
+**High level, in plain words.** The newsroom runs every 30 minutes for everyone, and is where AI is used. Your paper is built every morning for you with local math, and every action feeds back into tomorrow's paper.
+
+![High-level architecture: the newsroom (gather, understand, write it up once), one database, then your paper (tell us what you like, choose your Top 20, read it your way, the paper learns) with the learning loop](docs/architecture-high-level.png)
+
+Source: [`docs/architecture-high-level.html`](docs/architecture-high-level.html), rendered to PNG.
+
+**Detailed view.** Every component, data store and job:
+
+![Detailed architecture diagram: sources, worker, Supabase, Next.js app and the learning loop](docs/architecture-diagram.svg)
 
 Source: [`docs/architecture-diagram.mmd`](docs/architecture-diagram.mmd) (PNG: [`docs/architecture-diagram.png`](docs/architecture-diagram.png)). The full specification is [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
