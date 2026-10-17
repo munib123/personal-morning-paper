@@ -40,6 +40,22 @@ export function toInterestWeights(model: UserModel, taxonomy: TopicNode[], param
   });
 }
 
+/**
+ * "What moved": the biggest risers and the biggest fallers since the snapshot, up to `perSide` each.
+ * Ranking by size alone hid every rise whenever a broad pick (e.g. Sports) fell further than the
+ * specific topics it was narrowing to (e.g. International Cricket) rose.
+ */
+export function pickMovers(current: Record<string, number>, before: Record<string, number>, names: Map<string, string>, perSide = 3): WeightDelta[] {
+  const moves = Object.keys(current)
+    .filter((s) => typeof before[s] === 'number' && Math.abs(current[s] - before[s]) >= MIN_MOVE)
+    .map((s) => ({ slug: s, name: names.get(s) ?? s, before: before[s], after: current[s] }));
+  const delta = (m: WeightDelta) => m.after - m.before;
+  const bySlug = (a: WeightDelta, b: WeightDelta) => (a.slug < b.slug ? -1 : 1);
+  const up = moves.filter((m) => delta(m) > 0).sort((a, b) => delta(b) - delta(a) || bySlug(a, b)).slice(0, perSide);
+  const down = moves.filter((m) => delta(m) < 0).sort((a, b) => delta(a) - delta(b) || bySlug(a, b)).slice(0, perSide);
+  return [...up, ...down];
+}
+
 export async function getLearningView(userId: string, sinceDays: number, now: Date): Promise<LearningView> {
   if (isDemoFallback()) return snapshotGetLearningView(userId, sinceDays, now);
   if (isFixtureUser(userId)) return FIXTURE_LEARNING;
@@ -55,13 +71,7 @@ export async function getLearningView(userId: string, sinceDays: number, now: Da
   const weights = toInterestWeights(model, taxonomy, DEFAULT_PARAMS);
   const current = Object.fromEntries(weights.map((w) => [w.slug, w.theta]));
   const names = new Map(taxonomy.map((t) => [t.slug, t.name]));
-  const movers: WeightDelta[] = snap
-    ? Object.keys(current)
-        .filter((s) => typeof snap.weights[s] === 'number' && Math.abs(current[s] - snap.weights[s]) >= MIN_MOVE)
-        .map((s) => ({ slug: s, name: names.get(s) ?? s, before: snap.weights[s], after: current[s] }))
-        .sort((a, b) => Math.abs(b.after - b.before) - Math.abs(a.after - a.before) || (a.slug < b.slug ? -1 : 1))
-        .slice(0, 5)
-    : [];
+  const movers: WeightDelta[] = snap ? pickMovers(current, snap.weights, names) : [];
   return {
     weights,
     movers,

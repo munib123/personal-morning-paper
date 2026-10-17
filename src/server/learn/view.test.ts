@@ -105,3 +105,18 @@ describe('getLearningView', () => {
     expect(snapQ.filters).toContainEqual(['lte', 'snap_date', '2026-10-10']);
   });
 });
+
+describe('pickMovers', () => {
+  it('shows the biggest risers and the biggest fallers, even when every large move is a fall', async () => {
+    const { pickMovers } = await import('./view');
+    const before = { sports: 0.67, technical: 0.67, 'sports.football': 0.44, 'sports.tennis': 0.4, 'sports.motorsport': 0.4, 'sports.cricket.international': 0.44, 'science.space': 0.25, 'sports.cricket.leagues': 0.4, flat: 0.5 };
+    const after = { sports: 0.4, technical: 0.47, 'sports.football': 0.26, 'sports.tennis': 0.29, 'sports.motorsport': 0.3, 'sports.cricket.international': 0.59, 'science.space': 0.32, 'sports.cricket.leagues': 0.49, flat: 0.505 };
+    const names = new Map(Object.keys(after).map((s) => [s, s]));
+    const movers = pickMovers(after, before, names);
+    const up = movers.filter((m) => m.after > m.before).map((m) => m.slug);
+    const down = movers.filter((m) => m.after < m.before).map((m) => m.slug);
+    expect(up).toEqual(['sports.cricket.international', 'sports.cricket.leagues', 'science.space']);
+    expect(down).toEqual(['sports', 'technical', 'sports.football']);
+    expect(movers.map((m) => m.slug)).not.toContain('flat'); // under MIN_MOVE
+  });
+});
