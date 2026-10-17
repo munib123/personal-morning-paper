@@ -6,6 +6,9 @@ import { SectionHeader } from '@/components/morrow';
 import { DemoControls } from '@/components/streak/DemoControls';
 import { SettingsPanel } from '@/components/streak/SettingsPanel';
 import { StreakPanel } from '@/components/streak/StreakPanel';
+import { FastForward } from './FastForward';
+import { InterestEditor } from './InterestEditor';
+import { LearnedTab } from './LearnedTab';
 import { ME_TABS, nextTab, type MeData, type MeTab } from './me-tabs';
 
 export interface MeTabsProps {
@@ -76,15 +79,21 @@ export function MeTabs({ initialTab, data }: MeTabsProps) {
 function panel(tab: MeTab, data: MeData): ReactNode {
   switch (tab) {
     case 'learned':
-      return <p className="ui-text text-ink-soft">What your paper learned from your reading this week.</p>;
+      return (
+        <LearnedTab
+          initial={data.learning}
+          nowIso={data.nowIso}
+          after={<FastForward weights={data.learning?.weights ?? []} demoMode={data.demoMode} initial={data.simulation ?? undefined} />}
+        />
+      );
     case 'interests':
-      return <p className="ui-text text-ink-soft">Your interests, with their weights.</p>;
+      return <InterestEditor weights={data.learning?.weights ?? []} movers={data.learning?.movers ?? []} />;
     case 'streak':
       return (
         <div className="flex flex-col gap-10">
           <section className="flex max-w-(--measure) flex-col">
             <SectionHeader title="Your streak" />
-            <StreakPanel streak={data.streak} />
+            <StreakPanel streak={data.streak} heatmap={data.heatmap} />
           </section>
           <section className="flex max-w-(--measure) flex-col">
             <SectionHeader title="Settings" />
