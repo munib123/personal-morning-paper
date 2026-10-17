@@ -29,7 +29,7 @@ export interface DayTrace {
   pool: Candidate[];
   ranking: RankingResult;
   events: SignalEvent[];
-  thetaBefore: Record<TopicSlug, number>;
+  thetaBefore: Record<TopicSlug, number>; // θ̂ of every taxonomy node before that day's reading
   model: UserModel; // after that day's reading
 }
 
@@ -117,7 +117,7 @@ function dayMetrics(day: number, ranked: { c: Candidate; special: boolean }[], p
 /** The learning arm, day by day: rank → read → applySignal; seen stories never return. */
 export function runLearningArm(i: SimInput): DayTrace[] {
   const pools = dayPools(i.pool, i.days);
-  const slugs = level2(i.taxonomy);
+  const slugs = i.taxonomy.map((t) => t.slug); // every node: the demo seed stores these as interest_snapshots
   let model = initialModel(i);
   const out: DayTrace[] = [];
   pools.forEach((pool, d) => {
@@ -187,7 +187,7 @@ export function runSimulation(i: SimInput): SimulationResult {
     learning,
     onboardingOnly,
     popularity,
-    snapshots: trace.map((t) => ({ day: t.day, weights: t.thetaBefore })),
+    snapshots: trace.map((t) => ({ day: t.day, weights: Object.fromEntries(level2(i.taxonomy).map((s) => [s, t.thetaBefore[s]])) })),
   };
 }
 
