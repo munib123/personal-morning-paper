@@ -2,7 +2,8 @@
 import { TasteQuerySchema } from '@/contracts/api';
 import { getTasteCards } from '@/server/onboarding';
 
-// GET ?picks=a,b,c → TasteCard[] (8: 6 matched + 2 wildcards). Stub: no auth; getTasteCards serves the fixtures.
+// GET ?picks=a,b,c → TasteCard[] (8: 6 matched + 2 wildcards). The schema turns the comma string into clean slugs.
+// Stub: no auth; getTasteCards serves the fixtures.
 export async function GET(request: Request): Promise<Response> {
   const parsed = TasteQuerySchema.safeParse(Object.fromEntries(new URL(request.url).searchParams));
   if (!parsed.success) return invalid(parsed.error.issues);

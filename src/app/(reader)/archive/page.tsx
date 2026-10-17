@@ -14,7 +14,11 @@ export default function ArchivePage() {
         <h1 className="headline-lg">Past editions</h1>
         <p className="ui-text text-ink-soft">Every paper exactly as it was published, newest first.</p>
       </header>
-      <ArchiveCalendar entries={FIXTURE_ARCHIVE} />
+      <section>
+        {/* EditionCard headlines are h3s; this keeps the heading outline in order. */}
+        <h2 className="sr-only">Editions</h2>
+        <ArchiveCalendar entries={FIXTURE_ARCHIVE} />
+      </section>
       <p className="ui-meta text-ink-muted">Stub page · owner L7</p>
     </div>
   );

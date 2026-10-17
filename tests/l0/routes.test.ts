@@ -131,6 +131,11 @@ describe('bad input is a 400 JSON error, never a 500', () => {
     expect(res.status).toBe(400);
   });
 
+  it('GET /api/editions and /api/me/learning with non-numeric queries', async () => {
+    expect((await getArchive(get('/api/editions?limit=abc'))).status).toBe(400);
+    expect((await getLearning(get('/api/me/learning?since=week'))).status).toBe(400);
+  });
+
   it('PATCH /api/me/profile with an unsupported paper length', async () => {
     const res = await patchProfile(send('PATCH', '/api/me/profile', { presentation: { timeBudget: 7 } }));
     expect(res.status).toBe(400);
@@ -171,10 +176,12 @@ describe('every §9.2 route answers with its contract', () => {
     expect(cards.filter((c) => c.wildcard)).toHaveLength(2);
   });
 
-  it('GET /api/editions → the fixture archive', async () => {
+  it('GET /api/editions → the fixture archive; an empty or out-of-range limit still answers', async () => {
     const res = await getArchive(get('/api/editions?limit=60'));
     expect(res.status).toBe(200);
     expect(z.array(ArchiveEntrySchema).parse(await res.json())).toHaveLength(10);
+    expect((await getArchive(get('/api/editions?limit='))).status).toBe(200);
+    expect((await getArchive(get('/api/editions?limit=-5'))).status).toBe(200);
   });
 
   it('GET /api/editions/[date] → the fixture edition for its own date', async () => {
