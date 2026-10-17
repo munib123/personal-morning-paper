@@ -53,6 +53,7 @@ import {
   listImageless,
   loadSources,
   recordSourceHealth,
+  toArticleRow,
   updateArticleImages,
 } from './store';
 
@@ -117,6 +118,14 @@ describe('insertArticles', () => {
       lang: 'en',
       status: 'raw',
     });
+  });
+
+  it('strips NUL bytes and lone surrogates, which make Postgres reject the whole chunk', () => {
+    const row = toArticleRow({ ...article(1), title: 'A\u0000B', lede: 'x\uD800y', contentText: 'c\u0000d\ne', author: 'z\u0000' });
+    expect(row.title).toBe('AB');
+    expect(row.lede).toBe('x�y');
+    expect(row.content_text).toBe('cd\ne');
+    expect(row.author).toBe('z');
   });
 
   it('does nothing for an empty list', async () => {

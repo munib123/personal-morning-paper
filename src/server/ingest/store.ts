@@ -110,16 +110,24 @@ export async function findExistingHashes(hashes: string[]): Promise<Set<string>>
   return found;
 }
 
+// Postgres text rejects NUL bytes, and a lone surrogate breaks the JSON body: either one fails the
+// whole 200-row chunk, so feed text is cleaned first.
+function pgText(s: string): string;
+function pgText(s: string | null): string | null;
+function pgText(s: string | null): string | null {
+  return s === null ? null : s.replace(/\u0000/g, '').toWellFormed();
+}
+
 export function toArticleRow(a: PreparedArticle): TablesInsert<'articles'> {
   return {
     source_id: a.sourceId,
     url: a.url,
     url_hash: a.urlHash,
-    title: a.title,
-    lede: a.lede,
-    content_text: a.contentText,
+    title: pgText(a.title),
+    lede: pgText(a.lede),
+    content_text: pgText(a.contentText),
     image_url: a.imageUrl,
-    author: a.author,
+    author: pgText(a.author),
     published_at: a.publishedAt,
     word_count: a.wordCount,
     lang: 'en',

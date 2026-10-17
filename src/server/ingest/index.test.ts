@@ -3,7 +3,7 @@ import type { IngestSource, PreparedArticle } from './types';
 
 const NOW = new Date('2026-10-17T06:00:00Z');
 
-vi.mock('@/server/time', () => ({ requestNow: async () => new Date(NOW) }));
+vi.mock('@/server/time', () => ({ requestNow: vi.fn(async () => new Date(NOW)) }));
 vi.mock('./store', () => ({
   loadSources: vi.fn(),
   ensureApiSources: vi.fn(async () => {}),
@@ -17,7 +17,8 @@ vi.mock('./store', () => ({
 }));
 
 import { urlHash } from './canonical';
-import { runIngest } from './index';
+import { pageBudgetMs, runIngest } from './index';
+import { requestNow } from '@/server/time';
 import * as store from './store';
 
 const HOUR = 3_600_000;
@@ -92,6 +93,14 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+});
+
+describe('pageBudgetMs', () => {
+  it('gives the page phase at most 150 s, and only what is left of a 240 s run (the cron route has 300 s)', () => {
+    expect(pageBudgetMs(0)).toBe(150_000);
+    expect(pageBudgetMs(100_000)).toBe(140_000);
+    expect(pageBudgetMs(250_000)).toBe(0);
+  });
 });
 
 describe('runIngest', () => {
@@ -207,6 +216,18 @@ describe('runIngest', () => {
     expect(stats.failedSources).toEqual([]);
     expect(insertedRows()).toHaveLength(1);
     expect(insertedRows()[0]).toMatchObject({ sourceId: 'dev-to', url: 'https://dev.to/a/signals', imageUrl: 'https://media.dev.to/c.png', author: 'Ana' });
+  });
+
+  it('never dates rows by a demo clock that runs ahead of real time', async () => {
+    vi.mocked(requestNow).mockResolvedValueOnce(new Date('2030-01-01T00:00:00Z'));
+    serve({
+      [TRIBUNE]: `<?xml version="1.0"?><rss version="2.0"><channel><title>T</title><item><title>Undated</title><link>https://tribune.com.pk/story/10</link><description>${longText}</description></item></channel></rss>`,
+    });
+    useSources([src('tribune', TRIBUNE)]);
+    await runIngest();
+    const row = insertedRows()[0];
+    expect(row.title).toBe('Undated');
+    expect(Date.parse(row.publishedAt)).toBeLessThanOrEqual(Date.now());
   });
 
   it('respects maxPerSource and sourceIds', async () => {
