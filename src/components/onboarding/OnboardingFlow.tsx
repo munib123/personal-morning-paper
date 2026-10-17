@@ -6,6 +6,7 @@ import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type
 import { Button, Masthead, OnboardingStep } from '@/components/morrow';
 import type { TopicNode } from '@/contracts/taxonomy';
 import { InterestPicker } from './InterestPicker';
+import { InYourWordsStep } from './InYourWordsStep';
 import { RoutineStep } from './RoutineStep';
 import { WelcomeStep } from './WelcomeStep';
 import { DEFAULT_DRAFT, cleanName, loadDraft, saveDraft, type DraftStep, type OnboardingDraft } from './lib/draft';
@@ -91,7 +92,15 @@ function Flow({ taxonomy, date, initial, persist }: OnboardingFlowProps & { init
           description="Anything we missed? Describe it the way you would to a friend."
           onNext={() => update({ step: 4, skipped: { ...draft.skipped, words: false } })}
           onSkip={() => update({ step: 4, skipped: { ...draft.skipped, words: true } })}
-        />
+        >
+          <InYourWordsStep
+            words={draft.words}
+            avoidSources={draft.avoidSources}
+            value={{ picks: draft.picks, blocked: draft.blocked }}
+            taxonomy={taxonomy}
+            onChange={(patch) => update(patch)}
+          />
+        </OnboardingStep>
       );
       break;
     case 4:
