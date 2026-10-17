@@ -1,76 +1,62 @@
-# Subah: Demo script, live talk track & Q&A cheat sheet
+# The Morrow: Loom script, fallback plan and Q&A
 
-> **Quote measured numbers only.** Fill in the blanks in §5 from the live build before recording; leave out any number you haven't measured.
-> The Loom free plan cuts at **5:00**, so aim for **4:40**. Record each beat as soon as it passes QA (from ~17:30). The final take at 18:00 is then a re-record, not a first attempt.
+Recorded on the live site, **https://personal-morning-paper-three.vercel.app**. The Loom cuts at **5:00**; the script below runs **4:40**. Every label in quotes is the text the app renders, so you can click by name. Quote only the numbers written here.
 
-## 1. One-liner (everyone memorizes it)
-> **"Subah is your personal morning paper: 20 stories picked for you from about a thousand a day, readable as a newspaper or as 60-word bytes, and downloadable as a real newspaper PDF. It's also the only news app that helps you *remember* what you read."**
+## 1. One-liner
 
-The problem statement's own line is our hook: *"…they still can't name three things they learned."*
+> "The Morrow is one personal morning paper: twenty stories chosen for you from about seventeen hundred a day, readable on the web, downloadable as a real newspaper PDF, and getting better the more you read."
 
-## 2. Loom: 4 beats (target 4:40)
+## 2. Before you record (5 minutes)
 
-**Setup:**
-- The frozen build is running. The demo persona **"Ayesha"** has 7 days of seeded history.
-- Use a clean Chrome profile with no bookmarks bar and no extensions.
-- Window at 1280 px. For the mobile segment, use the device toolbar at 390 px.
-- Zoom 110%. Do-Not-Disturb on. Caches warmed: open every page once first.
-- Never show a spinner longer than 2 s; cut it.
-- Never show code or the terminal.
+- [ ] **Warm the site.** Open `/demo` once (it signs in Ayesha and lands on `/today`; a cold `/today` took about 5 s, a warm one is fast). Then open "Past editions", "Your interests" (`/me`) and press "Fast-forward 7 days" once, so the take does not wait on a cold function.
+- [ ] **Demo clock.** `/me` → tab "Streak & settings" → the line "Demo clock · …". If it does not show today (17 October), press "Reset clock". "Next morning" moves the clock one day and builds a new paper; it is not in this script.
+- [ ] **Night theme check.** Press the moon in the top bar ("Switch to Night edition"), glance at `/today`, then switch back ("Switch to Morning edition"). Record in Morning.
+- [ ] **One clean window.** Close other tabs, hide the bookmarks bar, turn on Do Not Disturb, window at 1280 px, zoom 110%. Keep the device toolbar ready at 390 px for Bytes.
+- [ ] **A private window on `/start`** for the fresh reader (beat 1).
+- [ ] **Order matters.** Download the PDF (beat 3) before "Tell your editor" (beat 5): applying the change rebuilds today's paper, which clears its stored PDF, so a later "Download PDF" opens the print page instead. On a re-take, that is expected; the archived papers keep their PDFs.
+- [ ] **Do not show** code, the terminal, or a spinner longer than 2 s (cut it).
 
-| Time | Beat | On screen | Say (gist) |
-|---|---|---|---|
-| 0:00–0:20 | **Hook** | Landing page with the cycling masthead | "News is scattered. People click through link after link and still can't name three things they learned. Subah gives you one paper a day, and helps you remember it." |
-| 0:20–1:35 | **1. The payoff: Ayesha's paper** (Req 3, 5, 4) | 1. `/today` on desktop, masthead "The Ayesha Times · No. 8 · 🔥 7".<br>2. **Morning Recall**: answer one question about yesterday, and the flame lights.<br>3. Hover a **why-chip** ("You follow AI policy · 82% match"), then open the popover's contribution bars.<br>4. **Skip** a celebrity story with the reason "Not interested". The card leaves, the reserve story slides in, and a toast says "Got it, less Celebrity".<br>5. Open a story: the sheet shows the **source-faithfulness badge**, then **Read original ↗**.<br>6. Switch to **Bytes** at 390 px and swipe two cards. | "Every story says why it's here. Skip what you don't want and the paper re-edits itself. Each morning starts by asking what you remember from yesterday. That's retrieval practice, the most reliable way people remember what they read." |
-| 1:35–2:20 | **2. A paper you can hold** (Req 2) | Click **PDF**: a 4-page A4 newspaper with the masthead and edition number, a lead story sized by her top interest, sections in her order, QR codes, and a back page with **"3 things you learned"** and **"Why these stories"**. Then put **a second persona's PDF side by side**. | "Same edition, laid out like a real newspaper, and personalized in *what* it includes and *how* it looks. Scan any QR code and the paper learns from that too." |
-| 2:20–3:30 | **3. It learns, and shows it** (Req 4) | 1. `/me` → **Your paper learned**: bars, the movers "+AI policy, −Celebrity", and the change sentence.<br>2. **Tell your editor**: type "less cricket, more climate", see the proposed diff, confirm, and the paper rebuilds live.<br>3. **Fast-forward 7 days**: precision@20 for learning vs onboarding-only vs popularity (or the day-1 vs day-7 interest map).<br>4. **Next morning →**: a new edition opens with a Morning Recall. | "Opens, reading time, skips and recall answers update a Beta distribution per topic, and tomorrow's paper re-ranks. You can see what it learned, and correct it in plain words." |
-| 3:30–4:40 | **4. A fresh reader in 30 s, and how it's built** (Req 1, efficiency) | 1. An incognito `/start`: Technical → Computer Science → AI/ML, then Science → Space, 3 taste-test swipes, 10 min, then **"Printing your first paper…"** reveals the edition.<br>2. The **"How this paper was made"** panel.<br>3. The architecture diagram, about 5 s.<br>4. Close on the repo URL and the PR list. | "Broad first, deep only where you want it. Each article is read and summarized **once**, for everyone. Your ranking is milliseconds of math, with zero AI calls per reader. One developer orchestrated 8 parallel agent lanes; every PR is reviewed and every commit is public." |
+## 3. The script (target 4:40)
 
-## 3. Live evaluation (≤ 3 min, then Q&A)
-1. Open with the one-liner. Start on Ayesha's paper, so the judges see the payoff first.
-2. Follow the Loom order, compressed: recall → why-chip → skip re-layout → PDF → learning bars → Tell your editor → a fresh 30 s onboarding.
-3. Keep a **60-second screen capture** of the core flow ready in case the Wi-Fi fails. `DEMO_FALLBACK=1` serves the snapshot offline.
-4. Say one known weakness before they ask, e.g. "The learning curve is shown on a simulated reader; real readers need a few days." Naming a limit scores well.
+| Time | Beat | What to click | What to say | Criterion |
+|---|---|---|---|---|
+| 0:00–0:15 | **Hook** | The landing page `/`: the masthead and "Build my paper". | "People read link after link and still can't name three things they learned. The Morrow gives every reader one finite paper each morning, chosen for them, and it learns from how they read." | Presentation |
+| 0:15–1:00 | **1. Onboarding** (required feature 1) | Private window, `/start`. "Welcome to your paper": type a first name, "Continue". "What do you want to read about?": tap Technical, then "›" beside it, then "›" beside Computer Science, then AI & Machine Learning; add Science and Sports (the button reads "Pick N more" until three are chosen), "Continue". "In your words": type "More climate tech and Pakistani startups, less celebrity news", press "Add to my topics" (chips appear, plus a "Less of" row), "Continue". "Your routine": Paper length "Standard", "Preview my paper". "A preview of your first front page", then "Build my paper" ("Setting today's paper · N of 20 stories"). | "Broad areas first, and depth only where you want it: Technical, then Computer Science, then AI. Then a sentence in your own words, which Gemini maps to topics, with a keyword fallback if it is slow. No sign-up form, and the first paper is built before onboarding ends." | UI/UX, Practical Impact |
+| 1:00–1:50 | **2. Today's paper** (feature 3) | Main window, `/demo` → `/today`: the masthead "The Morrow", "Edition No. 8", "Prepared for Ayesha", the "7-day streak" in the top bar. Answer one "Morning recall" question. Click a why-tag (for example "Because you follow Cricket") to open "Why this story?" with its "% match" and score bars. On another story press "Skip": the toast "Story skipped." offers "Undo", "Not interested in …", "Already seen", "Not today"; press "Not interested in …" and watch a reserve story take the slot. Open a story: the sheet, its summary and key fact, then "Read on {source}" (opens the publisher in a new tab). | "Twenty stories, ranked for her out of about seventeen hundred. Every story says why it is here, and the breakdown is the real score. Skip one and a reserve story takes its place; the reason teaches the paper. Every story links to the original." | Innovation, UI/UX |
+| 1:50–2:20 | **3. The PDF** (feature 2) | Press End: "That's your paper for today.", then "Download PDF" ("Preparing your PDF…"). Open the file: five A4 pages, the nameplate, "Prepared for Ayesha", the lead with a drop cap, "Three things to know", a QR code on every story; scroll to the last page: "Why these stories" and "Three things you learned". | "The same edition as a real A4 newspaper, personalised in what it holds and how it looks: her top interest sets the size of the lead, the sections follow her order, and the last page shows what the paper learned. Each QR code opens that story on the web and counts as a read. Vercel has no Chrome, so PDFs are rendered ahead and stored; a paper without one opens a print page instead." | Technical Complexity, Practical Impact |
+| 2:20–2:40 | **4. The archive** (feature 3) | "Past editions" (beside "Download PDF", or in the top bar): eight editions by week. Open yesterday's, 16 October (`/paper/2026-10-16`). | "Every morning is kept. Yesterday's paper reopens exactly as it was printed, with its own PDF." | Practical Impact |
+| 2:40–3:50 | **5. Learning, made visible** (feature 4) | "Your interests" in the top bar (`/me`), tab "Your paper learned": the change summary, "What moved" (Up and Down, in points), "What you did" (each action and what it changed). Press "Fast-forward 7 days" ("Day N of 7"): the Learning, Onboarding only and Popularity lines. Then tab "Your interests", press "Tell your editor", type "more cricket and space, less showbiz", "Propose changes", read the rows under "Your editor proposes" (for example "60 → 75"), "Make these changes" ("Rebuilding today's paper…"), then "Read today's paper". | "Every signal moves a Beta distribution per topic, and this page reads it back: what moved, and which action moved it. We measured it with a simulated reader with hidden tastes, five seeds, on the real article pool: by day seven the learning paper scores nDCG@10 of 0.52, against 0.34 for onboarding alone and 0.37 for popularity. And when it is wrong, you tell it in plain words, confirm the change, and today's paper is rebuilt." | Model/Algorithm Efficiency, Innovation |
+| 3:50–4:25 | **6. Room to explore** (feature 5) | Back on `/today`: press "Listen · N min" under the masthead (the bar shows "Story 1 of … · N min" and reads aloud); stop it. Open a story covered by several outlets and press "Other angles": the shared summary, each outlet's angle, "Where they differ". Switch the view to "Bytes" at 390 px and step through two cards. | "Listen reads the paper aloud with the browser's own voice: no server, no quota, and a story heard to the end counts as read. Other angles shows how several outlets covered one story and where they disagree, written once per story. Bytes is the same paper, one card at a time, for the phone." | Innovation, UI/UX |
+| 4:25–4:40 | **Close** | Open "How this paper was made" at the end of the paper ("Built in N ms", "LLM calls for you: N", "Ranking is local math, 0 AI calls per reader", the AI versus publisher's-excerpt share). Then the architecture diagram in the README and the repository's pull-request list. | "Each article is summarised once by Gemini, for everyone; your ranking is milliseconds of local math, with zero AI calls per reader. One developer ran parallel agent lanes: 51 merged pull requests, every commit public." | Model/Algorithm Efficiency, Presentation |
 
-## 4. Q&A cheat sheet (each answer ≤ 30 s)
+**On the simulation chart.** It runs the same simulator live on today's pool, so its lines move as new articles arrive, and it plots precision@20. Do not read its exact values aloud; quote the measured numbers above, which are nDCG@10 (the stronger evidence, see §5).
+
+## 4. Fallback plan (20 seconds to switch)
+
+- **The live site is slow or down.** On the recording laptop, set `DEMO_FALLBACK=1` and `DEMO_MODE=1` in `.env.local`, run `npm run dev`, and open `http://localhost:3000/demo`. Ayesha's eight papers, the archive, the streak, the story sheet and `/me` come from `public/demo/snapshot.json` with no database (`/api/health` shows `"fallback":true`). "Download PDF" opens the print page (`/paper/2026-10-17/print`, "Print / Save as PDF").
+- **What fallback mode cannot do.** Writes need the network: "Fast-forward 7 days" answers "The simulator didn't answer. Try again." and "Make these changes" fails calmly. Skip those two and show the README table and `docs/handoff/screens/L7-me-learned-1280.png` instead; "Next morning" serves the latest snapshot paper again.
+- **Gemini is rate-limited.** Nothing in the script waits on it: "Add to my topics" and "Tell your editor" fall back to keyword matching, "Other angles" and the summaries are stored, and the editor's note is written after the response.
+- **Onboarding hangs.** Cut to the main window and continue with Ayesha; onboarding can be re-recorded on its own.
+
+## 5. Q&A cheat sheet (each answer under 30 s)
 
 - **"Explain your algorithm."**
-  1. Every article is embedded locally (gte-small, 384-d) and summarized once by Gemini Flash-Lite. The result is shared by all readers and cached.
-  2. A reader is a Beta(α,β) per topic in our 67-node tree, plus a profile vector: a moving average of what they actually read.
-  3. The score is 40% topic affinity, 25% similarity to the reader's profile, 15% cross-outlet importance and 15% freshness, minus a "less like this" term.
-  4. We pick 20 with MMR for diversity: one story per cluster, at most 5 per area and 3 per source. Two slots are explore slots chosen by **Thompson sampling**, plus one serendipity slot.
-  5. Reads raise α, skips raise β, with a 14-day decay back to the onboarding prior.
-  6. The whole build takes about 10 ms of math per reader.
-- **"Cold start?"** The hierarchical onboarding sets Beta priors: a picked leaf starts at (4,1) and an unpicked topic at (1,3). The taste test adds 8 real signals before the first paper exists, and the explore slots gather signal from day 1.
-- **"Filter bubble?"** 2 explore slots plus 1 serendipity slot are guaranteed and labelled. Each area is capped at 5 stories. A "big story everyone should know" slot is ranked by how many outlets covered it.
-- **"Why not let the LLM rank?"** Cost, latency, determinism and explainability. The LLM does what it's good at: summaries, recall questions and the editor's note, **once per article**. Ranking is transparent math; every chip comes from the score breakdown.
-- **"Hallucinations?"** Prompts allow only facts stated in the source. Deterministic guardrails check that every number appears in the source, word counts, entity substrings and grounded quiz answers. If a check fails we fall back to the publisher's excerpt, and the badge says which one you're reading. The original link is always one tap away.
-- **"Cost per reader?"** Read it off the receipt: LLM calls per reader = 0 on the critical path, plus one editor's note per day. Gemini requests today: __ of the __/day free quota.
-- **"How do you know it improves?"** A 7-day simulated reader with hidden tastes: precision@20 from __ to __, against onboarding-only __ and popularity __. Also the real movers on Ayesha's paper. Be honest: it's a simulation, the method is standard (MIND-style offline evaluation), and real data would replace the persona.
-- **"What breaks first at scale?"** Ingestion fan-out and PDF rendering. Both are already batch jobs (cron) and pre-rendered; next we'd add a queue and per-region workers. The LLM cost stays flat per article, not per reader.
-- **"Built today vs reused?"** Everything in `src/` was written today; see the git history and PRs. Libraries: Next.js, Supabase, AI SDK, transformers.js, Puppeteer, shadcn/ui. Feeds are public RSS plus the HN, Dev.to and arXiv APIs.
-- **"Copyright and privacy?"** We show only our own short summaries, with attribution and a link out. We never republish full text; images are hotlinked with a fallback. Reading events are per user and protected by row-level security. There's no social layer.
-- **"Team collaboration?"**
-  - One human ran 8 parallel agent lanes, each with its own plan, branch, PR and handoff notes, coordinated through binding contracts (`docs/ARCHITECTURE.md` §9).
-  - Every merge was reviewed and every contract change is its own commit.
-  - The README has "How this was built".
-
-## 5. Numbers to fill in before recording (measured only)
-| Metric | Value | Where it comes from |
-|---|---|---|
-| Sources active / articles ingested today | __ / __ | `job_runs` / `/api/health` |
-| Stories (clusters) today | __ | edition receipt |
-| Enriched by Gemini vs extractive | __ / __ | `articles.enrich_provider` |
-| Edition build time (p50) | __ ms | receipt `buildMs` |
-| Gemini requests today / daily quota | __ / __ | `llm_usage` |
-| Simulator precision@20, day 1 → day 7 (learning / onboarding-only / popularity) | __ → __ / __ / __ | `/api/demo/fast-forward` |
-| Fresh onboarding time | __ s | Playwright L5 timing |
-
-## 6. Recording checklist
-- [ ] `DEMO_MODE=1`, and the demo clock is reset before the take.
-- [ ] Ayesha's 7-day history is seeded, and today's edition is built with Morning Recall present.
-- [ ] Both persona PDFs are pre-rendered (in Storage and in `public/demo/`).
-- [ ] The Gemini editor's note is present for Ayesha, not the template.
-- [ ] An incognito window is ready for the fresh onboarding, and the anonymous rate limit is raised.
-- [ ] The diagram is exported (FigJam PNG) and open in a tab.
-- [ ] Take 2–3 times and keep the best. The link works in incognito. The video is ≤ 4:45.
+  1. Every article is embedded locally (gte-small, 384 dimensions, on the CPU) and summarised once by Gemini; the result is shared by all readers and cached.
+  2. A reader is a Beta(α, β) per topic in a 67-node tree, plus two profile vectors: a moving average of what they read and of what they asked for less of.
+  3. The score is 40% topic affinity, 25% similarity to the profile, 15% cross-outlet importance and 15% freshness, minus a "less like this" term; every cosine is taken around the pool's mean vector.
+  4. Twenty stories by maximal marginal relevance: one per cluster, at most five per area and three per source, two explore slots by Thompson sampling and one serendipity slot.
+  5. Opens with long dwell raise α, scroll-pasts and skips raise β, with a 14-day half-life back to the onboarding prior. Ranking 1,000 candidates takes under 50 ms; a full build was 1.2 s warm, mostly database round trips.
+- **"Does it really learn?"** Five seeds, real pool, a simulated reader whose onboarding picks miss half her tastes. Days 4 to 7: learning 0.148 precision@20 and 0.511 nDCG@10, onboarding-only 0.070 and 0.401. Day 7 nDCG@10: 0.524 against 0.344 and popularity 0.372. Caveats: the reader model is ours, the labels are zero-shot and noisy, and the day-7 precision gap is about one standard deviation, so nDCG@10 and the multi-day means are the evidence we lean on.
+- **"What did you fix to get there?"** Two things. Every open used to pay +0.30, so every topic we showed drifted up; now a scroll-past costs −0.25 and the open itself 0, and only reading time pays. And gte-small vectors all point the same way (mean pairwise cosine 0.75), so taste added a constant; centring on the pool mean brought it to 0.01 for about 2 ms per build.
+- **"Cold start?"** Onboarding sets the priors: a picked leaf starts at (4, 1), an unpicked topic at (1, 3), and "in your words" adds topics the tree picker missed. The explore slots gather signal from day one.
+- **"Filter bubble?"** Two explore slots and one serendipity slot every day, labelled "Trying something new" and "A step outside your usual"; at most five stories per area; one "big story" slot ranked by how many outlets covered it; and "Other angles" on multi-source stories.
+- **"Why not let the LLM rank?"** Cost, latency, determinism and explainability. Gemini does what it is good at, once per article: summaries, recall questions, perspectives and the editor's note. Ranking is transparent math, and every why-tag comes from the score breakdown.
+- **"Hallucinations?"** The prompt allows only facts in the source; guardrails check every number against the source, word counts, entity substrings and that the quiz answer is grounded. A failure falls back to the publisher's own sentences, and the badge in the story sheet says which one you are reading. The original is one tap away.
+- **"Cost per reader?"** Zero LLM calls on the request path: the receipt shows "LLM calls for you" and "0 AI calls per reader" for ranking. The pipeline is budgeted to stay under about 250 Gemini requests a day on the free tier, with a per-model daily guard in `llm_usage`.
+- **"What if Gemini or the network fails?"** Every AI step has a deterministic fallback (extractive summaries, the template note, keyword mapping), the budget guard skips a model before it would return a 429, and `DEMO_FALLBACK=1` serves a committed snapshot with no database.
+- **"How fresh is it?"** A GitHub Actions workflow ingests every 30 minutes (117 sources, conditional requests, last 48 hours), and a Vercel cron builds editions daily at 00:00 UTC.
+- **"What breaks first at scale?"** PDF rendering, because Vercel has no Chrome: today PDFs are rendered ahead by a script and stored, and a miss opens the print page. Next is rendering right after each build behind a queue. LLM cost stays flat per article, not per reader.
+- **"Built today vs reused?"** Everything in `src/` was written today; see the commit history (287 commits from 11:12 PKT) and the pull requests. Libraries: Next.js, Supabase, the AI SDK, transformers.js, Puppeteer, shadcn/ui. Feeds are public RSS plus the Hacker News, Dev.to and arXiv APIs.
+- **"Copyright and privacy?"** Only short summaries of our own, with attribution and a link out; no full text is republished, and images are hotlinked with a fallback. Reading events are per user behind row-level security, and there is no social layer.
+- **"Team collaboration?"** One person ran eight parallel agent lanes, then two smaller waves, each with its own plan, branch, pull request and handoff note, coordinated through binding contracts in `src/contracts`. 51 pull requests merged with merge commits, CI on every push; "How this was built" in the README has the numbers.
+- **"A known weakness?"** Say it before they ask: the learning numbers come from a simulated reader, and a paper rebuilt after "Tell your editor" prints from the browser until its PDF is rendered again.
