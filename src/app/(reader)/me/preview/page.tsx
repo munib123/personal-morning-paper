@@ -3,9 +3,10 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { SectionHeader } from '@/components/morrow';
+import { MorningRecallCard } from '@/components/recall/MorningRecallCard';
 import { StreakChip } from '@/components/streak/StreakChip';
 import { StreakPanel } from '@/components/streak/StreakPanel';
-import { FIXTURE_STREAK } from '@/contracts/fixtures';
+import { FIXTURE_EDITION, FIXTURE_STREAK } from '@/contracts/fixtures';
 import { SheetPreview } from './SheetPreview';
 
 export const metadata: Metadata = { title: 'Engagement preview' };
@@ -30,6 +31,10 @@ export default async function PreviewPage({ searchParams }: { searchParams: Sear
       <section className="flex max-w-(--measure) flex-col gap-3">
         <SectionHeader title="Streak panel" />
         <StreakPanel streak={FIXTURE_STREAK} />
+      </section>
+      <section className="flex max-w-(--measure) flex-col gap-3" id="recall">
+        <SectionHeader title="Morning recall" />
+        <MorningRecallCard questions={FIXTURE_EDITION.recall} editionId={`preview-${FIXTURE_EDITION.id}`} />
       </section>
       {sp.open === 'sheet' ? <SheetPreview streak={FIXTURE_STREAK} /> : null}
     </div>
