@@ -37,7 +37,7 @@ function rank(voice: VoiceLike, prefix: string): number {
   return lang * 10 + (NATURAL.test(voice.name) ? 5 : 0) + (voice.default ? 2 : 0) + (voice.localService === false ? 1 : 0);
 }
 
-function best(voices: VoiceLike[], prefix: string): VoiceLike | null {
+function best(voices: readonly VoiceLike[], prefix: string): VoiceLike | null {
   let top: VoiceLike | null = null;
   let topScore = 0;
   for (const voice of voices) {

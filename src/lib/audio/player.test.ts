@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { createReadAloudPlayer, STALL_TICK_MS, type ReadAloudPlayer, type UtteranceLike } from './player';
 import { AUDIO_PREFS_KEY, type StorageLike } from './prefs';
 import type { ReadingChunk } from './queue';
@@ -76,8 +76,8 @@ function memoryStorage(initial: Record<string, string> = {}): StorageLike & { da
 
 let synth: FakeSynth;
 let storage: ReturnType<typeof memoryStorage>;
-let onStoryFinished: ReturnType<typeof vi.fn>;
-let onPlay: ReturnType<typeof vi.fn>;
+let onStoryFinished: Mock<(id: string) => void>;
+let onPlay: Mock<() => void>;
 let player: ReadAloudPlayer;
 
 function make(queue = QUEUE) {
@@ -90,8 +90,8 @@ beforeEach(() => {
   vi.useFakeTimers();
   synth = new FakeSynth();
   storage = memoryStorage();
-  onStoryFinished = vi.fn();
-  onPlay = vi.fn();
+  onStoryFinished = vi.fn<(id: string) => void>();
+  onPlay = vi.fn<() => void>();
 });
 afterEach(() => {
   player?.dispose();
