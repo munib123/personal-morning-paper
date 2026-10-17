@@ -3,18 +3,19 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type { MeData } from '@/components/learning/me-tabs';
-import { FIXTURE_LEARNING, FIXTURE_PROFILE, FIXTURE_STREAK, FIXTURE_TAXONOMY } from '@/contracts/fixtures';
+import { FIXTURE_HEATMAP, FIXTURE_LEARNING, FIXTURE_PROFILE, FIXTURE_SIMULATION, FIXTURE_STREAK, FIXTURE_TAXONOMY } from '@/contracts/fixtures';
 import { getSessionUser } from '@/server/auth/session';
 import { getLearningView } from '@/server/learn';
 import { getTaxonomy } from '@/server/onboarding';
 import { getProfile } from '@/server/profile';
-import { getStreak } from '@/server/streaks';
+import { getHeatmap, getStreak } from '@/server/streaks';
 import { nextMorningIso } from '@/server/streaks/clock';
 import { requestNow } from '@/server/time';
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
 const LEARNING_DAYS = 7;
+const HEATMAP_DAYS = 84; // 12 weeks
 
 const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 
@@ -43,11 +44,14 @@ export async function loadMeData(sp: SearchParams): Promise<MeData> {
     return {
       profile: FIXTURE_PROFILE,
       streak: FIXTURE_STREAK,
+      heatmap: FIXTURE_HEATMAP,
       learning: FIXTURE_LEARNING,
       taxonomy: FIXTURE_TAXONOMY,
       demoMode,
       nextMorning: nextMorningIso(now, FIXTURE_PROFILE.tz),
       clockIso,
+      nowIso: now.toISOString(),
+      simulation: FIXTURE_SIMULATION,
       fixtures: true,
     };
   }
@@ -57,13 +61,26 @@ export async function loadMeData(sp: SearchParams): Promise<MeData> {
   const profile = await getProfile(user.userId);
   if (!profile) redirect('/start');
 
-  const [streak, learning, taxonomy] = await Promise.all([
+  const [streak, heatmap, learning, taxonomy] = await Promise.all([
     getStreak(user.userId, now, profile.tz),
+    getHeatmap(user.userId, HEATMAP_DAYS, now, profile.tz),
     getLearningView(user.userId, LEARNING_DAYS, now).catch((err: unknown) => {
       console.error('[me] getLearningView failed', err);
       return null;
     }),
     getTaxonomy().catch(() => FIXTURE_TAXONOMY),
   ]);
-  return { profile, streak, learning, taxonomy, demoMode, nextMorning: nextMorningIso(now, profile.tz), clockIso, fixtures: false };
+  return {
+    profile,
+    streak,
+    heatmap,
+    learning,
+    taxonomy,
+    demoMode,
+    nextMorning: nextMorningIso(now, profile.tz),
+    clockIso,
+    nowIso: now.toISOString(),
+    simulation: null,
+    fixtures: false,
+  };
 }
