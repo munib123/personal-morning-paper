@@ -177,20 +177,24 @@ export async function buildEdition(userId: string, now: Date, opts: { force?: bo
     algoVersion: RANK_VERSION,
   };
 
+  const persist = (upsert: boolean, existingId?: string) =>
+    persistEdition({ userId, date, number, paperName: profile.paperName, presentation: profile.presentation, ranking, recall, note, receipt: { ...receipt }, snapshot, upsert, existingId });
+  const cardsP = loadArticleCards(
+    ranked.map((r) => r.candidateId),
+    ranked.map((r) => byId.get(r.candidateId)?.clusterId ?? null),
+  );
+  cardsP.catch(() => undefined); // awaited below; never an unhandled rejection if the write fails first
   let id: string;
-  let cards: Awaited<ReturnType<typeof loadArticleCards>>;
   try {
-    [id, cards] = await Promise.all([
-      persistEdition({ userId, date, number, paperName: profile.paperName, presentation: profile.presentation, ranking, recall, note, receipt: { ...receipt }, snapshot, upsert: !!existing, existingId: existing?.id }),
-      loadArticleCards(
-        ranked.map((r) => r.candidateId),
-        ranked.map((r) => byId.get(r.candidateId)?.clusterId ?? null),
-      ),
-    ]);
+    id = await persist(!!existing, existing?.id);
   } catch (e) {
-    if (e instanceof DbError && e.code === '23505') return waitForEdition(userId, date); // double first open
-    throw e;
+    if (!(e instanceof DbError && e.code === '23505')) throw e;
+    // Another request created today's paper between our read and our insert (double first open).
+    // A plain open takes that paper; a forced build (rebuild, onboarding, seed) replaces it.
+    if (!opts.force) return waitForEdition(userId, date);
+    id = await persist(true, (await findEditionRow(userId, date))?.id);
   }
+  const cards = await cardsP;
   receipt.buildMs = Math.round(performance.now() - t0);
   for (const r of ranking.items) {
     const c = cards.get(r.candidateId);
