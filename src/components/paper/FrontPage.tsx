@@ -4,6 +4,7 @@
 // affinity order, "Beyond your usual", then "In brief" beside one "Long read". Columns are separated
 // by a 1px rule, never by colour; rank shows by headline size and position.
 import { useMemo } from 'react';
+import { ListenBar } from '@/components/audio/ListenBar';
 import { SectionHeader, TakeawayBox } from '@/components/morrow';
 import { MorningRecallCard } from '@/components/recall/MorningRecallCard';
 import { PaperStory } from '@/components/story/PaperStory';
@@ -85,7 +86,7 @@ function EditorNote({ edition }: { edition: Edition }) {
 }
 
 export function FrontPage({ readerName, city }: FrontPageProps) {
-  const { edition, state, readOnly } = useEdition();
+  const { edition, state, readOnly, dispatch, signals } = useEdition();
   const layout = useMemo(
     () => layoutFrontPage(state.items, edition.sectionOrder, edition.leadArticleId),
     [state.items, edition.sectionOrder, edition.leadArticleId],
@@ -96,6 +97,17 @@ export function FrontPage({ readerName, city }: FrontPageProps) {
   return (
     <div className="mx-auto w-full max-w-(--page-max) px-4 pb-16 md:px-6">
       <PaperMasthead readerName={readerName} city={city} onHowMade={openHowMade} />
+      <ListenBar
+        className="mt-4"
+        items={state.items}
+        skippedIds={state.skippedIds}
+        sectionNames={edition.sectionNames}
+        onPlay={() => signals.track({ type: 'audio_play' })}
+        onStoryFinished={(id) => {
+          dispatch({ type: 'markRead', articleId: id });
+          signals.track({ type: 'open', articleId: id, meta: { mode: 'audio' } });
+        }}
+      />
       <EditorNote edition={edition} />
 
       <section aria-labelledby="above-the-fold" className="mt-8 grid gap-8 lg:grid-cols-[2fr_1fr] lg:gap-0 lg:divide-x lg:divide-rule">
