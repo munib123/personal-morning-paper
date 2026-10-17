@@ -19,7 +19,9 @@ export function ReadingHeatmap({ days }: { days: HeatmapDay[] }) {
   const width = columns * (CELL + GAP) - GAP;
   const height = ROWS * (CELL + GAP) - GAP;
   return (
-    <figure className="m-0 flex flex-col gap-2">
+    // relative + overflow-hidden: the sr-only table still grows to its 84 rows (a table ignores height),
+    // and inside a scrolling panel that invisible height would become blank scroll space.
+    <figure className="relative m-0 flex flex-col gap-2 overflow-hidden">
       <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Your reading over the last ${columns} weeks`} className="max-w-full">
         {days.map((d, i) => {
           const x = Math.floor(i / ROWS) * (CELL + GAP);

@@ -3,7 +3,21 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { FIXTURE_STREAK } from '@/contracts/fixtures';
 import type { StreakState, StreakView } from '@/contracts/streak';
-import { chipLabel, chipText, highestMilestone, milestoneLine, sheetHeadline, statusText } from './copy';
+import {
+  HOW_IT_WORKS,
+  chipLabel,
+  chipParts,
+  chipText,
+  goalLine,
+  goalProgress,
+  heroStat,
+  highestMilestone,
+  keptLine,
+  milestoneLine,
+  sheetHeadline,
+  statsLine,
+  statusText,
+} from './copy';
 import { StreakChip } from './StreakChip';
 import { StreakPanel } from './StreakPanel';
 import { StreakStrip } from './StreakStrip';
@@ -75,14 +89,22 @@ describe('streak copy', () => {
 });
 
 describe('streak components', () => {
-  it('StreakChip renders a quiet dateline in a ghost button', () => {
+  it('StreakChip puts the number up front, with a today mark, in a 44 px button', () => {
     const html = renderToStaticMarkup(createElement(StreakChip, { streak: FIXTURE_STREAK }));
     expect(html).toContain(`data-state="${FIXTURE_STREAK.state}"`);
-    expect(html).toContain('class="dateline"');
-    expect(html).toContain(chipText(FIXTURE_STREAK));
-    expect(html).toContain('mw-btn--ghost');
+    expect(html).toContain('data-today="kept"');
+    expect(html).toMatch(/class="[^"]*headline-sm[^"]*">6<\/span>/);
+    expect(html).toContain('day streak');
+    expect(html).toContain('min-h-11');
     expect(html).toContain('aria-haspopup="dialog"');
     expect(html).toContain(`aria-label="${chipLabel(FIXTURE_STREAK)}"`);
+    const pending = renderToStaticMarkup(createElement(StreakChip, { streak: view({ state: 'at_risk', todayQualified: false }) }));
+    expect(pending).toContain('data-today="at-risk"');
+    expect(pending).toContain('read 1 story today');
+    expect(renderToStaticMarkup(createElement(StreakChip, { streak: view({ state: 'pending', todayQualified: false }) }))).toContain('data-today="pending"');
+    const fresh = renderToStaticMarkup(createElement(StreakChip, { streak: view({ state: 'new', current: 0, todayQualified: false }) }));
+    expect(fresh).toContain('Start a streak');
+    expect(fresh).not.toMatch(/>0<\/span>/);
   });
 
   it('StreakChip renders nothing without a streak (before the fetch lands)', () => {
@@ -98,7 +120,10 @@ describe('streak components', () => {
 
   it('StreakPanel shows the stats, the milestone line and today’s progress', () => {
     const html = renderToStaticMarkup(createElement(StreakPanel, { streak: FIXTURE_STREAK }));
-    expect(html).toContain('Current 6 · Longest 6 · 12 reading days');
+    expect(html).toContain('Longest 6 days · 12 reading days');
+    expect(html).toMatch(/class="[^"]*headline-xl[^"]*">6<\/p>/);
+    expect(html).toContain('Streak kept for today');
+    expect(html).toContain('1 of 1 story read');
     expect(html).toContain('Three mornings in a row.');
     expect(html).toContain('3 of 5 stories today');
     expect(html).toContain('role="progressbar"');
@@ -110,5 +135,66 @@ describe('streak components', () => {
     const fresh = renderToStaticMarkup(createElement(StreakPanel, { streak: view({ state: 'new', current: 0, longest: 0, totalDays: 0 }) }));
     expect(fresh).not.toContain('in a row');
     expect(fresh).not.toContain('body-sm');
+    expect(fresh).toContain('03:00'); // a new reader is told how a streak works
+    const unread = renderToStaticMarkup(createElement(StreakPanel, { streak: view({ state: 'new', current: 0, longest: 0, totalDays: 0, todayQualified: false, todayStoriesRead: 0 }) }));
+    expect(unread).toContain('Read 1 story to start your streak');
+    expect(unread).toContain('0 of 1 story read');
+  });
+});
+
+describe('streak sheet and chip copy (polish)', () => {
+  it('chipParts: the number up front, a short label, a note only for states that need one', () => {
+    expect(chipParts(view({ state: 'done_today', current: 8 }))).toEqual({ value: '8', label: 'day streak', short: 'days', note: null });
+    expect(chipParts(view({ state: 'done_today', current: 1 }))).toEqual({ value: '1', label: 'day streak', short: 'day', note: null });
+    expect(chipParts(view({ state: 'pending', current: 6 })).note).toBeNull();
+    expect(chipParts(view({ state: 'at_risk', current: 6 })).note).toBe('read 1 story today');
+    expect(chipParts(view({ state: 'frozen', current: 6 })).note).toBe('freeze used');
+    expect(chipParts(view({ state: 'repairable', current: 6 })).note).toBe('catch up today');
+    expect(chipParts(view({ state: 'new', current: 0 }))).toEqual({ value: null, label: 'Start a streak', short: 'Start a streak', note: null });
+    expect(chipParts(view({ state: 'broken', current: 0, totalDays: 42 }))).toEqual({ value: '42', label: 'reading days', short: 'days read', note: null });
+    expect(chipParts(view({ state: 'broken', current: 0, totalDays: 1 })).label).toBe('reading day');
+  });
+
+  it('heroStat leads a broken streak with the reading days, and is empty for a new reader', () => {
+    expect(heroStat(view({ state: 'done_today', current: 8 }))).toEqual({ value: 8, label: 'day streak' });
+    expect(heroStat(view({ state: 'broken', current: 0, totalDays: 42 }))).toEqual({ value: 42, label: 'reading days so far' });
+    expect(heroStat(view({ state: 'broken', current: 0, totalDays: 1 }))).toEqual({ value: 1, label: 'reading day so far' });
+    expect(heroStat(view({ state: 'new', current: 0 }))).toBeNull();
+  });
+
+  it('statsLine', () => {
+    expect(statsLine(view({ state: 'done_today', current: 6, longest: 9, totalDays: 12 }))).toBe('Longest 9 days · 12 reading days');
+    expect(statsLine(view({ state: 'done_today', current: 1, longest: 1, totalDays: 1 }))).toBe('Longest 1 day · 1 reading day');
+    expect(statsLine(view({ state: 'broken', current: 0, longest: 6, totalDays: 42 }))).toBe('Longest streak 6 days');
+    expect(statsLine(view({ state: 'new', current: 0, longest: 0, totalDays: 0 }))).toBeNull();
+  });
+
+  it("goalLine and goalProgress say where today's goal stands", () => {
+    expect(goalLine(view({ state: 'done_today', todayQualified: true }))).toBe('Streak kept for today');
+    expect(goalLine(view({ state: 'pending', todayQualified: false }))).toBe('Read 1 story to keep it');
+    expect(goalLine(view({ state: 'at_risk', todayQualified: false }))).toBe('Read 1 story to keep it');
+    expect(goalLine(view({ state: 'frozen', todayQualified: false }))).toBe('Read 1 story to keep it');
+    expect(goalLine(view({ state: 'new', current: 0, todayQualified: false }))).toBe('Read 1 story to start your streak');
+    expect(goalLine(view({ state: 'broken', current: 0, todayQualified: false }))).toBe('Read 1 story to start a new streak');
+    expect(goalLine(view({ state: 'repairable', todayQualified: true }))).toBe("Catch up on yesterday's paper to keep it");
+    expect(goalProgress(view({ todayQualified: true }))).toBe('1 of 1 story read');
+    expect(goalProgress(view({ todayQualified: false }))).toBe('0 of 1 story read');
+  });
+
+  it('sheetHeadline on a kept day points at tomorrow', () => {
+    expect(sheetHeadline(view({ state: 'done_today', current: 8 }))).toBe('Come back tomorrow for day 9');
+  });
+
+  it('keptLine is one calm line', () => {
+    expect(keptLine(view({ current: 8 }))).toBe('Streak kept: 8 days.');
+    expect(keptLine(view({ current: 1 }))).toBe('Streak started: 1 day.');
+  });
+
+  it('HOW_IT_WORKS explains the rule and the 03:00 rollover, calmly', () => {
+    expect(HOW_IT_WORKS.join(' ')).toContain('1 story a day');
+    expect(HOW_IT_WORKS.join(' ')).toContain('03:00');
+    for (const line of [...HOW_IT_WORKS, goalLine(view({})), keptLine(view({})), chipParts(view({ state: 'at_risk' })).note ?? '']) {
+      expect(line).not.toMatch(/!|\bI\b|our AI/);
+    }
   });
 });

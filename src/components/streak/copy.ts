@@ -54,7 +54,7 @@ export function sheetHeadline(v: StreakView): string {
     case 'new':
       return 'Read 1 story to start your streak';
     case 'done_today':
-      return `Day ${v.current} of your streak`;
+      return `Come back tomorrow for day ${v.current + 1}`;
     case 'pending':
       return `Read 1 story today to keep your ${v.current}-day streak`;
     case 'at_risk':
@@ -69,6 +69,70 @@ export function sheetHeadline(v: StreakView): string {
       return unreachable(v.state);
   }
 }
+
+/** The chip's visible parts: the number up front, its label (a short one under 640 px) and a state note. */
+export interface ChipParts {
+  value: string | null;
+  label: string;
+  short: string;
+  note: string | null;
+}
+
+export function chipParts(v: StreakView): ChipParts {
+  const streak = (note: string | null): ChipParts => ({ value: String(v.current), label: 'day streak', short: v.current === 1 ? 'day' : 'days', note });
+  switch (v.state) {
+    case 'new':
+      return { value: null, label: 'Start a streak', short: 'Start a streak', note: null };
+    case 'done_today':
+    case 'pending':
+      return streak(null);
+    case 'at_risk':
+      return streak('read 1 story today');
+    case 'frozen':
+      return streak('freeze used');
+    case 'repairable':
+      return streak('catch up today');
+    case 'broken':
+      return { value: String(v.totalDays), label: v.totalDays === 1 ? 'reading day' : 'reading days', short: 'days read', note: null };
+    default:
+      return unreachable(v.state);
+  }
+}
+
+/** The sheet's big number and its label; a broken streak leads with the reading days, a new reader gets none. */
+export function heroStat(v: StreakView): { value: number; label: string } | null {
+  if (v.state === 'new') return null;
+  if (v.state === 'broken') return { value: v.totalDays, label: v.totalDays === 1 ? 'reading day so far' : 'reading days so far' };
+  return { value: v.current, label: 'day streak' };
+}
+
+/** One quiet stats line under the big number, or null for a new reader. */
+export function statsLine(v: StreakView): string | null {
+  if (v.state === 'new') return null;
+  if (v.state === 'broken') return `Longest streak ${days(v.longest)}`;
+  return `Longest ${days(v.longest)} · ${readingDays(v.totalDays)}`;
+}
+
+/** Today's goal (1 story keeps the streak), as one line above its progress bar. */
+export function goalLine(v: StreakView): string {
+  if (v.state === 'repairable') return "Catch up on yesterday's paper to keep it";
+  if (v.todayQualified) return 'Streak kept for today';
+  if (v.state === 'new') return 'Read 1 story to start your streak';
+  if (v.state === 'broken') return 'Read 1 story to start a new streak';
+  return 'Read 1 story to keep it';
+}
+
+/** The goal bar's label. */
+export const goalProgress = (v: StreakView): string => `${v.todayQualified ? 1 : 0} of 1 story read`;
+
+/** The quiet note when a read keeps today's streak. */
+export const keptLine = (v: StreakView): string => (v.current === 1 ? 'Streak started: 1 day.' : `Streak kept: ${days(v.current)}.`);
+
+/** How a streak works, for a reader who has not started one. */
+export const HOW_IT_WORKS: readonly string[] = [
+  'Read 1 story a day to build a streak. Opening the original, or reading for 20 seconds, counts.',
+  'Your day runs until 03:00, so a late-night read still counts for that day.',
+];
 
 const MILESTONE_LINES: Record<number, string> = {
   3: 'Three mornings in a row.',
