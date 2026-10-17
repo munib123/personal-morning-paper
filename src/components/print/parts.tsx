@@ -3,7 +3,7 @@ import { Masthead } from '@/components/morrow';
 import type { Edition, EditionItem } from '@/contracts/edition';
 import type { WeightDelta } from '@/contracts/signals';
 import { BRAND } from '@/lib/brand';
-import { countSources, formatPaperDate, pickSummary, sectionName, storyHref } from '@/server/pdf/layout';
+import { clampWords, countSources, formatPaperDate, pickSummary, sectionName, storyHref } from '@/server/pdf/layout';
 import type { PrintModel, StoryRole } from '@/server/pdf/types';
 
 /** The printed link of a story (headline, QR): through /r, so it is a learning signal. */
@@ -80,6 +80,37 @@ export function StoryBlock({ model, item, role }: { model: PrintModel; item: Edi
   );
 }
 
+/** A brief: a bold body-size headline, a one-sentence summary, then source and domain (linked through /r). */
+export function RunInBrief({ model, item }: { model: PrintModel; item: EditionItem }) {
+  const href = hrefOf(model, item);
+  return (
+    <article className="story story--brief">
+      <p className="print-kicker">{kickerOf(model.edition, item)}</p>
+      <h3 className="print-body brief__headline">
+        <a href={href}>{item.article.headline}</a>
+      </h3>
+      <p className="print-body brief__text">{pickSummary(item, 'brief', model.layout.budgets)}</p>
+      <p className="ui-meta brief__meta">
+        <a href={href}>{`${item.article.sourceName} · ${item.article.sourceDomain}`}</a>
+      </p>
+    </article>
+  );
+}
+
+/** A strip of briefs under its own section head, in up to 3 ruled columns. */
+export function BriefStrip({ model, items }: { model: PrintModel; items: EditionItem[] }) {
+  return (
+    <div className="briefs">
+      <SectionHead title="In brief" />
+      <div className={`brief-strip brief-strip--${Math.min(3, items.length)}`}>
+        {items.map((item) => (
+          <RunInBrief key={item.article.id} model={model} item={item} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /** The Morrow compact masthead as the running head of every page after the first. */
 export function RunningHead({ model, page }: { model: PrintModel; page: number }) {
   return (
@@ -107,12 +138,15 @@ export function PageFoot({ model }: { model: PrintModel }) {
   return <footer className="foot dateline">{`Prepared for ${who} · from ${countSources(model.layout)} sources`}</footer>;
 }
 
+// A teaser has three lines of a 34 mm column; six words end on a word, not mid-word.
+const TEASER_WORDS = 6;
+
 /** A front-page pointer to a story inside the paper. */
 export function Teaser({ model, item, page }: { model: PrintModel; item: EditionItem; page: number }) {
   return (
     <a className="teaser" href={`#page-${page}`}>
       <span className="print-kicker">{sectionName(model.edition, item.sectionSlug)}</span>
-      <span className="print-headline teaser__headline">{item.article.headline}</span>
+      <span className="print-headline teaser__headline">{clampWords(item.article.headline, TEASER_WORDS)}</span>
       <span className="dateline teaser__page">{`Page ${page}`}</span>
     </a>
   );
