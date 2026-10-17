@@ -27,6 +27,32 @@ describe('wholeSentences', () => {
   });
 });
 
+describe('scraped boilerplate', () => {
+  const BOILER = [
+    'To display this content from YouTube, you must enable advertisement tracking and audience measurement.',
+    'We use cookies to improve your experience on our site.',
+    'Please enable JavaScript to view the comments.',
+    'Copyright 2026 Example Media. All rights reserved.',
+    'Click here to subscribe to our newsletter.',
+  ];
+
+  it('never uses a consent, cookie or subscribe banner as the key fact or summary', () => {
+    const real = sentence(18, 'The central bank');
+    for (const junk of BOILER) {
+      const out = extractiveEnrichment({ title: TITLE, lede: null, contentText: `${junk} ${real} ${sentence(15, 'Analysts')}` });
+      expect(out.key_fact, junk).toBe(real);
+      expect(out.summary_brief, junk).toBe(real);
+      expect(out.summary_std, junk).not.toContain(junk);
+    }
+  });
+
+  it('falls back to the title when every sentence is boilerplate', () => {
+    const out = extractiveEnrichment({ title: TITLE, lede: null, contentText: BOILER.join(' ') });
+    expect(out.key_fact).toBe(TITLE);
+    expect(out.summary_deep).toBe(TITLE);
+  });
+});
+
 describe('extractiveEnrichment', () => {
   it('builds brief, std and deep from whole sentences', () => {
     const s = ['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo'].map((lead) => sentence(20, lead));

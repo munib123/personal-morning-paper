@@ -18,10 +18,15 @@ export interface ExtractiveFields {
 
 const SLACK = 1.15;
 const ENDS_SENTENCE = /[.!?][)\]"'”’]*$/;
+// Page furniture the scraper keeps: consent walls, cookie notices, script warnings, footers, CTAs.
+const BOILERPLATE =
+  /(^(©|\(c\)|copyright)\s)|\b(advertisement tracking|audience measurement|enable (javascript|cookies)|we use cookies|cookie (policy|settings|preferences)|accept (all )?cookies|your (browser|ad blocker)|all rights reserved|click here|subscribe (to|now)|sign up for (our|the) newsletter|to display this content|this content is (not available|blocked)|log ?in to (continue|read))\b/i;
 
-/** The article's sentences, minus a trailing fragment the publisher cut off (when others remain). */
+export const isBoilerplate = (sentence: string): boolean => BOILERPLATE.test(sentence);
+
+/** The article's sentences minus page boilerplate and a trailing fragment the publisher cut off (when others remain). */
 function completeSentences(text: string): string[] {
-  const sentences = splitSentences(text);
+  const sentences = splitSentences(text).filter((s) => !isBoilerplate(s));
   if (sentences.length > 1 && !ENDS_SENTENCE.test(sentences[sentences.length - 1])) sentences.pop();
   return sentences;
 }
