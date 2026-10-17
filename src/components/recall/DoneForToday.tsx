@@ -1,7 +1,14 @@
-// STUB (L0) — owner: L7. Replace freely; keep the props.
+'use client';
+
+import { useState } from 'react';
+import { Button, TakeawayBox } from '@/components/morrow';
+import type { RecallQuestion } from '@/contracts/article';
 import type { Edition } from '@/contracts/edition';
 import type { StreakView } from '@/contracts/streak';
-import { TakeawayBox, type Takeaway } from '@/components/morrow';
+import { useLiveStreak } from '@/components/streak/live';
+import { MorningRecallCard } from './MorningRecallCard';
+import { isHiddenOnLoad, useRecallStore } from './recall-state';
+import { doneStreakLine, pickThreeThings } from './three-things';
 
 export interface DoneForTodayProps {
   edition: Edition;
@@ -9,28 +16,46 @@ export interface DoneForTodayProps {
   streak: StreakView | null;
 }
 
-const COUNT = ['', 'One thing', 'Two things', 'Three things'] as const;
+const TITLES = ['', 'One thing you learned', 'Two things you learned', 'Three things you learned'] as const;
 
-// End of paper. "3 things you learned" = the keyFacts of read items (ARCHITECTURE §9.6). Stub: in
-// readIds order (callers pass most-dwell first); L7 adds the dwell ordering and the streak strip.
+/**
+ * End of paper (§9.6): "That's your paper for today.", the key facts of up to 3 stories read today
+ * (Morrow TakeawayBox), the quiet streak line, and "Quiz me now" with those stories' questions.
+ * No ring, badge or celebration: finishing the paper is the reward.
+ */
 export function DoneForToday({ edition, readIds, streak }: DoneForTodayProps) {
-  const byId = new Map([...edition.items, ...edition.reserve].map((item) => [item.article.id, item]));
-  const learned: Takeaway[] = [];
-  for (const id of readIds) {
-    const item = byId.get(id);
-    if (!item?.article.keyFact) continue;
-    learned.push({ text: item.article.keyFact, kicker: edition.sectionNames[item.sectionSlug] });
-    if (learned.length === 3) break;
-  }
+  const live = useLiveStreak(streak);
+  const things = pickThreeThings(edition, readIds);
+  const quiz = things.map((t) => t.recall).filter((q): q is RecallQuestion => q !== null);
+  const store = useRecallStore(edition.id);
+  const [quizOpen, setQuizOpen] = useState(false);
+  // Quizzed on an earlier visit: the card would stay hidden, so don't offer a button that opens nothing.
+  const canQuiz = quiz.length > 0 && (quizOpen || !isHiddenOnLoad(quiz, store));
+
   return (
     <section aria-label="End of paper" className="flex flex-col gap-6">
-      <h2 className="headline-lg text-ink">{"That's your paper for today."}</h2>
-      {learned.length > 0 ? (
-        <TakeawayBox title={`${COUNT[learned.length]} you learned`} items={learned} />
+      <h2 className="headline-md text-ink">{"That's your paper for today."}</h2>
+      {things.length > 0 ? (
+        <TakeawayBox
+          title={TITLES[things.length]}
+          items={things.map((t) => ({ kicker: t.section, text: t.fact }))}
+          footnote="Tomorrow's Morning Recall will ask about these."
+        />
       ) : (
-        <p className="ui-text text-ink-soft">Open a story and what you learned from it is listed here.</p>
+        <p className="ui-text text-ink-muted">Read a story and its key fact lands here.</p>
       )}
-      {streak && streak.current > 0 ? <p className="dateline text-ink-muted">{streak.current}-day reading streak</p> : null}
+      {live ? <p className="ui-meta text-ink-muted">{doneStreakLine(live)}</p> : null}
+      {canQuiz ? (
+        quizOpen ? (
+          <MorningRecallCard questions={quiz} editionId={edition.id} />
+        ) : (
+          <div>
+            <Button variant="secondary" onClick={() => setQuizOpen(true)}>
+              Quiz me now
+            </Button>
+          </div>
+        )
+      ) : null}
     </section>
   );
 }
