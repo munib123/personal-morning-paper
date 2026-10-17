@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BottomNav } from './BottomNav';
 import { Providers } from './Providers';
 import { ThemeToggle } from './ThemeToggle';
-import { TopBar } from './TopBar';
+import { TopBar, startsPageNavigation } from './TopBar';
 
 const nav = vi.hoisted(() => ({ pathname: '/archive' as string | null }));
 vi.mock('next/navigation', () => ({ usePathname: () => nav.pathname }));
@@ -24,6 +24,7 @@ const current = () => screen.getAllByRole('link').filter((a) => a.getAttribute('
 
 afterEach(() => {
   cleanup();
+  window.scrollY = 0;
   nav.pathname = '/archive';
   theme.resolvedTheme = 'morning';
   theme.setTheme.mockClear();
@@ -44,7 +45,64 @@ describe('TopBar', () => {
   it('renders the right slot and the theme toggle', () => {
     render(<TopBar right={<span>6-day streak</span>} />);
     expect(screen.getByText('6-day streak')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Switch to Night edition' })).toBeTruthy();
+    expect(screen.getByRole('switch', { name: 'Night edition' })).toBeTruthy();
+  });
+
+  it('draws its hairline rule only once the page has scrolled', () => {
+    render(<TopBar />);
+    const header = screen.getByRole('banner');
+    expect(header.hasAttribute('data-scrolled')).toBe(false);
+    act(() => {
+      window.scrollY = 120;
+      window.dispatchEvent(new Event('scroll'));
+    });
+    expect(header.hasAttribute('data-scrolled')).toBe(true);
+    act(() => {
+      window.scrollY = 0;
+      window.dispatchEvent(new Event('scroll'));
+    });
+    expect(header.hasAttribute('data-scrolled')).toBe(false);
+  });
+
+  it('shows the pending line from a click on a nav link until the page changes', () => {
+    nav.pathname = '/today';
+    window.history.replaceState(null, '', '/today');
+    const { container, rerender } = render(<TopBar />);
+    const line = () => container.querySelector('[data-nav-pending]');
+    expect(line()).toBeNull();
+    const link = screen.getByRole('link', { name: 'Past editions' });
+    link.addEventListener('click', (e) => e.preventDefault()); // jsdom cannot navigate
+    fireEvent.click(link);
+    expect(line()).not.toBeNull();
+    nav.pathname = '/archive';
+    rerender(<TopBar />);
+    expect(line()).toBeNull();
+  });
+});
+
+describe('startsPageNavigation', () => {
+  const here = { origin: 'https://paper.test', pathname: '/today' };
+  const plain = { button: 0, metaKey: false, ctrlKey: false, shiftKey: false, altKey: false };
+  const link = (href: string, extra: Partial<{ target: string; download: boolean }> = {}) => ({
+    href,
+    target: extra.target ?? '',
+    download: extra.download ?? false,
+  });
+
+  it('is true for a plain click to another page of the app', () => {
+    expect(startsPageNavigation(link('https://paper.test/archive'), plain, here)).toBe(true);
+    expect(startsPageNavigation(link('https://paper.test/paper/2026-10-16'), plain, here)).toBe(true);
+  });
+
+  it('is false for the same page, a new tab, a modified click, another site, an API route, the outbound redirect or a download', () => {
+    expect(startsPageNavigation(link('https://paper.test/today#how-made'), plain, here)).toBe(false);
+    expect(startsPageNavigation(link('https://paper.test/archive', { target: '_blank' }), plain, here)).toBe(false);
+    expect(startsPageNavigation(link('https://paper.test/archive'), { ...plain, metaKey: true }, here)).toBe(false);
+    expect(startsPageNavigation(link('https://paper.test/archive'), { ...plain, button: 1 }, here)).toBe(false);
+    expect(startsPageNavigation(link('https://elsewhere.test/archive'), plain, here)).toBe(false);
+    expect(startsPageNavigation(link('https://paper.test/api/editions/2026-10-17/pdf'), plain, here)).toBe(false);
+    expect(startsPageNavigation(link('https://paper.test/r/abc'), plain, here)).toBe(false);
+    expect(startsPageNavigation(link('https://paper.test/archive', { download: true }), plain, here)).toBe(false);
   });
 });
 
@@ -68,21 +126,34 @@ describe('BottomNav', () => {
   });
 });
 
+// A two-state switch named "Night edition" (off in Morning), drawn as Morning | Night with the current one filled.
 describe('ThemeToggle', () => {
-  it('offers the Night edition from Morning', () => {
+  it('is off in Morning and turns the Night edition on', () => {
     render(<ThemeToggle />);
-    fireEvent.click(screen.getByRole('button', { name: 'Switch to Night edition' }));
+    const toggle = screen.getByRole('switch', { name: 'Night edition' });
+    expect(toggle.getAttribute('aria-checked')).toBe('false');
+    expect(toggle.getAttribute('title')).toBe('Switch to Night edition');
+    fireEvent.click(toggle);
     expect(theme.setTheme).toHaveBeenCalledWith('night');
   });
 
-  it('offers Morning from Night, including a system-dark reader', () => {
+  it('is on in Night, including a system-dark reader, and turns Morning back on', () => {
     for (const resolved of ['night', 'dark']) {
       theme.resolvedTheme = resolved;
       const { unmount } = render(<ThemeToggle />);
-      fireEvent.click(screen.getByRole('button', { name: 'Switch to Morning edition' }));
+      const toggle = screen.getByRole('switch', { name: 'Night edition' });
+      expect(toggle.getAttribute('aria-checked')).toBe('true');
+      expect(toggle.getAttribute('title')).toBe('Switch to Morning edition');
+      fireEvent.click(toggle);
       expect(theme.setTheme).toHaveBeenLastCalledWith('morning');
       unmount();
     }
+  });
+
+  it('shows both editions, Morning and Night', () => {
+    render(<ThemeToggle />);
+    expect(screen.getByText('Morning')).toBeTruthy();
+    expect(screen.getByText('Night')).toBeTruthy();
   });
 });
 

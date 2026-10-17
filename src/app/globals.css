@@ -82,3 +82,118 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ── Reader polish: quiet motion, focus, hover and pending states (Morrow "Motion and states").
+   Append-only. Everything that moves is screen-only and off under prefers-reduced-motion. ── */
+
+/* Defaults for controls with no focus style of their own: the Morrow focus-ring (2px paper gap,
+   2px pen), drawn with box-shadow so it follows the radius. In base, so components still win. */
+@layer base {
+  :where(a[href], button, summary, input, select, textarea, [role="button"], [role="tab"], [role="switch"], [tabindex]:not([tabindex="-1"])):focus-visible {
+    outline: 2px solid transparent;
+    box-shadow: var(--focus-ring);
+  }
+
+  /* Phones: the 32px Morrow controls (FeedbackBar, small buttons) get a 44px tall hit area without
+     changing how they look. */
+  @media (pointer: coarse) {
+    .mw-fb__btn,
+    .mw-btn--sm {
+      position: relative;
+    }
+    .mw-fb__btn::after,
+    .mw-btn--sm::after {
+      content: "";
+      position: absolute;
+      inset: -6px 0;
+    }
+  }
+}
+
+/* Anchors and focused controls land below the sticky TopBar (and the compact masthead on a paper). */
+html {
+  scroll-padding-top: 96px;
+}
+@media (min-width: 640px) {
+  html {
+    scroll-padding-top: 152px;
+  }
+}
+
+/* Page content settles in on first paint: 180ms, opacity and 4px. A settle, never a slide. */
+@keyframes reader-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+@media screen and (prefers-reduced-motion: no-preference) {
+  .reader-enter {
+    animation: reader-enter 180ms ease-out;
+  }
+}
+
+@media screen {
+  /* Story images fade in once loaded, over the paper-sunk 3:2 box that already holds their space. */
+  .mw-story__figure img {
+    transition:
+      opacity 200ms ease,
+      filter 150ms ease;
+  }
+  .mw-story__figure img[data-img="pending"] {
+    opacity: 0;
+  }
+
+  /* Hovering a headline: the Morrow underline (1px, 3px offset) in ink, even on a read story, and
+     its picture brightens a touch. */
+  .mw-story__link:hover {
+    text-decoration-color: var(--ink);
+  }
+  .mw-story:has(.mw-story__link:hover) .mw-story__figure img {
+    filter: saturate(0.9) brightness(1.05);
+  }
+  [data-theme="night"] .mw-story:has(.mw-story__link:hover) .mw-story__figure img {
+    filter: saturate(0.85) brightness(0.9);
+  }
+
+  /* TopBar nav: the current page carries a 2px ink underline under its label; hover previews it. */
+  .reader-nav a {
+    text-decoration-line: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 8px;
+    text-decoration-color: transparent;
+  }
+  .reader-nav a:hover {
+    text-decoration-color: var(--rule-strong);
+  }
+  .reader-nav a[aria-current="page"] {
+    text-decoration-color: var(--ink);
+  }
+
+  /* A page on its way: a 2px ink line along the TopBar's foot, from the click until the page lands. */
+  .reader-pending {
+    position: absolute;
+    right: 0;
+    bottom: -1px;
+    left: 0;
+    height: 2px;
+    background: var(--ink);
+    transform-origin: left center;
+    opacity: 0.6;
+    pointer-events: none;
+  }
+}
+@keyframes reader-pending {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(0.9);
+  }
+}
+@media screen and (prefers-reduced-motion: no-preference) {
+  .reader-pending {
+    opacity: 1;
+    animation: reader-pending 2.4s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+  }
+}
