@@ -4,8 +4,10 @@
 // FeedbackBar. Opening it marks the story read, logs an open and starts the dwell timer (stopped on
 // close). Inside an EditionReader it uses the edition's handlers; elsewhere it shows content only.
 import { useEffect, useRef, type ButtonHTMLAttributes } from 'react';
+import { StoryListenButton } from '@/components/audio/StoryListenButton';
 import { Button, FeedbackBar, WhyTag } from '@/components/morrow';
 import { useEditionOptional } from '@/components/paper/EditionContext';
+import { PerspectivesPanel } from '@/components/perspectives/PerspectivesPanel';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
 import type { EditionItem } from '@/contracts/edition';
 import { FaithfulnessBadge } from './FaithfulnessBadge';
@@ -73,6 +75,9 @@ export function StorySheet({ item, editionId, open, onOpenChange }: StorySheetPr
               <SheetDescription className="sr-only">A story from {a.sourceName}</SheetDescription>
             )}
             <p className="ui-meta mt-3 text-ink-muted">{meta}</p>
+            <div className="mt-2">
+              <StoryListenButton item={item} sectionNames={names} onPlay={track ? () => track({ type: 'audio_play', articleId: a.id }) : undefined} />
+            </div>
           </div>
           {item.reasons.length > 0 ? (
             <div>
@@ -91,6 +96,7 @@ export function StorySheet({ item, editionId, open, onOpenChange }: StorySheetPr
               <mark className="bg-highlight text-ink">{a.keyFact}</mark>
             </p>
           ) : null}
+          <PerspectivesPanel clusterId={a.clusterId} sourceCount={a.alsoCoveredBy.length + 1} editionId={editionId} />
           <Button variant="primary" full href={outboundHref(a.id, editionId)} iconRight="external" {...NEW_TAB}>
             Read on {a.sourceDomain}
           </Button>

@@ -258,12 +258,14 @@ describe('perf', () => {
     });
     buildRanking(user, pool, DEFAULT_PARAMS, SEED, NOW, TAX); // warm-up (JIT)
     buildRanking(user, pool, DEFAULT_PARAMS, SEED, NOW, TAX);
-    // Best of 5: the suite shares the CPU with other test files, so a single sample is noise-prone.
+    // CPU time, best of 5: the suite runs many files in parallel on a shared machine, so wall-clock time
+    // mostly measures waiting for a core; CPU time measures the ranking itself.
     let ms = Infinity;
     for (let k = 0; k < 5; k++) {
-      const t0 = performance.now();
+      const c0 = process.cpuUsage();
       const r = buildRanking(user, pool, DEFAULT_PARAMS, `u1|2026-10-${18 + k}`, NOW, TAX);
-      ms = Math.min(ms, performance.now() - t0);
+      const c = process.cpuUsage(c0);
+      ms = Math.min(ms, (c.user + c.system) / 1000);
       expect(r.items).toHaveLength(20);
     }
     expect(ms).toBeLessThan(50);

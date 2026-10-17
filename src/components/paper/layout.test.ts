@@ -63,6 +63,19 @@ describe('layoutFrontPage', () => {
     expect(layoutFrontPage(short, ['sports'], 'art-1').longRead).toBeNull();
   });
 
+  it('In brief keeps at most the 6 lowest-ranked brief stories; the rest stay in their sections', () => {
+    const items = [
+      makeItem(1, 'lead', 'news', 'deep'),
+      makeItem(2, 'top', 'news'),
+      ...Array.from({ length: 14 }, (_, k) => makeItem(3 + k, 'core', k % 2 ? 'sports' : 'technical', 'brief', 2)),
+    ];
+    const l = layoutFrontPage(items, ['technical', 'sports'], 'art-1');
+    expect(ranks(l.briefs)).toEqual([11, 12, 13, 14, 15, 16]);
+    expect(l.sections.map((s) => s.slug)).toEqual(['technical', 'sports']);
+    expect(l.sections.flatMap((s) => ranks(s.items)).sort((a, b) => a - b)).toEqual([3, 4, 5, 6, 7, 8, 9, 10]);
+    expect(placed(l)).toHaveLength(items.length);
+  });
+
   it('sections follow sectionOrder, ancestor match', () => {
     const items = [
       makeItem(1, 'lead', 'news'),

@@ -3,7 +3,7 @@
 // runIngest itself never writes job_runs (§9.7).
 import pLimit from 'p-limit';
 import { requestNow } from '@/server/time';
-import { enrichFromPages } from './page';
+import { enrichFromPages, PAGE_BUDGET_MS } from './page';
 import { needsPage, prepareArticle } from './prepare';
 import { failedResult, processSource } from './source';
 import { ensureApiSources, findExistingHashes, insertArticles, loadSources, recordSourceHealth } from './store';
@@ -14,6 +14,13 @@ export interface IngestStats { sources: number; fetched: number; inserted: numbe
 export const DEFAULT_MAX_PER_SOURCE = 60;
 export const DEFAULT_SINCE_HOURS = 48;
 export const SOURCE_CONCURRENCY = 8;
+/** The whole run aims to finish inside this, so the cron route stays under its maxDuration of 300 s. */
+export const RUN_BUDGET_MS = 240_000;
+
+/** The page phase gets at most PAGE_BUDGET_MS, and never more than what is left of RUN_BUDGET_MS. */
+export function pageBudgetMs(elapsedMs: number): number {
+  return Math.max(0, Math.min(PAGE_BUDGET_MS, RUN_BUDGET_MS - elapsedMs));
+}
 
 const message = (err: unknown) => (err instanceof Error ? err.message : String(err));
 
@@ -23,7 +30,9 @@ const better = (a: PreparedArticle, b: PreparedArticle) =>
 
 export async function runIngest(opts?: { sourceIds?: string[]; maxPerSource?: number; sinceHours?: number }): Promise<IngestStats> {
   const t0 = performance.now();
-  const now = await requestNow();
+  // A demo clock ahead of real time must never move the 48 h window or date undated rows in the
+  // future (§9.7 "Demo clock vs freshness": real now = min(demoNow, realNow)).
+  const now = new Date(Math.min((await requestNow()).getTime(), Date.now()));
   const o = { sinceHours: opts?.sinceHours ?? DEFAULT_SINCE_HOURS, maxPerSource: opts?.maxPerSource ?? DEFAULT_MAX_PER_SOURCE };
 
   try {
@@ -68,7 +77,7 @@ export async function runIngest(opts?: { sourceIds?: string[]; maxPerSource?: nu
   const drafts = [...byHash.values()].filter((a) => !existing.has(a.urlHash));
 
   // 3. Article pages, for new items only: og:image / twitter:image, and Readability when the text is thin.
-  const fresh = await enrichFromPages(drafts, now);
+  const fresh = await enrichFromPages(drafts, now, { budgetMs: pageBudgetMs(performance.now() - t0) });
   const missingImageOrText = drafts.filter(needsPage).length;
 
   // 4. Insert (ON CONFLICT (url_hash) DO NOTHING).

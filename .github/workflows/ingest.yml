@@ -1,0 +1,55 @@
+# Ingest worker (L1, ARCHITECTURE §12): every 30 minutes, `npm run job:ingest` =
+# runIngest → runNlp → runEnrich, recorded as one job_runs row (job='ingest', written by scripts/job-ingest.ts).
+# Scheduled and dispatched runs only work once this file is on main. Every run enriches against the shared
+# Gemini free-tier quota; L2's llm_usage budget guard caps it.
+name: ingest
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ingest
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # §9.7: workflows map secrets.SUPABASE_URL → NEXT_PUBLIC_SUPABASE_URL (every server/admin client reads it).
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      # Local transformers.js embeddings (§10.2); the model is cached between runs.
+      MODEL_CACHE_DIR: ${{ github.workspace }}/.model-cache
+      EMBEDDINGS_PROVIDER: local
+      # Plain values from §5 (not secrets): spec models and budget guards for the enrichment stage.
+      GEMINI_MODEL_FAST: gemini-3.5-flash-lite
+      GEMINI_MODEL_FALLBACK: gemini-3.1-flash-lite
+      GEMINI_RPD_FAST: '450'
+      GEMINI_RPD_FALLBACK: '450'
+      GEMINI_RPM_FAST: '12'
+      # npm ci: no Chrome download (the worker renders no PDFs), and no optional onnxruntime GPU binaries
+      # (their CDN times out on runners; the CPU runtime ships in the package), as in ci.yml.
+      PUPPETEER_SKIP_DOWNLOAD: 'true'
+      ONNXRUNTIME_NODE_INSTALL: skip
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - name: Cache the embedding model (Supabase/gte-small)
+        uses: actions/cache@v6
+        with:
+          path: .model-cache
+          key: models-${{ runner.os }}-gte-small-v1
+      - run: npm ci
+      - name: Ingest, embed and enrich
+        run: npm run job:ingest

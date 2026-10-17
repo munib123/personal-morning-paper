@@ -282,6 +282,9 @@ export async function seedDemoPersona(realNow: Date, creds: { email: string; pas
   await saveUserModel({ ...trace[trace.length - 1].model, userId }); // the simulated model carries a sim id
 
   // 5. Today's paper, No. 8: Morning Recall about yesterday's reads, refold over the seeded week.
+  // A reader who opened the demo paper during the reset got a paper built from an empty history (No. 1,
+  // no recall): drop it so today's number and recall are recomputed from the seeded week.
+  must('reset today', await db.from('editions').delete().eq('user_id', userId).eq('edition_date', today));
   const todayEdition = await buildEdition(userId, realNow, { force: true, awaitNote: true });
   const finalModel = trace[trace.length - 1].model;
   const now = Object.fromEntries(taxonomy.map((n) => [n.slug, Math.round(thetaOf(finalModel, n.slug, DEFAULT_PARAMS) * 10_000) / 10_000]));

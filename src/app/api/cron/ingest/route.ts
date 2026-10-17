@@ -1,16 +1,35 @@
-// STUB (L0) — owner: L1. Replace freely; keep the signature.
+// GET (Vercel cron) and POST /api/cron/ingest (§9.2), behind `Authorization: Bearer ${CRON_SECRET}`.
+// Runs runIngest only: NLP and enrichment run in the worker (scripts/job-ingest.ts), never on Vercel.
+// Records one job_runs row, job='ingest-cron' (§9.7). Owner: L1.
+import { timingSafeEqual } from 'node:crypto';
+import { runIngest } from '@/server/ingest';
+import { finishJobRun, startJobRun } from '@/server/ingest/store';
 
-// GET (Vercel cron) and POST, both behind `Authorization: Bearer ${CRON_SECRET}` → job stats.
-// Real version: runIngest only (NLP and enrichment run in the worker, never on Vercel) and one job_runs row
-// 'ingest-cron'. Stub: 501.
-export async function GET(): Promise<Response> {
-  return notImplemented();
+export const runtime = 'nodejs';
+export const maxDuration = 300;
+
+function authorized(request: Request): boolean {
+  const secret = process.env.CRON_SECRET;
+  if (!secret) return false; // an unset secret never opens the route
+  const given = Buffer.from(request.headers.get('authorization') ?? '');
+  const expected = Buffer.from(`Bearer ${secret}`);
+  return given.length === expected.length && timingSafeEqual(given, expected);
 }
 
-export async function POST(): Promise<Response> {
-  return notImplemented();
+async function handle(request: Request): Promise<Response> {
+  if (!authorized(request)) return Response.json({ error: 'unauthorized' }, { status: 401 });
+
+  const runId = await startJobRun('ingest-cron');
+  try {
+    const stats = await runIngest({});
+    await finishJobRun(runId, 'ok', { ...stats });
+    return Response.json(stats);
+  } catch (err) {
+    const error = err instanceof Error ? err.message : String(err);
+    await finishJobRun(runId, 'error', { error });
+    return Response.json({ error }, { status: 500 });
+  }
 }
 
-function notImplemented(): Response {
-  return Response.json({ error: 'not implemented', owner: 'L1' }, { status: 501 });
-}
+export const GET = handle;
+export const POST = handle;

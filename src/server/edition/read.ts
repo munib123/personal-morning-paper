@@ -8,6 +8,7 @@ import { isFixtureUser } from '@/server/profile';
 import { activityByDate, archiveRows, fetchArticleRows, fetchClusterSources, readEditionRow, type EditionItemRow, type EditionRow } from './db';
 import { sectionNamesFor, toArticleCard } from './hydrate';
 import { loadTaxonomy } from './taxonomy';
+import { isDemoFallback, snapshotGetEdition, snapshotListArchive } from '@/server/demo';
 
 /**
  * ArticleCards for the given ids (with "Also covered by"), keyed by id. Missing articles are absent.
@@ -66,6 +67,7 @@ export async function assembleEdition(row: EditionRow, items: EditionItem[], pdf
 }
 
 export async function getEdition(userId: string, date: string): Promise<Edition | null> {
+  if (isDemoFallback()) return snapshotGetEdition(userId, date);
   if (isFixtureUser(userId)) return date === FIXTURE_EDITION.date ? FIXTURE_EDITION : null;
   const row = await readEditionRow(userId, date);
   if (!row) return null;
@@ -76,6 +78,7 @@ export async function getEdition(userId: string, date: string): Promise<Edition 
 
 /** Past papers, newest first, with the lead headline and whether that day counted for the streak. */
 export async function listArchive(userId: string, limit = 60): Promise<ArchiveEntry[]> {
+  if (isDemoFallback()) return snapshotListArchive(userId, limit);
   if (isFixtureUser(userId)) return FIXTURE_ARCHIVE.slice(0, limit);
   const rows = await archiveRows(userId, limit);
   const activity = await activityByDate(userId, rows.map((r) => r.edition_date));

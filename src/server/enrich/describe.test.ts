@@ -57,14 +57,61 @@ describe('keywordTopics', () => {
 
 describe('mapTextToTopics', () => {
   it('mapTextToTopics returns keyword results', async () => {
+    // callLLM falls back (no key, quota, timeout): the keyword result is the answer.
+    callLLM.mockImplementation(async (_s: string, _i: unknown, _schema: unknown, opts: { fallback: () => unknown }) => ({
+      output: opts.fallback(),
+      provider: 'fallback',
+      model: null,
+      cached: false,
+    }));
     const r = await mapTextToTopics('cricket, AI and a bit of space, no showbiz');
     expect(r.provider).toBe('keyword');
     expect(r.picks).toEqual(expect.arrayContaining(['sports.cricket', 'technical.cs.ai-ml', 'science.space']));
     expect(r.blocked).toContain('entertainment');
-    expect(callLLM).not.toHaveBeenCalled();
+  });
+
+  it('asks gemini on the fast ladder with a 6 s deadline and the slug list (stretch S1)', async () => {
+    callLLM.mockResolvedValue({ output: { picks: ['sports.cricket'], blocked: [] }, provider: 'gemini', model: 'fast-test', cached: false });
+    await mapTextToTopics('cricket please');
+    const [step, input, , opts] = callLLM.mock.calls[0];
+    expect(step).toBe('describe');
+    expect(opts).toMatchObject({ model: 'fast', timeoutMs: 6_000 });
+    expect(input.instructions).toContain('technical.cs.web-dev');
+    expect(input.prompt).toContain('cricket please');
+  });
+
+  it('mapTextToTopics drops invalid gemini slugs', async () => {
+    callLLM.mockResolvedValue({
+      output: { picks: ['sports.cricket', 'sports.fake', 'sports.cricket'], blocked: ['entertainment.pakistani-showbiz', 'x.y'] },
+      provider: 'gemini',
+      model: 'fast-test',
+      cached: false,
+    });
+    await expect(mapTextToTopics('cricket, no celebrity gossip')).resolves.toEqual({
+      picks: ['sports.cricket'],
+      blocked: ['entertainment.pakistani-showbiz'],
+      provider: 'gemini',
+    });
+  });
+
+  it('caps gemini picks at 8 and blocked at 5', async () => {
+    const slugs = FIXTURE_TAXONOMY.map((t) => t.slug);
+    callLLM.mockResolvedValue({ output: { picks: slugs.slice(0, 12), blocked: slugs.slice(20, 30) }, provider: 'gemini', model: 'fast-test', cached: false });
+    const r = await mapTextToTopics('everything');
+    expect(r.picks).toHaveLength(8);
+    expect(r.blocked).toHaveLength(5);
+  });
+
+  it('uses keyword when gemini returns nothing valid', async () => {
+    callLLM.mockResolvedValue({ output: { picks: ['nope'], blocked: [] }, provider: 'gemini', model: 'fast-test', cached: false });
+    const r = await mapTextToTopics('I love cricket');
+    expect(r).toMatchObject({ provider: 'keyword' });
+    expect(r.picks).toContain('sports.cricket');
   });
 
   it('never throws', async () => {
+    callLLM.mockRejectedValue(new Error('caller bug'));
+    await expect(mapTextToTopics('cricket')).resolves.toMatchObject({ provider: 'keyword', picks: ['sports.cricket'] });
     loadTopics.mockRejectedValue(new Error('db down'));
     await expect(mapTextToTopics('cricket')).resolves.toEqual({ picks: [], blocked: [], provider: 'keyword' });
   });

@@ -73,6 +73,7 @@ async function loadFromDb(): Promise<TopicNode[] | null> {
 
 /** The topic tree for onboarding and /me. A database answer is cached per process; the seed is the fallback. */
 export async function getTaxonomy(): Promise<TopicNode[]> {
+  if (process.env.DEMO_FALLBACK === '1') return seedTaxonomy();
   if (dbTree) return dbTree;
   try {
     const fromDb = await loadFromDb();

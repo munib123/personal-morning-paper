@@ -17,6 +17,10 @@ export function pacificDay(at: Date): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Los_Angeles', year: 'numeric', month: '2-digit', day: '2-digit' }).format(at);
 }
 
+// The budget table must never stall a request (geminiStatus backs /api/health): reads and increments
+// give up after a few seconds and count in memory instead.
+const DB_TIMEOUT_MS = 2_500;
+
 const supabaseStore: UsageStore = {
   async get(day, model) {
     const { data, error } = await createSupabaseAdminClient()
@@ -24,19 +28,22 @@ const supabaseStore: UsageStore = {
       .select('requests')
       .eq('usage_day', day)
       .eq('model', model)
+      .abortSignal(AbortSignal.timeout(DB_TIMEOUT_MS))
       .maybeSingle();
     if (error) throw new Error(error.message);
     return data?.requests ?? 0;
   },
   async add(day, model, d) {
-    const { data, error } = await createSupabaseAdminClient().rpc('increment_llm_usage', {
-      p_day: day,
-      p_model: model,
-      p_requests: d.requests,
-      p_limited: d.rateLimited,
-      p_in: d.tokensIn,
-      p_out: d.tokensOut,
-    });
+    const { data, error } = await createSupabaseAdminClient()
+      .rpc('increment_llm_usage', {
+        p_day: day,
+        p_model: model,
+        p_requests: d.requests,
+        p_limited: d.rateLimited,
+        p_in: d.tokensIn,
+        p_out: d.tokensOut,
+      })
+      .abortSignal(AbortSignal.timeout(DB_TIMEOUT_MS));
     if (error) throw new Error(error.message);
     return data;
   },

@@ -6,12 +6,14 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextRequest, NextResponse } from 'next/server';
 import { ROUTES } from '@/contracts/api';
+import { isDemoFallback } from '@/server/demo';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request): Promise<Response> {
   const req = request instanceof NextRequest ? request : new NextRequest(request);
   const res = NextResponse.redirect(new URL(ROUTES.today, req.url));
+  if (isDemoFallback()) return res; // the persona is the session (getSessionUser); no sign-in needed
   if (await signInDemo(req, res)) return res;
   return NextResponse.redirect(new URL(`${ROUTES.start}?demo=unavailable`, req.url));
 }

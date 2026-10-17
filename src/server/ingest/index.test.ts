@@ -3,7 +3,7 @@ import type { IngestSource, PreparedArticle } from './types';
 
 const NOW = new Date('2026-10-17T06:00:00Z');
 
-vi.mock('@/server/time', () => ({ requestNow: async () => new Date(NOW) }));
+vi.mock('@/server/time', () => ({ requestNow: vi.fn(async () => new Date(NOW)) }));
 vi.mock('./store', () => ({
   loadSources: vi.fn(),
   ensureApiSources: vi.fn(async () => {}),
@@ -17,7 +17,8 @@ vi.mock('./store', () => ({
 }));
 
 import { urlHash } from './canonical';
-import { runIngest } from './index';
+import { pageBudgetMs, runIngest } from './index';
+import { requestNow } from '@/server/time';
 import * as store from './store';
 
 const HOUR = 3_600_000;
@@ -71,7 +72,8 @@ beforeEach(() => {
     if (hit === undefined) return new Response('not found', { status: 404, headers: { 'content-type': 'text/html' } });
     if (hit instanceof Error) throw hit;
     if (typeof hit === 'string') return new Response(hit, { status: 200, headers: { 'content-type': 'application/rss+xml; charset=utf-8' } });
-    return new Response(hit.body, { status: hit.status, headers: { 'content-type': hit.type ?? 'text/html' } });
+    const nullBody = hit.status === 204 || hit.status === 304; // the Response constructor rejects a body for these
+    return new Response(nullBody ? null : hit.body, { status: hit.status, headers: { 'content-type': hit.type ?? 'text/html' } });
   });
   vi.stubGlobal('fetch', fetchMock);
   serve({
@@ -91,6 +93,14 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+});
+
+describe('pageBudgetMs', () => {
+  it('gives the page phase at most 150 s, and only what is left of a 240 s run (the cron route has 300 s)', () => {
+    expect(pageBudgetMs(0)).toBe(150_000);
+    expect(pageBudgetMs(100_000)).toBe(140_000);
+    expect(pageBudgetMs(250_000)).toBe(0);
+  });
 });
 
 describe('runIngest', () => {
@@ -125,7 +135,7 @@ describe('runIngest', () => {
     const stats = await runIngest();
     expect(stats.failedSources).toEqual(['al-jazeera']);
     expect(insertedRows().map((r) => r.sourceId)).toContain('dawn-home');
-  });
+  }, 15_000); // includes the real 2 s retry delay after a network error
 
   it('a bot wall answering 403 or an empty 202 marks the source failed', async () => {
     serve({ ...served, 'https://espn.example/rss': { status: 403, body: 'Forbidden' }, 'https://akamai.example/rss': { status: 202, body: '' } });
@@ -133,6 +143,16 @@ describe('runIngest', () => {
     const stats = await runIngest();
     expect(stats.failedSources.sort()).toEqual(['akamai', 'espn']);
     expect(stats.inserted).toBe(1);
+  });
+
+  it('a 304 Not Modified feed is healthy, not failed', async () => {
+    serve({ ...served, 'https://quiet.example/feed': { status: 304, body: '' } });
+    useSources([{ ...src('quiet', 'https://quiet.example/feed'), cache: { httpStatus: 200, etag: '"abc"', lastModified: null, error: null, items: 5, at: '' } }, src('tribune', TRIBUNE)]);
+    const stats = await runIngest();
+    expect(stats.failedSources).toEqual([]);
+    const quiet = vi.mocked(store.recordSourceHealth).mock.calls.find((c) => c[0].id === 'quiet');
+    expect(quiet?.[1].ok).toBe(true);
+    expect(quiet?.[1].cache.etag).toBe('"abc"');
   });
 
   it('stats add up', async () => {
@@ -196,6 +216,18 @@ describe('runIngest', () => {
     expect(stats.failedSources).toEqual([]);
     expect(insertedRows()).toHaveLength(1);
     expect(insertedRows()[0]).toMatchObject({ sourceId: 'dev-to', url: 'https://dev.to/a/signals', imageUrl: 'https://media.dev.to/c.png', author: 'Ana' });
+  });
+
+  it('never dates rows by a demo clock that runs ahead of real time', async () => {
+    vi.mocked(requestNow).mockResolvedValueOnce(new Date('2030-01-01T00:00:00Z'));
+    serve({
+      [TRIBUNE]: `<?xml version="1.0"?><rss version="2.0"><channel><title>T</title><item><title>Undated</title><link>https://tribune.com.pk/story/10</link><description>${longText}</description></item></channel></rss>`,
+    });
+    useSources([src('tribune', TRIBUNE)]);
+    await runIngest();
+    const row = insertedRows()[0];
+    expect(row.title).toBe('Undated');
+    expect(Date.parse(row.publishedAt)).toBeLessThanOrEqual(Date.now());
   });
 
   it('respects maxPerSource and sourceIds', async () => {

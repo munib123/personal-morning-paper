@@ -5,7 +5,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 export async function proxy(request: NextRequest): Promise<NextResponse> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  if (!url || !key) return NextResponse.next();
+  // DEMO_FALLBACK: no session refresh (an unreachable auth host would stall every page).
+  if (!url || !key || process.env.DEMO_FALLBACK === '1') return NextResponse.next();
 
   let response = NextResponse.next({ request });
   const supabase = createServerClient(url, key, {

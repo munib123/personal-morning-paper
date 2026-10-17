@@ -3,6 +3,7 @@ import type { Profile } from '@/contracts/profile';
 import { FIXTURE_PROFILE, FIXTURE_USER_ID } from '@/contracts/fixtures';
 import { createSupabaseAdminClient } from '@/server/db/admin';
 import { asDepth, asLang, asTimeBudget } from '@/server/learn/store';
+import { isDemoFallback, snapshotGetProfile } from '@/server/demo';
 
 export const PROFILE_COLUMNS = 'user_id, display_name, paper_name, tz, city, time_budget, depth, lang, delivery_hour, is_demo, onboarded_at';
 
@@ -71,6 +72,7 @@ export async function updateProfile(userId: string, patch: ProfilePatch): Promis
 
 /** null = not onboarded (no row, or onboarded_at is null) → pages redirect('/start'). */
 export async function getProfile(userId: string): Promise<Profile | null> {
+  if (isDemoFallback()) return snapshotGetProfile(userId);
   if (isFixtureUser(userId)) return FIXTURE_PROFILE;
   const { data, error } = await createSupabaseAdminClient().from('profiles').select(PROFILE_COLUMNS).eq('user_id', userId).maybeSingle();
   if (error) throw new Error(`getProfile: ${error.message}`);

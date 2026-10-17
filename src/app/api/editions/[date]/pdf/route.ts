@@ -6,6 +6,7 @@ import { getEdition } from '@/server/edition';
 import { getEditionPdfUrl, renderAndStoreEditionPdf } from '@/server/pdf';
 import { isPaperDate } from '@/server/pdf/access';
 import { canRenderHere } from '@/server/pdf/browser';
+import { isDemoFallback } from '@/server/demo';
 
 export const maxDuration = 60;
 export const runtime = 'nodejs';
@@ -13,7 +14,7 @@ export const dynamic = 'force-dynamic';
 
 const printFallback = (date: string) => Response.json(PdfFallbackSchema.parse({ fallback: ROUTES.print(date) }), { status: 503 });
 
-export async function GET(_request: Request, { params }: { params: Promise<{ date: string }> }): Promise<Response> {
+export async function GET(request: Request, { params }: { params: Promise<{ date: string }> }): Promise<Response> {
   const { date } = await params;
   if (!isPaperDate(date)) return Response.json({ error: 'bad_date' }, { status: 400 });
 
@@ -27,6 +28,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ dat
 
   const edition = await getEdition(userId, date);
   if (!edition) return Response.json({ error: 'no_edition' }, { status: 404 });
+  if (isDemoFallback()) return edition.pdfUrl ? Response.redirect(new URL(edition.pdfUrl, request.url), 302) : printFallback(date);
 
   const stored = await getEditionPdfUrl(edition.id).catch(() => null);
   if (stored) return Response.redirect(stored, 302);

@@ -13,7 +13,8 @@ async function fetchTopics(): Promise<TopicRow[]> {
   const { data, error } = await db
     .from('topics')
     .select('slug, parent_slug, level, name, description, emoji, synonyms, embedding')
-    .order('slug');
+    .order('slug')
+    .abortSignal(AbortSignal.timeout(5_000)); // mapTextToTopics runs on a request path: never hang it
   if (error) throw new Error(`topics: ${error.message}`);
   return (data ?? []).map((r) => ({
     slug: r.slug,

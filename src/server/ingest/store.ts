@@ -1,6 +1,8 @@
 // Every Supabase read and write of the ingest lane (L1). Uses the admin (secret key) client.
 import type { Json, TablesInsert } from '@/contracts/database.types';
 import { createSupabaseAdminClient } from '@/server/db/admin';
+import { nextHealth } from './health';
+import type { ArticleStatRow } from './report';
 import type { FeedCache, IngestSource, PreparedArticle, SourceKind, SourceResult } from './types';
 
 const db = () => createSupabaseAdminClient();
@@ -108,16 +110,24 @@ export async function findExistingHashes(hashes: string[]): Promise<Set<string>>
   return found;
 }
 
+// Postgres text rejects NUL bytes, and a lone surrogate breaks the JSON body: either one fails the
+// whole 200-row chunk, so feed text is cleaned first.
+function pgText(s: string): string;
+function pgText(s: string | null): string | null;
+function pgText(s: string | null): string | null {
+  return s === null ? null : s.replace(/\u0000/g, '').toWellFormed();
+}
+
 export function toArticleRow(a: PreparedArticle): TablesInsert<'articles'> {
   return {
     source_id: a.sourceId,
     url: a.url,
     url_hash: a.urlHash,
-    title: a.title,
-    lede: a.lede,
-    content_text: a.contentText,
+    title: pgText(a.title),
+    lede: pgText(a.lede),
+    content_text: pgText(a.contentText),
     image_url: a.imageUrl,
-    author: a.author,
+    author: pgText(a.author),
     published_at: a.publishedAt,
     word_count: a.wordCount,
     lang: 'en',
@@ -183,14 +193,21 @@ export async function updateArticleImages(rows: { urlHash: string; imageUrl: str
   return updated;
 }
 
-/** Health after each fetch: last_fetched_at and the FeedCache JSON in last_status. */
+/**
+ * Health after each fetch: last_fetched_at, the FeedCache JSON in last_status, and fail_count /
+ * active from nextHealth (inactive after 5 failures in a row).
+ */
 export async function recordSourceHealth(source: IngestSource, result: SourceResult): Promise<void> {
+  const health = nextHealth(source, result.ok);
   const patch = {
     last_fetched_at: result.cache.at || new Date().toISOString(),
     last_status: JSON.stringify(result.cache),
+    fail_count: health.failCount,
+    active: health.active,
   };
   const { error } = await db().from('sources').update(patch).eq('id', source.id);
   if (error) throw new Error(`source health ${source.id}: ${error.message}`);
+  if (!health.active) console.warn(`ingest: ${source.id} deactivated after ${health.failCount} failures in a row (${result.cache.error ?? 'unknown error'})`);
 }
 
 /** Active/inactive source counts by kind (run-cli --sources). */
@@ -203,6 +220,32 @@ export async function sourceKindCounts(): Promise<Record<string, { active: numbe
     out[r.kind][r.active ? 'active' : 'inactive'] += 1;
   }
   return out;
+}
+
+// ── run-cli --report (read-only) ──────────────────────────────────────────────────────────────
+
+export const REPORT_PAGE = 1000;
+
+/** Every article's source, image and fetch time, paged with .range() (PostgREST caps a response at 1,000 rows). */
+export async function listArticleStats(): Promise<ArticleStatRow[]> {
+  const rows: ArticleStatRow[] = [];
+  for (let from = 0; ; from += REPORT_PAGE) {
+    const { data, error } = await db()
+      .from('articles')
+      .select('source_id,image_url,fetched_at')
+      .order('id', { ascending: true })
+      .range(from, from + REPORT_PAGE - 1);
+    if (error) throw new Error(`article stats: ${error.message}`);
+    rows.push(...(data ?? []));
+    if ((data ?? []).length < REPORT_PAGE) return rows;
+  }
+}
+
+/** The newest job_runs row of `job`, or null. */
+export async function latestJobRun(job: string): Promise<Record<string, unknown> | null> {
+  const { data, error } = await db().from('job_runs').select('id,job,status,started_at,finished_at,stats').eq('job', job).order('id', { ascending: false }).limit(1);
+  if (error) throw new Error(`job_runs ${job}: ${error.message}`);
+  return (data?.[0] as Record<string, unknown> | undefined) ?? null;
 }
 
 // ── job_runs: used ONLY by the cron route (§9.7: runIngest never writes job_runs) ──────────────

@@ -3,6 +3,7 @@
 import type { Candidate } from '@/contracts/engine';
 import type { Json } from '@/contracts/database.types';
 import type { EventsResult, SignalEvent, WeightDelta } from '@/contracts/signals';
+import type { StreakView } from '@/contracts/streak';
 import type { TopicSlug } from '@/contracts/taxonomy';
 import { FIXTURE_EVENTS_RESULT } from '@/contracts/fixtures';
 import { createSupabaseAdminClient } from '@/server/db/admin';
@@ -15,9 +16,22 @@ import { localDate } from '@/server/time';
 import { toastFor } from './copy';
 import { applySignal, mergeDeltas, withNames } from './signal';
 import { loadUserModel, saveUserModel } from './store';
+import { isDemoFallback, snapshotProcessSignals } from '@/server/demo';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DEFAULT_TZ = 'Asia/Karachi';
+const NEW_STREAK: StreakView = {
+  state: 'new',
+  current: 0,
+  longest: 0,
+  totalDays: 0,
+  freezesAvailable: 1,
+  todayQualified: false,
+  todayStoriesRead: 0,
+  editionComplete: false,
+  milestone: null,
+  last7: [],
+};
 
 const articleIdOf = (ev: SignalEvent): string | undefined => {
   const id = ev.articleId ?? (typeof ev.meta?.articleId === 'string' ? ev.meta.articleId : undefined);
@@ -33,10 +47,14 @@ const effectOf = (d: WeightDelta[]): string | null => {
 };
 
 export async function processSignals(userId: string, events: SignalEvent[], now: Date): Promise<EventsResult> {
+  if (isDemoFallback()) return snapshotProcessSignals(userId, events, now);
   if (isFixtureUser(userId)) return { ...FIXTURE_EVENTS_RESULT, accepted: events.length };
   const db = createSupabaseAdminClient();
   const profile = await getProfile(userId);
-  const tz = profile?.tz ?? DEFAULT_TZ;
+  // Signed in but not onboarded yet (no profile row): events.user_id references profiles, so there is
+  // nothing to log or learn into. Accept the batch and answer a fresh streak instead of failing.
+  if (!profile) return { accepted: events.length, streak: NEW_STREAK, deltas: [], toast: null };
+  const tz = profile.tz ?? DEFAULT_TZ;
   const date = localDate(now, tz);
 
   const articleIds = [...new Set(events.map(articleIdOf).filter((x): x is string => !!x))];

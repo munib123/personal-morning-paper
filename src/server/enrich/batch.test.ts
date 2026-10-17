@@ -105,6 +105,12 @@ describe('enrichBatch', () => {
     expect(text).toContain('{"items":[...]}');
   });
 
+  it('enrich instructions keep features, guides and tutorials usable', () => {
+    // The first real run lost 29 long dev tutorials and features to usable=false ("not news").
+    const text = ENRICH_INSTRUCTIONS(SLUGS);
+    for (const phrase of ['features', 'reviews', 'guides', 'tutorials', 'are usable']) expect(text, phrase).toContain(phrase);
+  });
+
   it('enrichBatch marks a missing id for re-batch', async () => {
     callLLM.mockImplementation(async (_step: string, input: { prompt: string }) => {
       const ids = idsIn(input.prompt).filter((id) => id !== 'a3');
