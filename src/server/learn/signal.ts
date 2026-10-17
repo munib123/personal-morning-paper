@@ -1,6 +1,7 @@
 // Incremental learning from one reading signal (ARCHITECTURE §10.4–10.5). PURE: returns new objects.
 //   reward r → each label × conf: r > 0 → α += r·conf, r < 0 → β += |r|·conf; parent × 0.3, grandparent × 0.1
-//   pos ← normalize((1−ηr)·pos + ηr·e), η = 0.10 (r > 0); neg likewise with |r|, η = 0.15 (r < 0); r clipped to 1
+//   pos ← normalize((1−ηr)·pos + ηr·e), η = 0.10 (r > 0); neg likewise with |r|, η = 0.15 (r < 0); r clipped to 1;
+//   implicit signals (RANK_V1_FIXED.betaOnlyTypes: impressions) move the Beta only (Ruling W3)
 import type { Candidate, InterestState, RankParams, UserModel } from '@/contracts/engine';
 import type { SignalEvent, WeightDelta } from '@/contracts/signals';
 import { ancestorsOf, type TopicNode, type TopicSlug } from '@/contracts/taxonomy';
@@ -10,6 +11,9 @@ import { thetaOf } from './theta';
 
 const ENGAGED_TYPES = new Set<SignalEvent['type']>(['open', 'read_original', 'qr_scan', 'save', 'share', 'more']);
 const ZERO_SKIPS: readonly string[] = RANK_V1_FIXED.skipZeroReasons;
+// Every shown story gets an impression, the ones she loved too: pulling `neg` toward each of them would
+// teach "less of what we showed", so implicit signals only move the Beta (Ruling W3).
+const BETA_ONLY: readonly string[] = RANK_V1_FIXED.betaOnlyTypes;
 
 /** The reward of one signal for its article (0 when there is no article to learn from). */
 export function rewardOf(ev: SignalEvent, item: Candidate | null, params: RankParams): number {
@@ -80,7 +84,7 @@ export function applySignal(model: UserModel, ev: SignalEvent, item: Candidate |
   if (!item || r === 0) return { model: next, deltas: [] };
 
   const touched = addReward(next.interests, item, r, params);
-  if (item.embedding) {
+  if (item.embedding && !BETA_ONLY.includes(ev.type)) {
     const rc = Math.min(1, Math.abs(r));
     if (r > 0) next.pos = ema(model.pos, item.embedding, params.emaEta * rc);
     else next.neg = ema(model.neg, item.embedding, params.emaEtaNeg * rc);

@@ -35,11 +35,11 @@ describe('DEFAULT_PARAMS (rank-v1)', () => {
     });
   });
 
-  it('rewards has exactly one key per SignalType, with the §10.4 values', () => {
+  it('rewards has exactly one key per SignalType, with the §10.4 values (impression and open per Ruling W3)', () => {
     expect(Object.keys(DEFAULT_PARAMS.rewards).sort()).toEqual([...SIGNAL_TYPES].sort());
     expect(DEFAULT_PARAMS.rewards).toEqual({
-      impression: -0.05,
-      open: 0.3,
+      impression: -0.25,
+      open: 0,
       dwell: 0.7,
       read_original: 0.6,
       qr_scan: 0.6,
@@ -70,6 +70,8 @@ describe('DEFAULT_PARAMS (rank-v1)', () => {
       seenEditions: 7,
       engagedDays: 14,
       engagedMax: 50,
+      centerMinPool: 20,
+      betaOnlyTypes: ['impression'],
     });
   });
 });

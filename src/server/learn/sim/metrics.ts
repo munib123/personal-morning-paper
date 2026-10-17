@@ -15,6 +15,19 @@ export function ndcgAt10(rankedTrues: number[], poolTrues: number[]): number {
   return ideal > 0 ? Math.min(1, dcg(rankedTrues) / ideal) : 0;
 }
 
+/** The base rate: share of the day's pool she truly likes (what precision@20 a random paper scores on average). */
+export function baseRate(poolTrues: number[]): number {
+  return poolTrues.length === 0 ? 0 : poolTrues.filter((t) => t >= 0.6).length / poolTrues.length;
+}
+
+/** nDCG@10 a uniformly random order scores on average: every slot holds the pool's mean affinity in expectation. */
+export function randomNdcgAt10(poolTrues: number[]): number {
+  const ideal = dcg([...poolTrues].sort((a, b) => b - a));
+  if (ideal <= 0) return 0;
+  const mean = poolTrues.reduce((s, t) => s + t, 0) / poolTrues.length;
+  return Math.min(1, dcg(poolTrues.map(() => mean)) / ideal);
+}
+
 /** Intra-list diversity: 1 − mean pairwise cosine (null embeddings skipped; < 2 vectors → 0). */
 export function diversity(embs: (Float32Array | null)[]): number {
   const vs = embs.filter((e): e is Float32Array => !!e);
