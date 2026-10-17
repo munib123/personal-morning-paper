@@ -54,6 +54,18 @@ describe('scraped boilerplate', () => {
     }
   });
 
+  it('skips a scraped navigation menu run together into one sentence', () => {
+    const nav = 'Home News Sport Weather iPlayer Sounds Bitesize CBeebies CBBC Food Home News Sport Business Technology Health';
+    const real = sentence(18, 'Arsenal');
+    const out = extractiveEnrichment({ title: TITLE, lede: null, contentText: `${nav} ${real} ${sentence(12, 'Analysts')}` });
+    expect(out.key_fact).toBe(real);
+  });
+
+  it('keeps a real sentence that starts with a few capitalised names', () => {
+    const real = 'Arsenal, Chelsea and Manchester United all won on Saturday as the title race tightened.';
+    expect(extractiveEnrichment({ title: TITLE, lede: null, contentText: real }).key_fact).toBe(real);
+  });
+
   it('falls back to the title when every sentence is boilerplate', () => {
     const out = extractiveEnrichment({ title: TITLE, lede: null, contentText: BOILER.join(' ') });
     expect(out.key_fact).toBe(TITLE);
