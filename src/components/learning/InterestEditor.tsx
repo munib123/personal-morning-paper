@@ -53,7 +53,7 @@ function WeightSlider({ row, onCommit }: { row: BarRow; onCommit: (value: number
       value={value}
       aria-label={`${row.name} weight`}
       aria-valuetext={`${value} out of 100`}
-      className="h-11 w-28 cursor-pointer accent-ink"
+      className="h-11 w-28 cursor-pointer rounded-control accent-ink outline-none focus-visible:shadow-(--focus-ring)"
       onChange={(e) => setDraft(Number(e.target.value))}
       onPointerUp={commit}
       onKeyUp={commit}
