@@ -80,7 +80,8 @@ export function MorningRecallCard({ questions, editionId }: MorningRecallCardPro
               <span className="mw-takeaway__num" aria-hidden="true">
                 {i + 1}
               </span>
-              <fieldset className="m-0 flex min-w-0 flex-col gap-2 border-0 p-0">
+              {/* Under the lead's wide column on desktop, the three answers sit side by side. */}
+              <fieldset className="m-0 grid min-w-0 gap-2 border-0 p-0 lg:grid-cols-3">
                 <legend className="headline-sm mb-2 p-0 text-ink">{q.question}</legend>
                 {q.options.map((option, oi) => {
                   const isChosen = chosen === oi;
@@ -99,7 +100,7 @@ export function MorningRecallCard({ questions, editionId }: MorningRecallCardPro
                     </Button>
                   );
                 })}
-                <div aria-live="polite">{answered ? <p className="body-sm m-0 text-ink-soft">{q.explanation}</p> : null}</div>
+                <div aria-live="polite" className="lg:col-span-3">{answered ? <p className="body-sm m-0 text-ink-soft">{q.explanation}</p> : null}</div>
               </fieldset>
             </li>
           );

@@ -114,9 +114,14 @@ export function FrontPage({ readerName, city }: FrontPageProps) {
         <h2 id="above-the-fold" className="sr-only">
           Top stories
         </h2>
-        <div className="lg:pr-6">{layout.lead ? <Story item={layout.lead} variant="lead" withDeck /> : null}</div>
-        <div className="flex flex-col gap-6 lg:pl-6">
+        {/* Morning recall sits under the lead, not in the rail: three questions of answers made the
+            rail ~600px taller than the lead at 1280px and left a blank column beside it. Phone order
+            (lead, recall, takeaways, second) is unchanged. */}
+        <div className="flex flex-col gap-8 lg:pr-6">
+          {layout.lead ? <Story item={layout.lead} variant="lead" withDeck /> : null}
           {!readOnly && edition.recall.length > 0 ? <MorningRecallCard questions={edition.recall} editionId={edition.id} /> : null}
+        </div>
+        <div className="flex flex-col gap-6 lg:pl-6">
           {takeaways.length > 0 ? <TakeawayBox items={takeaways} /> : null}
           {layout.second ? <Story item={layout.second} variant="standard" withDeck /> : null}
         </div>
