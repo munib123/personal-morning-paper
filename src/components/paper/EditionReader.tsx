@@ -9,6 +9,8 @@ import type { Feedback } from '@/components/morrow';
 import { feedbackNote, sectionLabel } from '@/components/story/format';
 import { useImageFallback } from '@/components/story/image-fallback';
 import { SkipToast, type SkipReason } from '@/components/story/SkipToast';
+import { StorySheet } from '@/components/story/StorySheet';
+import { whyActionEvent } from '@/components/story/WhyPopover';
 import type { WhyAction } from '@/components/story/WhyChip';
 import { useLiveStreak } from '@/components/streak/live';
 import type { Edition, EditionItem } from '@/contracts/edition';
@@ -25,6 +27,8 @@ const NOTE_MS = 3000;
 const SKIP_UNDO_MS = 5000;
 /** A server "Got it…" toast this soon after our own note is the same message: show it once. */
 const SERVER_ECHO_MS = 6000;
+/** The same server toast again within this window is not shown twice. */
+const SERVER_REPEAT_MS = 30_000;
 const skipToastId = (articleId: string) => `skip-${articleId}`;
 
 export interface EditionReaderProps {
@@ -40,7 +44,7 @@ export interface EditionReaderProps {
 export function EditionReader({ edition, nowIso, initialView, streak, readOnly, readerName, city }: EditionReaderProps) {
   const [state, dispatch] = useReducer(editionReducer, edition, initEditionState);
   const [view, setView] = useState<ReaderView>(initialView);
-  const [, setSheetId] = useState<string | null>(null);
+  const [sheetId, setSheetId] = useState<string | null>(null);
   const signals = useSignals(edition.id);
   const { track } = signals;
   const liveStreak = useLiveStreak(streak);
@@ -124,11 +128,16 @@ export function EditionReader({ edition, nowIso, initialView, streak, readOnly, 
     [track, edition.sectionNames, announce],
   );
 
-  // Toasts from the server (EventsResult.toast), unless it only repeats the note just shown.
+  // Toasts from the server (EventsResult.toast), unless it only repeats the note just shown or the
+  // same server line shown a moment ago (each flush returns the latest toast).
+  const serverToast = useRef<{ text: string; at: number } | null>(null);
   useEffect(() => {
     const text = signals.lastResult?.toast;
     if (!text) return;
-    if (/^got it/i.test(text) && performance.now() - noteAt.current < SERVER_ECHO_MS) return;
+    const now = performance.now();
+    if (/^got it/i.test(text) && now - noteAt.current < SERVER_ECHO_MS) return;
+    if (serverToast.current?.text === text && now - serverToast.current.at < SERVER_REPEAT_MS) return;
+    serverToast.current = { text, at: now };
     toast(text, { duration: NOTE_MS });
   }, [signals.lastResult]);
 
@@ -140,15 +149,25 @@ export function EditionReader({ edition, nowIso, initialView, streak, readOnly, 
     [track],
   );
 
+  // From the "Why this story?" popover: More / Less take the FeedbackBar's path (same note);
+  // Hide this source is its own signal (L3 mutes the source from the next paper on).
   const onWhyAction = useCallback(
     (item: EditionItem, a: WhyAction) => {
-      if (a === 'hide_source') track({ type: 'hide_source', articleId: item.article.id, meta: { sourceId: item.article.sourceId } });
-      else onFeedback(item, a);
+      if (a !== 'hide_source') {
+        onFeedback(item, a);
+        return;
+      }
+      track(whyActionEvent(a, item));
+      const note = `Got it. No more stories from ${item.article.sourceName}.`;
+      noteAt.current = performance.now();
+      toast(note, { duration: NOTE_MS });
+      announce(note);
     },
-    [track, onFeedback],
+    [track, onFeedback, announce],
   );
 
   const openSheet = useCallback((id: string) => setSheetId(id), []);
+  const sheetItem = sheetId ? (state.items.find((i) => i.article.id === sheetId) ?? null) : null;
 
   const value = useMemo<EditionContextValue>(
     () => ({ state, dispatch, signals, edition, nowIso, readOnly, view, setView, openSheet, onFeedback, onSkip, onSave, onWhyAction, liveStreak }),
@@ -160,6 +179,14 @@ export function EditionReader({ edition, nowIso, initialView, streak, readOnly, 
       <MotionConfig reducedMotion="user">
         <div ref={rootRef}>
           <FrontPage readerName={readerName} city={city} />
+          <StorySheet
+            item={sheetItem}
+            editionId={edition.id}
+            open={sheetItem !== null}
+            onOpenChange={(open) => {
+              if (!open) setSheetId(null);
+            }}
+          />
           {region}
         </div>
       </MotionConfig>

@@ -1,10 +1,16 @@
-// STUB (L0) — owner: L4. Replace freely; keep the props.
 'use client';
-
-import { useEffect, useId, useRef } from 'react';
+// The reader view (§9.6): the story in a bottom sheet with the reading column, its "why", how the
+// summary was made, the deep summary and the key fact, then the link to the original and the same
+// FeedbackBar. Opening it marks the story read, logs an open and starts the dwell timer (stopped on
+// close). Inside an EditionReader it uses the edition's handlers; elsewhere it shows content only.
+import { useEffect, useRef, type ButtonHTMLAttributes } from 'react';
+import { Button, FeedbackBar, WhyTag } from '@/components/morrow';
+import { useEditionOptional } from '@/components/paper/EditionContext';
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
 import type { EditionItem } from '@/contracts/edition';
-import { ROUTES } from '@/contracts/api';
-import { Button, Icon } from '@/components/morrow';
+import { FaithfulnessBadge } from './FaithfulnessBadge';
+import { outboundHref, readingTimeLabel, sectionLabel, timeAgo } from './format';
+import { WhyChip } from './WhyChip';
 
 export interface StorySheetProps {
   item: EditionItem | null;
@@ -13,65 +19,100 @@ export interface StorySheetProps {
   onOpenChange: (open: boolean) => void;
 }
 
-// Stub reader view: a plain floating panel (Escape, the backdrop or Close dismisses it; focus moves
-// in and back out). No focus trap: L4 swaps in the Radix sheet and the open/dwell signals.
+// Morrow's Button renders an <a> for href and passes the rest through; its props type has no target/rel.
+const NEW_TAB = { target: '_blank', rel: 'noopener noreferrer' } as unknown as ButtonHTMLAttributes<HTMLButtonElement>;
+
 export function StorySheet({ item, editionId, open, onOpenChange }: StorySheetProps) {
-  const titleId = useId();
-  const panelRef = useRef<HTMLDivElement>(null);
-  const onOpenChangeRef = useRef(onOpenChange);
-  useEffect(() => {
-    onOpenChangeRef.current = onOpenChange;
-  });
+  const ctx = useEditionOptional();
+  const openerRef = useRef<HTMLElement | null>(null);
+  const dispatch = ctx?.dispatch;
+  const track = ctx?.signals.track;
+  const startDwell = ctx?.signals.startDwell;
+  const id = item?.article.id ?? null;
+  const visible = open && id !== null;
 
-  const visible = open && item !== null;
   useEffect(() => {
-    if (!visible) return;
-    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    panelRef.current?.focus();
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onOpenChangeRef.current(false);
-    };
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      opener?.focus();
-    };
-  }, [visible]);
+    if (!visible || !id || !dispatch || !track || !startDwell) return;
+    dispatch({ type: 'markRead', articleId: id });
+    track({ type: 'open', articleId: id, meta: { mode: 'sheet' } });
+    const stop = startDwell(id, 'sheet');
+    return () => stop();
+  }, [visible, id, dispatch, track, startDwell]);
 
-  if (!visible) return null;
+  if (!item) return null;
   const a = item.article;
-  const summary = a.summary[item.tier] || a.summary.std;
+  const names = ctx?.edition.sectionNames ?? {};
+  const meta = [a.sourceName, readingTimeLabel(a.readingMinutes), ctx ? timeAgo(a.publishedAt, ctx.nowIso) : ''].filter(Boolean).join(' · ');
+  const summary = a.summary.deep || a.summary.std || a.summary.brief;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-paper/80 md:items-center md:p-6" onClick={() => onOpenChange(false)}>
-      <div
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        tabIndex={-1}
-        className="flex max-h-[85vh] w-full max-w-(--measure) flex-col gap-4 overflow-y-auto rounded-t-card border border-rule bg-paper-raised p-6 shadow-floating outline-none md:rounded-card"
-        onClick={(e) => e.stopPropagation()}
+    <Sheet open={visible} onOpenChange={onOpenChange}>
+      <SheetContent
+        side="bottom"
+        className="max-h-[90dvh] gap-0 overflow-y-auto rounded-t-card border-t border-rule bg-paper p-0 text-ink shadow-floating data-open:animate-none data-closed:animate-none"
+        // Opened without a Radix trigger, so remember what had focus ("Read here") and give it back on close.
+        onOpenAutoFocus={() => {
+          openerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        }}
+        onCloseAutoFocus={(e) => {
+          const opener = openerRef.current;
+          openerRef.current = null;
+          if (opener?.isConnected) {
+            e.preventDefault();
+            opener.focus();
+          }
+        }}
       >
-        <div className="flex items-start justify-between gap-4">
-          <p className="ui-meta pt-3 text-ink-muted">
-            {a.sourceName} · {a.readingMinutes} min read
-          </p>
-          <Button variant="ghost" icon="x" aria-label="Close" onClick={() => onOpenChange(false)} />
+        <div className="mx-auto flex w-full max-w-(--measure) flex-col gap-4 px-5 pt-10 pb-10">
+          <div>
+            <p className="kicker text-press">{sectionLabel(item.sectionSlug, names)}</p>
+            <SheetTitle className="headline-lg mt-1 text-ink">{a.headline}</SheetTitle>
+            {a.whyItMatters ? (
+              <SheetDescription className="deck mt-2 text-ink-soft">{a.whyItMatters}</SheetDescription>
+            ) : (
+              <SheetDescription className="sr-only">A story from {a.sourceName}</SheetDescription>
+            )}
+            <p className="ui-meta mt-3 text-ink-muted">{meta}</p>
+          </div>
+          {item.reasons.length > 0 ? (
+            <div>
+              <WhyTag>
+                <WhyChip reasons={item.reasons} breakdown={item.breakdown} onAction={ctx ? (w) => ctx.onWhyAction(item, w) : undefined} />
+              </WhyTag>
+            </div>
+          ) : null}
+          <div className="flex flex-col gap-2">
+            <FaithfulnessBadge provider={a.aiProvider} />
+            {summary ? <p className="body-text text-ink">{summary}</p> : null}
+          </div>
+          {a.keyFact ? (
+            <p className="body-text text-ink">
+              <span className="ui-label mr-2 text-ink-muted">Key fact</span>
+              <mark className="bg-highlight text-ink">{a.keyFact}</mark>
+            </p>
+          ) : null}
+          <Button variant="primary" full href={outboundHref(a.id, editionId)} iconRight="external" {...NEW_TAB}>
+            Read on {a.sourceDomain}
+          </Button>
+          {ctx ? (
+            <FeedbackBar
+              value={ctx.state.feedback[a.id] ?? null}
+              saved={ctx.state.saved.includes(a.id)}
+              onChange={(f) => ctx.onFeedback(item, f)}
+              onSave={(saved) => ctx.onSave(item, saved)}
+              onSkip={
+                ctx.readOnly
+                  ? undefined
+                  : () => {
+                      onOpenChange(false);
+                      ctx.onSkip(item);
+                    }
+              }
+            />
+          ) : null}
         </div>
-        <h2 id={titleId} className="headline-lg text-ink">
-          {a.headline}
-        </h2>
-        {summary ? <p className="body-text text-ink-soft">{summary}</p> : null}
-        {a.whyItMatters ? <p className="ui-text text-ink-soft">{a.whyItMatters}</p> : null}
-        <div>
-          {/* Button's markup (secondary, md, iconRight) as a plain <a>: ButtonProps has no target/rel. */}
-          <a className="mw-btn ui-button mw-btn--secondary mw-btn--md" href={ROUTES.outbound(a.id, 'web', editionId)} target="_blank" rel="noopener noreferrer">
-            <span>Read at {a.sourceName}</span>
-            <Icon name="external" size={18} />
-          </a>
-        </div>
-      </div>
-    </div>
+      </SheetContent>
+    </Sheet>
   );
 }
 
