@@ -1,4 +1,5 @@
 import { createSupabaseServerClient } from '@/server/db/server';
+import { isDemoFallback, snapshotPersonaId } from '@/server/demo';
 
 export interface SessionUser {
   userId: string;
@@ -7,6 +8,8 @@ export interface SessionUser {
 
 /** The signed-in reader (anonymous guests included), or null. Never throws: missing env reads as signed out. */
 export async function getSessionUser(): Promise<SessionUser | null> {
+  // DEMO_FALLBACK: the network is off, so the persona is the only reader and the session is hers.
+  if (isDemoFallback()) return { userId: snapshotPersonaId(), isAnonymous: false };
   try {
     const supabase = await createSupabaseServerClient();
     const { data } = await supabase.auth.getClaims();

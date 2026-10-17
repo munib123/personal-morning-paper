@@ -16,6 +16,7 @@ import { addDays, localDate } from '@/server/time';
 import { processSignals } from './signals';
 import { loadUserModel } from './store';
 import { thetaOf } from './theta';
+import { isDemoFallback, snapshotGetLearningView } from '@/server/demo';
 
 const STILL_LEARNING = 'Your paper is still learning. Read or skip a few stories and this will change.';
 const MIN_MOVE = 0.02;
@@ -40,6 +41,7 @@ export function toInterestWeights(model: UserModel, taxonomy: TopicNode[], param
 }
 
 export async function getLearningView(userId: string, sinceDays: number, now: Date): Promise<LearningView> {
+  if (isDemoFallback()) return snapshotGetLearningView(userId, sinceDays, now);
   if (isFixtureUser(userId)) return FIXTURE_LEARNING;
   const profile = await getProfile(userId);
   const today = localDate(now, profile?.tz ?? 'Asia/Karachi');
