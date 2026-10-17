@@ -47,11 +47,12 @@ export default async function SavedPage({ searchParams }: { searchParams: Search
           </Button>
         </section>
       ) : (
-        <ol className="grid gap-x-10 md:grid-cols-2" aria-label="Saved stories">
+        <ol className="grid gap-x-10 border-t border-rule md:grid-cols-2" aria-label="Saved stories">
           {stories.map((s) => {
             const a = s.article;
+            // Brief cards carry their own rule below; the list adds the one above.
             return (
-              <li key={a.id} className="border-t border-rule pt-4 pb-2">
+              <li key={a.id}>
                 <StoryCard
                   variant="brief"
                   kicker={s.section || undefined}
