@@ -196,6 +196,14 @@ describe('callLLM', () => {
     expect(sleep).toHaveBeenCalledTimes(1); // the fast call did not wait on the smart slot
   });
 
+  it('skips only the model whose pacing slot falls after the deadline', async () => {
+    vi.stubEnv('GEMINI_RPM_SMART', '4'); // SMART's next slot is 15 s after this call
+    await call('k8d', 'smart');
+    const r = await call('k8e', 'smart', 10_000); // 10 s deadline: SMART cannot start in time, FAST can
+    expect(r).toMatchObject({ provider: 'gemini', model: 'fast-test' });
+    expect(gen.smart).toHaveBeenCalledTimes(1);
+  });
+
   it('budget guard skips a model at its RPD', async () => {
     usage.set(`${pacificDay(new Date())}|fast-test`, 450);
     const r = await call('k9');
