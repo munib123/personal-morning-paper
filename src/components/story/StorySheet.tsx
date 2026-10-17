@@ -6,6 +6,7 @@
 import { useEffect, useRef, type ButtonHTMLAttributes } from 'react';
 import { Button, FeedbackBar, WhyTag } from '@/components/morrow';
 import { useEditionOptional } from '@/components/paper/EditionContext';
+import { PerspectivesPanel } from '@/components/perspectives/PerspectivesPanel';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
 import type { EditionItem } from '@/contracts/edition';
 import { FaithfulnessBadge } from './FaithfulnessBadge';
@@ -91,6 +92,7 @@ export function StorySheet({ item, editionId, open, onOpenChange }: StorySheetPr
               <mark className="bg-highlight text-ink">{a.keyFact}</mark>
             </p>
           ) : null}
+          <PerspectivesPanel clusterId={a.clusterId} sourceCount={a.alsoCoveredBy.length + 1} editionId={editionId} />
           <Button variant="primary" full href={outboundHref(a.id, editionId)} iconRight="external" {...NEW_TAB}>
             Read on {a.sourceDomain}
           </Button>
