@@ -70,6 +70,7 @@ describe('DEFAULT_PARAMS (rank-v1)', () => {
       seenEditions: 7,
       engagedDays: 14,
       engagedMax: 50,
+      centerMinPool: 20,
     });
   });
 });

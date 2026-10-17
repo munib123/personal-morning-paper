@@ -70,4 +70,5 @@ export const RANK_V1_FIXED = {
   seenEditions: 7, // items of the last 7 editions are never shown again
   engagedDays: 14, // the 'similar' chip looks back 14 days…
   engagedMax: 50, // …at up to 50 engaged articles
+  centerMinPool: 20, // cosines are taken around the pool's mean vector once it has this many embedded stories (Ruling W3)
 } as const;

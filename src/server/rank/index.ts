@@ -4,6 +4,7 @@ import type { Candidate, RankParams, RankedItem, RankingResult, UserModel } from
 import type { Slot } from '@/contracts/edition';
 import type { TopicNode, TopicSlug } from '@/contracts/taxonomy';
 import { thetaOf } from '@/server/learn/theta';
+import { centerSpace } from './center';
 import { assignTiers, layout, type Pick } from './layout';
 import { namesOf, reasonsFor } from './reasons';
 import { hashSeed, mulberry32 } from './rng';
@@ -18,14 +19,16 @@ export function buildRanking(user: UserModel, pool: Candidate[], params: RankPar
 }
 
 export function rankWithCounts(
-  user: UserModel,
-  pool: Candidate[],
+  rawUser: UserModel,
+  rawPool: Candidate[],
   params: RankParams,
   seed: string,
   now: Date,
   taxonomy: TopicNode[],
   readCounts: Record<TopicSlug, number>,
 ): RankingResult {
+  // Every cosine below is taken around the pool's mean vector (center.ts); ids, labels and scores are unchanged.
+  const { user, pool } = centerSpace(rawUser, rawPool);
   const thetaCache = new Map<TopicSlug, number>();
   const theta = (slug: TopicSlug) => {
     let v = thetaCache.get(slug);
