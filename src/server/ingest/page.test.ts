@@ -130,6 +130,17 @@ describe('enrichFromPages', () => {
     expect(out).toEqual(drafts);
   });
 
+  it('skips hosts whose og:image is always the site logo (arXiv)', async () => {
+    const paper = prepareArticle(
+      { ...draft(1, false, 200).raw, link: 'https://arxiv.org/abs/2610.01234', contentHtml: null, descriptionHtml: words(200) },
+      null,
+      now,
+    )!;
+    const out = await enrichFromPages([paper], now);
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(out).toEqual([paper]);
+  });
+
   it('a fetch that throws leaves that draft as it was', async () => {
     fetchMock.mockImplementationOnce(async () => Promise.reject(new DOMException('aborted', 'AbortError')));
     const drafts = [draft(1, false, 30), draft(2, false, 30)];
