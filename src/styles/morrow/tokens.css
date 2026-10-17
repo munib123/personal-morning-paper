@@ -1,0 +1,276 @@
+/* Morrow design tokens — GENERATED from design/project/tokens.json (Morrow v1).
+   Do not hand-edit values here; change tokens.json and regenerate.
+
+   Themes: Morning (default) on :root and [data-theme="morning"]; Night edition on [data-theme="night"].
+   With no data-theme on <html> (first visit, no JS yet) the Night values follow prefers-color-scheme.
+   [data-theme="dark"] is an alias of night: next-themes' pre-hydration script writes the unmapped
+   system value ("dark"/"light") before React maps it to "night"/"morning".
+   on-ink and link are aliases and are redeclared per theme so they resolve inside nested themes. */
+
+/* ── Colour + shadow: Morning (default) ── */
+:root,
+[data-theme="morning"] {
+  color-scheme: light;
+  --paper: #f5f0e6;
+  --paper-raised: #fbf8f2;
+  --paper-sunk: #ebe4d6;
+  --rule: #d6ccba;
+  --rule-strong: #8c8170;
+  --ink: #1b1813;
+  --ink-soft: #3a342c;
+  --ink-muted: #665c4f;
+  --on-ink: var(--paper);
+  --press: #a8281d;
+  --press-soft: #f3ddd7;
+  --on-press: #fdf9f3;
+  --pen: #1f4e80;
+  --pen-soft: #dde7f1;
+  --on-pen: #fdf9f3;
+  --highlight: #f2df96;
+  --link: var(--pen);
+  --shadow-float: 0 1px 0 #1b18130f, 0 12px 32px -12px #1b181340;
+  --focus-ring: 0 0 0 2px #f5f0e6, 0 0 0 4px #1f4e80;
+}
+
+/* ── Colour + shadow: Night edition ── */
+[data-theme="night"],
+[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #15130f;
+  --paper-raised: #1e1b16;
+  --paper-sunk: #0f0d0a;
+  --rule: #3a342b;
+  --rule-strong: #7a705f;
+  --ink: #f0e9db;
+  --ink-soft: #cfc6b6;
+  --ink-muted: #a3998a;
+  --on-ink: var(--paper);
+  --press: #f07565;
+  --press-soft: #3d1a15;
+  --on-press: #15130f;
+  --pen: #93b8e6;
+  --pen-soft: #18263a;
+  --on-pen: #15130f;
+  --highlight: #5c4c14;
+  --link: var(--pen);
+  --shadow-float: 0 12px 32px -12px #000000cc;
+  --focus-ring: 0 0 0 2px #15130f, 0 0 0 4px #93b8e6;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --paper: #15130f;
+    --paper-raised: #1e1b16;
+    --paper-sunk: #0f0d0a;
+    --rule: #3a342b;
+    --rule-strong: #7a705f;
+    --ink: #f0e9db;
+    --ink-soft: #cfc6b6;
+    --ink-muted: #a3998a;
+    --on-ink: var(--paper);
+    --press: #f07565;
+    --press-soft: #3d1a15;
+    --on-press: #15130f;
+    --pen: #93b8e6;
+    --pen-soft: #18263a;
+    --on-pen: #15130f;
+    --highlight: #5c4c14;
+    --link: var(--pen);
+    --shadow-float: 0 12px 32px -12px #000000cc;
+    --focus-ring: 0 0 0 2px #15130f, 0 0 0 4px #93b8e6;
+  }
+}
+
+/* ── Spacing, radius, layout, font families (theme-independent) ── */
+:root {
+  /* spacing (4px base) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  /* radius */
+  --radius-0: 0px;
+  --radius-1: 2px;
+  --radius-2: 6px;
+  --radius-pill: 9999px;
+  /* layout */
+  --measure: 680px;
+  --page-max: 1240px;
+  --gutter: 24px;
+  --rule-heavy: 3px;
+  /* font families */
+  --font-masthead: var(--font-unifraktur, "UnifrakturMaguntia"), "UnifrakturMaguntia", "Newsreader", Georgia, serif;
+  --font-serif: var(--font-newsreader, "Newsreader"), "Newsreader", Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-franklin, "Libre Franklin"), "Libre Franklin", "Franklin Gothic Medium", "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ── Type styles (tokens.json type.groups). Kicker, dateline and print-kicker are uppercase in CSS. ── */
+/* Masthead: Blackletter is the wordmark and nothing else. */
+.masthead {
+  font-family: var(--font-masthead);
+  font-size: 72px;
+  line-height: 1;
+  font-weight: 400;
+}
+.masthead-sm {
+  font-family: var(--font-masthead);
+  font-size: 28px;
+  line-height: 1;
+  font-weight: 400;
+}
+
+/* Headlines: Newsreader with optical sizing; tighter tracking as size grows. */
+.headline-xl {
+  font-family: var(--font-serif);
+  font-size: 52px;
+  line-height: 56px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  font-variation-settings: "opsz" 72;
+}
+.headline-lg {
+  font-family: var(--font-serif);
+  font-size: 34px;
+  line-height: 40px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  font-variation-settings: "opsz" 60;
+}
+.headline-md {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  line-height: 30px;
+  font-weight: 600;
+  font-variation-settings: "opsz" 36;
+}
+.headline-sm {
+  font-family: var(--font-serif);
+  font-size: 19px;
+  line-height: 25px;
+  font-weight: 600;
+  font-variation-settings: "opsz" 24;
+}
+.deck {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 400;
+  font-style: italic;
+  font-variation-settings: "opsz" 20;
+}
+.pull-quote {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  line-height: 36px;
+  font-weight: 500;
+  font-style: italic;
+  font-variation-settings: "opsz" 36;
+}
+
+/* Reading */
+.body-text {
+  font-family: var(--font-serif);
+  font-size: 19px;
+  line-height: 31px;
+  font-weight: 400;
+  font-variation-settings: "opsz" 16;
+}
+.body-sm {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  line-height: 25px;
+  font-weight: 400;
+  font-variation-settings: "opsz" 14;
+}
+
+/* Interface: Libre Franklin, the newspaper sans. Kicker and dateline are set uppercase in CSS. */
+.kicker {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.dateline {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.ui-label {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+}
+.ui-text {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 400;
+}
+.ui-button {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.ui-meta {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
+}
+
+/* Print (PDF): CSS px for an A4 page rendered at 96dpi (Playwright page.pdf). 12.5px is about 9.4pt, broadsheet body size. */
+.print-lead {
+  font-family: var(--font-serif);
+  font-size: 40px;
+  line-height: 42px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  font-variation-settings: "opsz" 72;
+}
+.print-headline {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  line-height: 23px;
+  font-weight: 650;
+  font-variation-settings: "opsz" 24;
+}
+.print-body {
+  font-family: var(--font-serif);
+  font-size: 12.5px;
+  line-height: 17px;
+  font-weight: 400;
+  font-variation-settings: "opsz" 10;
+}
+.print-kicker {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  line-height: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ── Mobile (usage notes): masthead 44px and headline-xl 36px/40px under 640px ── */
+@media (max-width: 640px) {
+  .masthead {
+    font-size: 44px;
+  }
+  .headline-xl {
+    font-size: 36px;
+    line-height: 40px;
+  }
+}
