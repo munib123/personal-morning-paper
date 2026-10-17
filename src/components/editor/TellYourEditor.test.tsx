@@ -27,6 +27,15 @@ function stubFetch(opts: { tell?: () => Response | Promise<Response>; apply?: ()
 
 const bodyOf = (fetchMock: ReturnType<typeof stubFetch>, i: number) => JSON.parse(String((fetchMock.mock.calls[i] as unknown as [string, RequestInit])[1].body));
 
+/** Long sentences go in as one paste: typing them key by key is slow on a machine running many lanes. */
+async function enter(text: string) {
+  await userEvent.click(screen.getByRole('textbox'));
+  await userEvent.paste(text);
+}
+
+// Multi-step flows (type, propose, apply) under a loaded machine need more than the 5 s default.
+vi.setConfig({ testTimeout: 20_000 });
+
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
@@ -49,7 +58,7 @@ describe('TellYourEditor', () => {
     const fetchMock = stubFetch({ apply: () => new Promise<Response>((r) => (release = r)) });
     const onApplied = vi.fn();
     render(<TellYourEditor onApplied={onApplied} />);
-    await userEvent.type(screen.getByRole('textbox'), TEXT);
+    await enter(TEXT);
     await userEvent.click(screen.getByRole('button', { name: 'Propose changes' }));
 
     expect(await screen.findByRole('heading', { name: 'Your editor proposes' })).toHaveFocus();
@@ -110,7 +119,7 @@ describe('TellYourEditor', () => {
   it('a failed rebuild keeps the proposal so the reader can try again', async () => {
     stubFetch({ apply: () => json({ error: 'unavailable' }, 503) });
     render(<TellYourEditor />);
-    await userEvent.type(screen.getByRole('textbox'), TEXT);
+    await enter(TEXT);
     await userEvent.click(screen.getByRole('button', { name: 'Propose changes' }));
     await userEvent.click(await screen.findByRole('button', { name: 'Make these changes' }));
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent("Couldn't rebuild your paper just now."));
@@ -121,7 +130,7 @@ describe('TellYourEditor', () => {
   it('"Not now" drops the proposal, keeps the words, and returns focus to the text box', async () => {
     stubFetch();
     render(<TellYourEditor />);
-    await userEvent.type(screen.getByRole('textbox'), TEXT);
+    await enter(TEXT);
     await userEvent.click(screen.getByRole('button', { name: 'Propose changes' }));
     await userEvent.click(await screen.findByRole('button', { name: 'Not now' }));
     expect(screen.queryByRole('list')).not.toBeInTheDocument();
@@ -132,7 +141,7 @@ describe('TellYourEditor', () => {
   it('nothing matched: says so, quotes the words it could not place, and offers no apply button', async () => {
     stubFetch({ tell: () => json({ changes: [], unmatched: ['quilting'], provider: 'keyword' }) });
     render(<TellYourEditor />);
-    await userEvent.type(screen.getByRole('textbox'), "I'm curious about quilting");
+    await enter("I'm curious about quilting");
     await userEvent.click(screen.getByRole('button', { name: 'Propose changes' }));
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Nothing to change yet.'));
     expect(screen.getByText(/couldn't place "quilting" yet/)).toBeInTheDocument();
