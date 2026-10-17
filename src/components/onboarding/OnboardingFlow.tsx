@@ -6,6 +6,7 @@ import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type
 import { Button, Masthead, OnboardingStep } from '@/components/morrow';
 import type { TopicNode } from '@/contracts/taxonomy';
 import { InterestPicker } from './InterestPicker';
+import { RoutineStep } from './RoutineStep';
 import { WelcomeStep } from './WelcomeStep';
 import { DEFAULT_DRAFT, cleanName, loadDraft, saveDraft, type DraftStep, type OnboardingDraft } from './lib/draft';
 import { MIN_PICKS, ctaLabel } from './lib/picker-state';
@@ -94,7 +95,14 @@ function Flow({ taxonomy, date, initial, persist }: OnboardingFlowProps & { init
       );
       break;
     case 4:
-      body = <OnboardingStep step={4} total={TOTAL} title="Your routine" description="This changes how much you get, not what's in it." nextLabel="Preview my paper" onNext={() => go(5)} />;
+      body = (
+        <OnboardingStep step={4} total={TOTAL} title="Your routine" description="This changes how much you get, not what's in it." nextLabel="Preview my paper" onNext={() => go(5)}>
+          {/* Enter in the city field previews the paper, like the button. */}
+          <form onSubmit={(e: FormEvent) => { e.preventDefault(); go(5); }}>
+            <RoutineStep value={{ presentation: draft.presentation, deliveryHour: draft.deliveryHour, city: draft.city }} onChange={(v) => update(v)} />
+          </form>
+        </OnboardingStep>
+      );
       break;
     case 5:
       header = <Masthead date={date} reader={cleanName(draft.name) ?? undefined} location={draft.city} edition={1} storyCount={20} />;
