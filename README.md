@@ -1,3 +1,6 @@
+## Registered mail: muneebzehel@gmail.com
+## Name: M. Muneeb Shafiq
+## Number: 0316447****
 # The Morrow: a personal morning paper
 
 **Live:** https://personal-morning-paper-three.vercel.app
