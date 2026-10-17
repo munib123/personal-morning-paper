@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>Dawn - Home</title>
+    <link>https://www.dawn.com</link>
+    <description>Pakistan's most widely read English newspaper</description>
+    <item>
+      <title>PM &amp; army chief meet</title>
+      <link>https://www.dawn.com/news/1950001/pm-army-chief-meet?utm_source=rss&amp;utm_medium=feed</link>
+      <description><![CDATA[<p>The prime minister and the army chief discussed the security situation on Saturday.</p>]]></description>
+      <content:encoded><![CDATA[<p>Prime Minister and the army chief met in Islamabad on Saturday to review the security situation along the western border, officials said after the meeting ended late in the evening.</p><p>The two leaders discussed the progress of ongoing operations, the economic outlook for the coming quarter and coordination between federal and provincial governments on counter-terrorism efforts across the country.</p><p>According to a statement issued afterwards, both sides agreed that lasting stability depends on economic recovery, regional cooperation and continued support for the families of those affected by violence, and that further meetings would be held in the coming weeks to follow up on the decisions taken today.</p>]]></content:encoded>
+      <media:content url="https://i.dawn.com/large/2026/10/a.jpg" medium="image" width="800" height="480"/>
+      <dc:creator>Staff Reporter</dc:creator>
+      <pubDate>Sat, 17 Oct 2026 09:00:00 +0500</pubDate>
+    </item>
+    <item>
+      <title>Rupee gains against the dollar</title>
+      <link>https://www.dawn.com/news/1950002</link>
+      <description>The rupee rose 0.1pc in interbank trading on Saturday.</description>
+      <media:content url="https://www.dawn.com/_img/social-default.jpg" medium="image"/>
+      <media:thumbnail url="https://i.dawn.com/thumbnail/2026/10/b.jpg"/>
+      <pubDate>Sat, 17 Oct 2026 08:00:00 +0500</pubDate>
+    </item>
+    <item>
+      <title>Karachi weather to stay hot and humid</title>
+      <link>https://www.dawn.com/news/1950003</link>
+      <description>The Met Office forecast hot and humid weather for the weekend.</description>
+      <enclosure url="https://i.dawn.com/large/2026/10/c.jpg" type="image/jpeg" length="12345"/>
+      <pubDate>Fri, 16 Oct 2026 20:00:00 +0500</pubDate>
+    </item>
+  </channel>
+</rss>
