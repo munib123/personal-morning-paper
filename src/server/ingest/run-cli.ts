@@ -2,11 +2,13 @@
 //   npx tsx src/server/ingest/run-cli.ts [--only=id1,id2] [--max=N] [--since=H]   one runIngest, prints IngestStats JSON
 //   npx tsx src/server/ingest/run-cli.ts --sources                               source counts by kind, then exits
 //   npx tsx src/server/ingest/run-cli.ts --backfill-images                       og:image for recent imageless rows
+//   npx tsx src/server/ingest/run-cli.ts --report                                coverage over all articles + latest job_runs rows
 // It reads .env.local itself (variables already in the environment win), so --env-file is optional.
 import pLimit from 'p-limit';
 import { runIngest } from './index';
 import { fetchArticlePage, PAGE_CONCURRENCY } from './page';
-import { listImageless, sourceKindCounts, updateArticleImages } from './store';
+import { summarizeArticles } from './report';
+import { latestJobRun, listArticleStats, listImageless, sourceKindCounts, updateArticleImages } from './store';
 
 try {
   process.loadEnvFile('.env.local');
@@ -14,10 +16,10 @@ try {
   // CI / Actions pass the env directly.
 }
 
-const USAGE = 'usage: run-cli.ts [--only=id1,id2] [--max=N] [--since=H] | --sources | --backfill-images';
+const USAGE = 'usage: run-cli.ts [--only=id1,id2] [--max=N] [--since=H] | --sources | --backfill-images | --report';
 
 interface CliArgs {
-  mode: 'run' | 'sources' | 'backfill';
+  mode: 'run' | 'sources' | 'backfill' | 'report';
   sourceIds?: string[];
   maxPerSource?: number;
   sinceHours?: number;
@@ -32,6 +34,10 @@ function parseArgs(argv: string[]): CliArgs {
     }
     if (arg === '--backfill-images') {
       args.mode = 'backfill';
+      continue;
+    }
+    if (arg === '--report') {
+      args.mode = 'report';
       continue;
     }
     const m = /^--(only|max|since)=(.+)$/.exec(arg);
@@ -76,6 +82,11 @@ async function main(): Promise<number> {
   }
   if (args.mode === 'backfill') {
     console.log(JSON.stringify(await backfillImages()));
+    return 0;
+  }
+  if (args.mode === 'report') {
+    console.log(JSON.stringify(summarizeArticles(await listArticleStats(), new Date())));
+    for (const job of ['ingest', 'ingest-cron']) console.log(`job_runs ${job}: ${JSON.stringify(await latestJobRun(job))}`);
     return 0;
   }
   const stats = await runIngest({ sourceIds: args.sourceIds, maxPerSource: args.maxPerSource, sinceHours: args.sinceHours });

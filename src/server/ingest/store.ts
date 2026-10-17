@@ -2,6 +2,7 @@
 import type { Json, TablesInsert } from '@/contracts/database.types';
 import { createSupabaseAdminClient } from '@/server/db/admin';
 import { nextHealth } from './health';
+import type { ArticleStatRow } from './report';
 import type { FeedCache, IngestSource, PreparedArticle, SourceKind, SourceResult } from './types';
 
 const db = () => createSupabaseAdminClient();
@@ -211,6 +212,32 @@ export async function sourceKindCounts(): Promise<Record<string, { active: numbe
     out[r.kind][r.active ? 'active' : 'inactive'] += 1;
   }
   return out;
+}
+
+// ── run-cli --report (read-only) ──────────────────────────────────────────────────────────────
+
+export const REPORT_PAGE = 1000;
+
+/** Every article's source, image and fetch time, paged with .range() (PostgREST caps a response at 1,000 rows). */
+export async function listArticleStats(): Promise<ArticleStatRow[]> {
+  const rows: ArticleStatRow[] = [];
+  for (let from = 0; ; from += REPORT_PAGE) {
+    const { data, error } = await db()
+      .from('articles')
+      .select('source_id,image_url,fetched_at')
+      .order('id', { ascending: true })
+      .range(from, from + REPORT_PAGE - 1);
+    if (error) throw new Error(`article stats: ${error.message}`);
+    rows.push(...(data ?? []));
+    if ((data ?? []).length < REPORT_PAGE) return rows;
+  }
+}
+
+/** The newest job_runs row of `job`, or null. */
+export async function latestJobRun(job: string): Promise<Record<string, unknown> | null> {
+  const { data, error } = await db().from('job_runs').select('id,job,status,started_at,finished_at,stats').eq('job', job).order('id', { ascending: false }).limit(1);
+  if (error) throw new Error(`job_runs ${job}: ${error.message}`);
+  return (data?.[0] as Record<string, unknown> | undefined) ?? null;
 }
 
 // ── job_runs: used ONLY by the cron route (§9.7: runIngest never writes job_runs) ──────────────
