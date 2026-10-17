@@ -1,6 +1,6 @@
 // L2 dev CLI (worker only, never on Vercel):
 //   npx tsx --env-file=.env.local src/server/enrich/cli.ts <command>
-//   nlp [--limit n] | recluster | extractive | enrich [--limit n] | reset-sample <n> | stats | ping
+//   nlp [--limit n] | recluster | extractive | enrich [--limit n] | reset-sample <n> | stats | ping | note-demo [--smart] | describe "<text>"
 import '../../../scripts/lib/env';
 
 import { createSupabaseAdminClient } from '@/server/db/admin';
@@ -9,7 +9,7 @@ import { pacificDay } from '@/server/ai/usage';
 import { extractiveBackfill } from './backfill';
 import { CANDIDATE_COLUMNS, enrichRows, type CandidateRow } from './run';
 
-const USAGE = 'usage: cli.ts nlp [--limit n] | recluster | extractive | enrich [--limit n] | reset-sample <n> | stats | ping';
+const USAGE = 'usage: cli.ts nlp [--limit n] | recluster | extractive | enrich [--limit n] | reset-sample <n> | stats | ping | note-demo [--smart] | describe "<text>"';
 const STATUSES = ['raw', 'embedded', 'enriched', 'fallback', 'unusable'] as const;
 
 class UsageError extends Error {}
@@ -117,6 +117,44 @@ async function main(argv: string[]): Promise<number> {
       case 'recluster': {
         const { reclusterAll } = await import('@/server/nlp/recluster');
         console.log(JSON.stringify(await reclusterAll()));
+        return 0;
+      }
+      case 'describe': {
+        const text = args.join(' ').trim();
+        if (!text) throw new UsageError('describe needs some text, e.g. describe "cricket, AI and a bit of space, no showbiz"');
+        const { mapTextToTopics } = await import('./index');
+        console.log(JSON.stringify(await mapTextToTopics(text)));
+        return 0;
+      }
+      case 'note-demo': {
+        // One FAST request (or one SMART with --smart): a real editor's note on today's real headlines.
+        const { writeEditorNote } = await import('./index');
+        const { BRAND } = await import('@/lib/brand');
+        const { data } = await createSupabaseAdminClient()
+          .from('articles')
+          .select('headline, labels')
+          .eq('status', 'enriched')
+          .order('enriched_at', { ascending: false })
+          .limit(20);
+        const headlines = (data ?? []).map((a) => ({
+          headline: a.headline ?? '',
+          section: ((a.labels as { slug: string }[] | null)?.[0]?.slug ?? 'news').split('.')[0],
+        }));
+        const result = await writeEditorNote({
+          paperName: BRAND.defaultPaperName(),
+          displayName: 'Ayesha Khan',
+          date: pacificDayNow(),
+          number: 3,
+          headlines,
+          movers: [
+            { slug: 'sports.cricket', name: 'Cricket', before: 0.4, after: 0.6 },
+            { slug: 'technical.cs.ai-ml', name: 'AI & Machine Learning', before: 0.5, after: 0.6 },
+            { slug: 'entertainment.pakistani-showbiz', name: 'Pakistani Showbiz', before: 0.5, after: 0.3 },
+          ],
+          streak: 6,
+          preferSmart: args.includes('--smart'),
+        });
+        console.log(JSON.stringify({ ...result, words: result.text.split(/\s+/).length }, null, 2));
         return 0;
       }
       case 'enrich': {

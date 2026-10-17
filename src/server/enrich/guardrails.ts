@@ -35,16 +35,18 @@ const NUMBER = /\d+(?:[.,]\d+)*/g;
 const dropThousands = (s: string) => s.replace(/(\d),(?=\d)/g, '$1');
 const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-/** Every number in `fields` appears in the source, between non-digit boundaries, ignoring thousands separators. */
-function numbersFaithful(fields: string[], source: string): boolean {
+/**
+ * `n` (thousands separators already removed) appears in the haystack as a whole number: not inside a
+ * longer one ("25" in "1250") and not as part of a decimal ("1" in "2.1").
+ */
+export function numberAppears(n: string, haystack: string): boolean {
+  return new RegExp(`(?<!\\d)(?<!\\d[.,])${escapeRegex(n)}(?!\\d)(?![.,]\\d)`).test(haystack);
+}
+
+/** Every number in `texts` appears in `source`, ignoring thousands separators. */
+export function numbersFaithful(texts: string[], source: string): boolean {
   const haystack = dropThousands(source);
-  for (const field of fields) {
-    for (const raw of field.match(NUMBER) ?? []) {
-      const n = dropThousands(raw);
-      if (!new RegExp(`(?<!\\d)${escapeRegex(n)}(?!\\d)`).test(haystack)) return false;
-    }
-  }
-  return true;
+  return texts.every((t) => (t.match(NUMBER) ?? []).every((raw) => numberAppears(dropThousands(raw), haystack)));
 }
 
 const STOPWORDS = new Set(

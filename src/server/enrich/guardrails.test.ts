@@ -53,6 +53,9 @@ describe('checkEnrichment', () => {
   it('a number must match between non-digit boundaries', () => {
     // "25" is not in the source: "1,250" normalizes to "1250", which only contains it.
     expect(check(item({ key_fact: 'The index gained 25 points.' })).failures).toContain('numbers');
+    // Nor is "1" or "2": the source only has them inside the decimal "2.1".
+    expect(check(item({ key_fact: 'The banking index rose 1 percent.' })).failures).toContain('numbers');
+    expect(check(item({ key_fact: 'The banking index rose 2 percent.' })).failures).toContain('numbers');
   });
 
   it('headline over 14 words fails', () => {
