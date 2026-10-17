@@ -195,6 +195,21 @@ describe('buildEdition', () => {
     expect(vi.mocked(db.insertEditionItems)).not.toHaveBeenCalled();
   });
 
+  it('a forced build that loses the insert race (23505) still wins: it retries as an upsert over that row', async () => {
+    vi.mocked(db.writeEditionRow)
+      .mockRejectedValueOnce(new db.DbError('writeEditionRow', '23505', 'duplicate key value violates unique constraint'))
+      .mockResolvedValueOnce('ed-race');
+    vi.mocked(db.findEditionRow).mockResolvedValueOnce(null).mockResolvedValueOnce({ id: 'ed-race', number: 1 });
+    const e = await buildEdition(U, REAL, { force: true });
+    expect(e.id).toBe('ed-race');
+    expect(e.number).toBe(3); // this build's count (2 earlier papers), not the racing row's 1
+    const calls = vi.mocked(db.writeEditionRow).mock.calls;
+    expect(calls).toHaveLength(2);
+    expect(calls[1][1]).toBe(true);
+    expect(vi.mocked(db.deleteEditionItems)).toHaveBeenCalledWith('ed-race');
+    expect(vi.mocked(db.insertEditionItems)).toHaveBeenCalledTimes(1);
+  });
+
   it('other write errors propagate', async () => {
     h.writeError = new db.DbError('writeEditionRow', '42P01', 'relation missing');
     await expect(buildEdition(U, REAL)).rejects.toThrow(/relation missing/);
