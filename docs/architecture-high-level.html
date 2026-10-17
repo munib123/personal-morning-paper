@@ -1,0 +1,193 @@
+<!doctype html>
+<!-- High-level architecture of The Morrow, in plain words. Rendered to docs/architecture-high-level.png
+     (scripts are not needed to view it: open this file in a browser). Colours and fonts are Morrow's. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Morrow: how it works</title>
+<style>
+  @font-face { font-family: 'Newsreader'; src: url('../src/app/fonts/Newsreader-Variable.woff2') format('woff2'); font-weight: 200 800; }
+  @font-face { font-family: 'Libre Franklin'; src: url('../src/app/fonts/LibreFranklin-Variable.woff2') format('woff2'); font-weight: 100 900; }
+  @font-face { font-family: 'UnifrakturMaguntia'; src: url('../src/app/fonts/UnifrakturMaguntia-Regular.woff2') format('woff2'); }
+  :root {
+    --paper: #f5f0e6; --paper-raised: #fbf8f2; --paper-sunk: #ebe4d6; --rule: #d6ccba; --rule-strong: #8c8170;
+    --ink: #1b1813; --ink-soft: #3a342c; --ink-muted: #665c4f; --press: #a8281d; --pen: #1f4e80; --pen-soft: #dde7f1;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: 'Libre Franklin', system-ui, sans-serif; }
+  .page { width: 1800px; padding: 44px 60px 48px; }
+
+  /* Masthead */
+  .mast { display: flex; align-items: flex-end; justify-content: space-between; border-bottom: 3px double var(--ink); padding-bottom: 14px; }
+  .nameplate { font-family: 'UnifrakturMaguntia', serif; font-size: 72px; line-height: 1; }
+  .mast-right { text-align: right; }
+  .kicker { font-size: 15px; letter-spacing: .14em; text-transform: uppercase; font-weight: 700; color: var(--press); }
+  .promise { font-family: 'Newsreader', serif; font-style: italic; font-size: 26px; color: var(--ink-soft); margin-top: 6px; }
+
+  /* Bands */
+  .band-label { display: flex; align-items: baseline; gap: 14px; margin: 30px 0 14px; }
+  .band-label h2 { margin: 0; font-family: 'Newsreader', serif; font-size: 30px; font-weight: 700; }
+  .band-label span { font-size: 17px; color: var(--ink-muted); }
+  .tag { font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; padding: 4px 10px; border: 1.5px solid var(--ink); border-radius: 3px; }
+  .tag.pen { color: var(--pen); border-color: var(--pen); background: var(--pen-soft); }
+
+  .row { display: flex; align-items: stretch; }
+  .card { background: var(--paper-raised); border: 1.5px solid var(--rule-strong); border-top: 4px solid var(--ink); border-radius: 4px; padding: 18px 20px 16px; display: flex; flex-direction: column; }
+  .row.newsroom .card { width: 533px; }
+  .row.paper .card { width: 390px; }
+  .card.learn { border-top-color: var(--pen); background: #f2f6fa; }
+  .num { font-family: 'Newsreader', serif; font-size: 40px; font-weight: 700; line-height: 1; color: var(--press); }
+  .card.learn .num { color: var(--pen); }
+  .card h3 { margin: 6px 0 8px; font-family: 'Newsreader', serif; font-size: 27px; line-height: 1.15; }
+  .card p { margin: 0 0 14px; font-size: 18px; line-height: 1.42; color: var(--ink-soft); flex: 1; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { font-size: 14px; font-weight: 600; padding: 4px 9px; border-radius: 3px; background: var(--paper-sunk); color: var(--ink); border: 1px solid var(--rule); }
+  .chip.pen { background: var(--pen-soft); color: var(--pen); border-color: #b9cde3; }
+  .arrow { width: 40px; display: flex; align-items: center; justify-content: center; font-size: 30px; color: var(--ink-muted); }
+
+  /* Database band */
+  .db-wrap { position: relative; margin: 18px 0 4px; }
+  .down { display: flex; justify-content: space-around; font-size: 26px; color: var(--ink-muted); height: 34px; align-items: center; }
+  .db { border: 2px solid var(--ink); border-radius: 6px; background: var(--paper-sunk); padding: 16px 24px; display: flex; align-items: center; gap: 22px; }
+  .db b { font-family: 'Newsreader', serif; font-size: 26px; white-space: nowrap; }
+  .db span { font-size: 18px; color: var(--ink-soft); }
+
+  /* Loop */
+  .paper-wrap { position: relative; padding-bottom: 74px; }
+  .loop { position: absolute; left: 0; bottom: 0; width: 1680px; height: 74px; pointer-events: none; overflow: visible; }
+  .loop-label { position: absolute; bottom: 20px; left: 815px; width: 480px; text-align: center; font-size: 19px; font-weight: 700; color: var(--pen); }
+  .loop-label span { background: var(--paper); padding: 2px 16px; }
+
+  /* Footer grid */
+  .foot { display: grid; grid-template-columns: 1.05fr 1fr 1fr; gap: 22px; margin-top: 8px; }
+  .box { border: 1.5px solid var(--rule-strong); border-radius: 4px; padding: 16px 20px; background: var(--paper-raised); }
+  .box h4 { margin: 0 0 8px; font-size: 14px; letter-spacing: .14em; text-transform: uppercase; color: var(--press); }
+  .box p, .box li { font-size: 17px; line-height: 1.45; color: var(--ink-soft); margin: 0; }
+  .box ul { margin: 0; padding-left: 20px; }
+  .result { border: 2px solid var(--pen); background: #f2f6fa; }
+  .result h4 { color: var(--pen); }
+  .big { font-family: 'Newsreader', serif; font-size: 34px; font-weight: 700; color: var(--pen); line-height: 1.1; margin: 4px 0 6px; }
+  .stack { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .credit { margin-top: 18px; display: flex; justify-content: space-between; font-size: 14px; color: var(--ink-muted); border-top: 1px solid var(--rule); padding-top: 10px; }
+</style>
+</head>
+<body>
+<div class="page" id="diagram">
+
+  <header class="mast">
+    <div>
+      <div class="kicker">High-level architecture · How it works</div>
+      <div class="nameplate">The Morrow</div>
+    </div>
+    <div class="mast-right">
+      <div class="promise">One personal newspaper every morning, built from the open web,<br>that learns from how you read.</div>
+    </div>
+  </header>
+
+  <!-- THE NEWSROOM -->
+  <div class="band-label"><span class="tag">Part 1</span><h2>The newsroom</h2><span>runs every 30 minutes · shared by every reader · this is where AI is used</span></div>
+  <div class="row newsroom">
+    <div class="card">
+      <div class="num">1</div>
+      <h3>Gather the news</h3>
+      <p>Collect fresh stories from 117 trusted sources: news sites, Hacker News, Dev.to and arXiv. Drop duplicates and anything older than two days.</p>
+      <div class="chips"><span class="chip">GitHub Actions · every 30 min</span><span class="chip">RSS feeds + APIs</span></div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="card">
+      <div class="num">2</div>
+      <h3>Understand each story</h3>
+      <p>A small AI model running on our own server turns each story into numbers (an embedding), tags its topics, and groups the same story told by different outlets.</p>
+      <div class="chips"><span class="chip">transformers.js · gte-small</span><span class="chip">67 topics</span><span class="chip">story clusters</span></div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="card">
+      <div class="num">3</div>
+      <h3>Write it up once</h3>
+      <p>Gemini writes a short summary, a key fact and a quiz question for each story: once, for everyone. If Gemini is busy, the publisher's own sentences are used.</p>
+      <div class="chips"><span class="chip">Google Gemini</span><span class="chip">Vercel AI SDK</span><span class="chip">fact checks + fallback</span></div>
+    </div>
+  </div>
+
+  <div class="db-wrap">
+    <div class="down"><span>↓</span><span>↓</span><span>↓</span></div>
+    <div class="db">
+      <b>One database</b>
+      <span>stories · topics · readers · daily papers · reading activity · PDFs</span>
+      <span style="margin-left:auto" class="chips"><span class="chip">Supabase · Postgres + pgvector</span><span class="chip">Auth</span><span class="chip">Storage</span></span>
+    </div>
+    <div class="down"><span>↓</span><span>↓</span><span>↓</span></div>
+  </div>
+
+  <!-- YOUR PAPER -->
+  <div class="band-label"><span class="tag pen">Part 2</span><h2>Your paper</h2><span>built every morning · personal to each reader · no AI calls needed</span></div>
+  <div class="paper-wrap">
+    <div class="row paper">
+      <div class="card">
+        <div class="num">4</div>
+        <h3>Tell us what you like</h3>
+        <p>Pick broad areas, then go deeper only where you want (Technical → Computer Science → AI). Or just say it in your own words.</p>
+        <div class="chips"><span class="chip">one-minute onboarding</span><span class="chip">Gemini reads your words</span></div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="card">
+        <div class="num">5</div>
+        <h3>Choose your Top 20</h3>
+        <p>A ranking engine scores about 1,700 fresh stories for you: your topics, what you read, how big and how new each story is, plus a few deliberate surprises.</p>
+        <div class="chips"><span class="chip">local math · under 50 ms</span><span class="chip">0 AI calls per reader</span></div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="card">
+        <div class="num">6</div>
+        <h3>Read it your way</h3>
+        <p>The same edition as a web paper, as a real newspaper PDF with QR codes, or read aloud. Every story links to the original.</p>
+        <div class="chips"><span class="chip">Next.js on Vercel</span><span class="chip">Puppeteer PDF</span><span class="chip">browser voice</span></div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="card learn">
+        <div class="num">7</div>
+        <h3>The paper learns</h3>
+        <p>Opening, reading time, skipping, "more" or "less", the PDF and quiz answers all update your profile at once, and the app shows what changed and why.</p>
+        <div class="chips"><span class="chip pen">"Your paper learned" page</span><span class="chip pen">Tell your editor</span></div>
+      </div>
+    </div>
+    <svg class="loop" width="1680" height="74" viewBox="0 0 1680 74" aria-hidden="true">
+      <defs><marker id="head" markerUnits="userSpaceOnUse" markerWidth="18" markerHeight="18" refX="9" refY="9" orient="auto"><path d="M2,2 L16,9 L2,16 z" fill="#1f4e80"/></marker></defs>
+      <path d="M1485,2 L1485,24 Q1485,40 1469,40 L641,40 Q625,40 625,24 L625,12" fill="none" stroke="#1f4e80" stroke-width="3" stroke-dasharray="10 7" marker-end="url(#head)"/>
+    </svg>
+    <div class="loop-label"><span>↺ Every action shapes tomorrow's paper</span></div>
+  </div>
+
+  <div class="foot">
+    <div class="box">
+      <h4>Built with</h4>
+      <div class="stack">
+        <span class="chip">Next.js 16 + React 19</span><span class="chip">Tailwind + Morrow design system</span><span class="chip">Supabase</span>
+        <span class="chip">Google Gemini</span><span class="chip">Vercel AI SDK</span><span class="chip">transformers.js</span>
+        <span class="chip">Puppeteer</span><span class="chip">Playwright</span><span class="chip">Vitest</span>
+        <span class="chip">GitHub Actions</span><span class="chip">Vercel</span><span class="chip">Claude Code</span>
+      </div>
+    </div>
+    <div class="box">
+      <h4>Safety nets</h4>
+      <ul>
+        <li>Every AI step has a plain, non-AI fallback</li>
+        <li>Gemini never blocks a page from loading</li>
+        <li>A daily budget guard keeps us inside the free tier</li>
+        <li>An offline snapshot keeps the demo running without a network</li>
+      </ul>
+    </div>
+    <div class="box result">
+      <h4>Does it really learn?</h4>
+      <div class="big">0.52 vs 0.34</div>
+      <p>Ranking quality on day 7 (nDCG@10) for the learning paper vs. a fixed profile. Simulated reader, the real day's stories, average of 5 runs.</p>
+    </div>
+  </div>
+
+  <div class="credit">
+    <span>How we built it: one developer + parallel Claude Code agents · 8 build lanes in git worktrees · shared contracts first · tests first (164 test files) · CI on every pull request · 60 merged PRs</span>
+    <span>NaSCon'26 AI Hackathon</span>
+  </div>
+</div>
+</body>
+</html>
