@@ -37,6 +37,17 @@ describe('assignLabels', () => {
     expect(labels.some((l) => l.slug === 'sports')).toBe(false);
   });
 
+  it('searches globally when the global best beats the prior subtree by 0.03 or more', () => {
+    // gte-small's cosines are compressed (unrelated texts ≈ 0.75), so the 0.30 floor never fires; a
+    // relative gap catches feeds whose items stray off their prior (a sports feed carrying world news).
+    const e = vec(1, 0, 0, 0);
+    const sport: TopicVec = { slug: 'sports.cricket', level: 2, embedding: vec(0.8, 0.6, 0, 0) }; // cos 0.80
+    const world: TopicVec = { slug: 'news.global-affairs', level: 2, embedding: vec(0.85, 0, Math.sqrt(1 - 0.85 ** 2), 0) }; // cos 0.85
+    expect(assignLabels(e, [sport, world], ['sports'])[0].slug).toBe('news.global-affairs');
+    const closeWorld: TopicVec = { slug: 'news.global-affairs', level: 2, embedding: vec(0.82, 0, Math.sqrt(1 - 0.82 ** 2), 0) }; // cos 0.82
+    expect(assignLabels(e, [sport, closeWorld], ['sports']).map((l) => l.slug)).toEqual(['sports.cricket']);
+  });
+
   it('conf is softmax(cos/0.05)', () => {
     const e = vec(1, 0, 0, 0);
     const a: TopicVec = { slug: 'science.space', level: 2, embedding: vec(0.9, Math.sqrt(1 - 0.81), 0, 0) };

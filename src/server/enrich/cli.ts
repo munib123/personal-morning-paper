@@ -1,6 +1,6 @@
 // L2 dev CLI (worker only, never on Vercel):
 //   npx tsx --env-file=.env.local src/server/enrich/cli.ts <command>
-//   nlp [--limit n] | recluster | extractive | enrich [--limit n] | reset-sample <n> | stats | ping | note-demo [--smart] | describe "<text>"
+//   nlp [--limit n] | recluster | relabel | extractive | enrich [--limit n] | reset-sample <n> | revive-unusable | stats | ping | note-demo [--smart] [--number n] | describe "<text>"
 import '../../../scripts/lib/env';
 
 import { createSupabaseAdminClient } from '@/server/db/admin';
@@ -9,7 +9,7 @@ import { pacificDay } from '@/server/ai/usage';
 import { extractiveBackfill } from './backfill';
 import { CANDIDATE_COLUMNS, enrichRows, type CandidateRow } from './run';
 
-const USAGE = 'usage: cli.ts nlp [--limit n] | recluster | extractive | enrich [--limit n] | reset-sample <n> | stats | ping | note-demo [--smart] | describe "<text>"';
+const USAGE = 'usage: cli.ts nlp [--limit n] | recluster | relabel | extractive | enrich [--limit n] | reset-sample <n> | revive-unusable | stats | ping | note-demo [--smart] [--number n] | describe "<text>"';
 const STATUSES = ['raw', 'embedded', 'enriched', 'fallback', 'unusable'] as const;
 
 class UsageError extends Error {}
@@ -50,7 +50,9 @@ async function resetSample(n: number): Promise<void> {
   if (resetError) throw new Error(resetError.message);
   const { data: rows, error: rowsError } = await db.from('articles').select(CANDIDATE_COLUMNS).in('id', ids).overrideTypes<CandidateRow[], { merge: false }>();
   if (rowsError) throw new Error(rowsError.message);
-  console.log(JSON.stringify({ reset: ids.length, ...(await enrichRows(rows ?? [], { cap: ids.length })) }));
+  const stats = await enrichRows(rows ?? [], { cap: ids.length });
+  const { geminiStatus } = await import('@/server/ai');
+  console.log(JSON.stringify({ reset: ids.length, ids, ...stats, geminiStatus: await geminiStatus() }));
 }
 
 function pacificDayNow(): string {
@@ -114,6 +116,11 @@ async function main(argv: string[]): Promise<number> {
         console.log(JSON.stringify({ result, status: await geminiStatus(), llmUsageToday: usage ?? [] }, null, 2));
         return result.provider === 'gemini' ? 0 : 1;
       }
+      case 'relabel': {
+        const { relabelAll } = await import('@/server/nlp/recluster');
+        console.log(JSON.stringify(await relabelAll()));
+        return 0;
+      }
       case 'recluster': {
         const { reclusterAll } = await import('@/server/nlp/recluster');
         console.log(JSON.stringify(await reclusterAll()));
@@ -144,7 +151,7 @@ async function main(argv: string[]): Promise<number> {
           paperName: BRAND.defaultPaperName(),
           displayName: 'Ayesha Khan',
           date: pacificDayNow(),
-          number: 3,
+          number: Number(flag(args, "number") ?? 3),
           headlines,
           movers: [
             { slug: 'sports.cricket', name: 'Cricket', before: 0.4, after: 0.6 },
@@ -169,6 +176,9 @@ async function main(argv: string[]): Promise<number> {
         await resetSample(n);
         return 0;
       }
+      case 'revive-unusable':
+        console.log(JSON.stringify({ revived: await extractiveBackfill('unusable') }));
+        return 0;
       case 'extractive':
         console.log(JSON.stringify({ fallback: await extractiveBackfill() }));
         return 0;

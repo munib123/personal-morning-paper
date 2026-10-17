@@ -89,8 +89,8 @@ describe('nlpPlan', () => {
   });
 
   it('uses the source priors for labels', () => {
-    // Closer to markets (cos 0.75) than to cricket (0.66), but the source's prior is sports.
-    const e = f(0.75, 0, 0.66);
+    // Closer to markets (cos 0.717) than to cricket (0.697), but within 0.03, and the source's prior is sports.
+    const e = f(0.7, 0, 0.68);
     const free = nlpPlan({ rows: [A], embeddings: [e], topics, priorsBySource: {}, clusters: [], now, newId: ids() });
     expect(free.articles[0].labels[0].slug).toBe('business.markets');
     const plan = nlpPlan({ rows: [A], embeddings: [e], topics, priorsBySource: { dawn: ['sports'] }, clusters: [], now, newId: ids() });
