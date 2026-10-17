@@ -113,10 +113,10 @@ export const PRINT_CSS = `
 .beyond .story { break-inside: avoid; }
 .last .brief-strip--3 { column-count: 2; }
 .brief__meta { margin-top: 1.5mm; color: var(--ink-muted); }
-.movers { display: flex; flex-direction: column; gap: 2mm; margin-top: 2.5mm; }
-.mover { display: grid; grid-template-columns: 1fr 26mm; align-items: center; column-gap: 3mm; }
-.mover__bars { display: block; width: 26mm; height: 3.2mm; }
-.mover__delta { grid-column: 1; color: var(--ink-muted); }
+.movers { display: flex; flex-direction: column; gap: 1.5mm; margin-top: 2.5mm; }
+.mover { display: grid; grid-template-columns: 1fr auto 22mm; align-items: center; column-gap: 2mm; }
+.mover__bars { display: block; width: 22mm; height: 3.2mm; grid-column: 3; grid-row: 1; }
+.mover__delta { grid-column: 2; grid-row: 1; color: var(--ink-muted); }
 .bar-track { fill: var(--paper-sunk); }
 .bar--before { fill: var(--rule-strong); }
 .bar--after { fill: var(--pen); }
