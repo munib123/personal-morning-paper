@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { Button, SectionHeader } from '@/components/morrow';
-import { InterestWeightSchema, ROUTES } from '@/contracts/api';
+import { TellYourEditorEntry } from '@/components/editor/TellYourEditor';
+import { InterestWeightSchema, LearningViewSchema, ROUTES } from '@/contracts/api';
 import type { InterestWeight } from '@/contracts/profile';
 import type { WeightDelta } from '@/contracts/signals';
 import { InterestBars } from './InterestBars';
@@ -70,6 +71,16 @@ function WeightSlider({ row, onCommit }: { row: BarRow; onCommit: (value: number
 export function InterestEditor({ weights: initial, movers = [] }: InterestEditorProps) {
   const [weights, setWeights] = useState(initial);
   const [effect, setEffect] = useState('');
+  // After "Tell your editor" rebuilds the paper, show the reader's new weights in the bars below.
+  const refreshWeights = async () => {
+    try {
+      const res = await fetch(`${ROUTES.learning}?since=7`);
+      const parsed = LearningViewSchema.safeParse(res.ok ? await res.json() : null);
+      if (parsed.success) setWeights(parsed.data.weights);
+    } catch {
+      // the bars catch up on the next visit
+    }
+  };
 
   const edit = async (row: BarRow, action: EditAction, value?: number) => {
     const before = weights;
@@ -99,8 +110,7 @@ export function InterestEditor({ weights: initial, movers = [] }: InterestEditor
   return (
     <section className="flex max-w-(--measure) flex-col gap-4">
       <SectionHeader title="Your interests" meta="pin, mute or weigh each topic" />
-      {/* Reserved for wave 2 "Tell your editor" (L2 + L7), directly above the bars. */}
-      <div data-slot="tell-your-editor" />
+      <TellYourEditorEntry onApplied={() => void refreshWeights()} />
       <p className="ui-meta min-h-[18px] text-ink-muted" aria-live="polite">
         {effect}
       </p>
