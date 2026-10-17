@@ -235,5 +235,16 @@ describe('recordSourceHealth', () => {
     const [patch] = argsOf(chain, 'update') as [Record<string, unknown>];
     expect(patch.last_fetched_at).toBe('2026-10-17T06:00:00.000Z');
     expect(JSON.parse(String(patch.last_status))).toEqual(cache);
+    expect(patch.fail_count).toBe(0);
+    expect(patch.active).toBe(true);
+  });
+
+  it('counts a failure and deactivates the source on the 5th in a row', async () => {
+    const source: IngestSource = { id: 'espn', name: 'ESPN', url: 'u', kind: 'rss', homepage: null, cache: null, failCount: 4 };
+    const cache: FeedCache = { httpStatus: 403, etag: null, lastModified: null, error: 'HTTP 403', items: 0, at: '2026-10-17T06:00:00.000Z' };
+    await recordSourceHealth(source, { sourceId: 'espn', items: [], fetched: 0, skippedOld: 0, ok: false, cache });
+    const [patch] = argsOf(chains[0], 'update') as [Record<string, unknown>];
+    expect(patch.fail_count).toBe(5);
+    expect(patch.active).toBe(false);
   });
 });

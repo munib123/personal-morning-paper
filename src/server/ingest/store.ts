@@ -1,6 +1,7 @@
 // Every Supabase read and write of the ingest lane (L1). Uses the admin (secret key) client.
 import type { Json, TablesInsert } from '@/contracts/database.types';
 import { createSupabaseAdminClient } from '@/server/db/admin';
+import { nextHealth } from './health';
 import type { FeedCache, IngestSource, PreparedArticle, SourceKind, SourceResult } from './types';
 
 const db = () => createSupabaseAdminClient();
@@ -183,14 +184,21 @@ export async function updateArticleImages(rows: { urlHash: string; imageUrl: str
   return updated;
 }
 
-/** Health after each fetch: last_fetched_at and the FeedCache JSON in last_status. */
+/**
+ * Health after each fetch: last_fetched_at, the FeedCache JSON in last_status, and fail_count /
+ * active from nextHealth (inactive after 5 failures in a row).
+ */
 export async function recordSourceHealth(source: IngestSource, result: SourceResult): Promise<void> {
+  const health = nextHealth(source, result.ok);
   const patch = {
     last_fetched_at: result.cache.at || new Date().toISOString(),
     last_status: JSON.stringify(result.cache),
+    fail_count: health.failCount,
+    active: health.active,
   };
   const { error } = await db().from('sources').update(patch).eq('id', source.id);
   if (error) throw new Error(`source health ${source.id}: ${error.message}`);
+  if (!health.active) console.warn(`ingest: ${source.id} deactivated after ${health.failCount} failures in a row (${result.cache.error ?? 'unknown error'})`);
 }
 
 /** Active/inactive source counts by kind (run-cli --sources). */
