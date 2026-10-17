@@ -91,10 +91,14 @@ beforeEach(() => {
   vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'http://127.0.0.1:9');
   vi.stubEnv('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY', 'sb_publishable_test');
   vi.stubEnv('SUPABASE_SECRET_KEY', 'sb_secret_test');
+  // postgrest-js retries idempotent reads with backoff (~7 s per lookup on a dead host). A fast,
+  // non-retryable 400 makes every DB read fail at once and deterministically.
+  vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ message: 'db unavailable in tests' }), { status: 400, headers: { 'content-type': 'application/json' } })));
 });
 
 afterEach(() => {
   vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
 });
 
 describe('every §9.2 route answers with its contract (or a sanctioned error, never a 500)', () => {
