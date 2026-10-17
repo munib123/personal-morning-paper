@@ -7,6 +7,7 @@ import { DemoControls } from '@/components/streak/DemoControls';
 import { SettingsPanel } from '@/components/streak/SettingsPanel';
 import { StreakPanel } from '@/components/streak/StreakPanel';
 import { FastForward } from './FastForward';
+import { InterestEditor } from './InterestEditor';
 import { LearnedTab } from './LearnedTab';
 import { ME_TABS, nextTab, type MeData, type MeTab } from './me-tabs';
 
@@ -86,7 +87,7 @@ function panel(tab: MeTab, data: MeData): ReactNode {
         />
       );
     case 'interests':
-      return <p className="ui-text text-ink-soft">Your interests, with their weights.</p>;
+      return <InterestEditor weights={data.learning?.weights ?? []} movers={data.learning?.movers ?? []} />;
     case 'streak':
       return (
         <div className="flex flex-col gap-10">
