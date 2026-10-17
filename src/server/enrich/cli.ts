@@ -1,6 +1,6 @@
 // L2 dev CLI (worker only, never on Vercel):
 //   npx tsx --env-file=.env.local src/server/enrich/cli.ts <command>
-//   nlp [--limit n] | recluster | extractive | enrich [--limit n] | reset-sample <n> | revive-unusable | stats | ping | note-demo [--smart] | describe "<text>"
+//   nlp [--limit n] | recluster | relabel | extractive | enrich [--limit n] | reset-sample <n> | revive-unusable | stats | ping | note-demo [--smart] | describe "<text>"
 import '../../../scripts/lib/env';
 
 import { createSupabaseAdminClient } from '@/server/db/admin';
@@ -9,7 +9,7 @@ import { pacificDay } from '@/server/ai/usage';
 import { extractiveBackfill } from './backfill';
 import { CANDIDATE_COLUMNS, enrichRows, type CandidateRow } from './run';
 
-const USAGE = 'usage: cli.ts nlp [--limit n] | recluster | extractive | enrich [--limit n] | reset-sample <n> | revive-unusable | stats | ping | note-demo [--smart] | describe "<text>"';
+const USAGE = 'usage: cli.ts nlp [--limit n] | recluster | relabel | extractive | enrich [--limit n] | reset-sample <n> | revive-unusable | stats | ping | note-demo [--smart] | describe "<text>"';
 const STATUSES = ['raw', 'embedded', 'enriched', 'fallback', 'unusable'] as const;
 
 class UsageError extends Error {}
@@ -113,6 +113,11 @@ async function main(argv: string[]): Promise<number> {
         const { data: usage } = await createSupabaseAdminClient().from('llm_usage').select('*').eq('usage_day', pacificDayNow());
         console.log(JSON.stringify({ result, status: await geminiStatus(), llmUsageToday: usage ?? [] }, null, 2));
         return result.provider === 'gemini' ? 0 : 1;
+      }
+      case 'relabel': {
+        const { relabelAll } = await import('@/server/nlp/recluster');
+        console.log(JSON.stringify(await relabelAll()));
+        return 0;
       }
       case 'recluster': {
         const { reclusterAll } = await import('@/server/nlp/recluster');

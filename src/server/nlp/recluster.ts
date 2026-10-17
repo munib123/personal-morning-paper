@@ -4,8 +4,43 @@ import pLimit from 'p-limit';
 import { createSupabaseAdminClient } from '@/server/db/admin';
 import { parseVector, toPgVector } from '@/server/db/vector';
 import { requestNow } from '@/server/time';
+import { assignLabels } from './labels';
 import { chunk, selectPaged } from './paged';
 import { nlpPlan } from './plan';
+import { loadTopics } from './topics';
+
+/**
+ * Recomputes the zero-shot labels of every embedded article that Gemini has not labelled (status other
+ * than 'enriched'), for when the label rules change. Writes only the rows whose labels changed.
+ */
+export async function relabelAll(): Promise<{ articles: number; changed: number; ms: number }> {
+  const started = Date.now();
+  const db = createSupabaseAdminClient();
+  const topics = (await loadTopics()).flatMap((t) => (t.embedding ? [{ slug: t.slug, level: t.level, embedding: t.embedding }] : []));
+  const { data: sources, error } = await db.from('sources').select('id, topics');
+  if (error) throw new Error(`sources: ${error.message}`);
+  const priors = new Map((sources ?? []).map((s) => [s.id, s.topics ?? []]));
+  const rows = await selectPaged((from, to) =>
+    db.from('articles').select('id, source_id, labels, embedding').not('embedding', 'is', null).neq('status', 'enriched').order('id').range(from, to),
+  );
+  const limit = pLimit(10);
+  let changed = 0;
+  await Promise.all(
+    rows.map((r) =>
+      limit(async () => {
+        const e = parseVector(r.embedding);
+        if (!e) return;
+        const labels = assignLabels(e, topics, priors.get(r.source_id) ?? []);
+        if (JSON.stringify(labels.map((l) => l.slug)) === JSON.stringify((r.labels as { slug: string }[]).map((l) => l.slug))) return;
+        // Never overwrite Gemini's labels, even if the row was enriched while this ran.
+        const { error: updateError } = await db.from('articles').update({ labels }).eq('id', r.id).neq('status', 'enriched');
+        if (updateError) throw new Error(`articles update ${r.id}: ${updateError.message}`);
+        changed++;
+      }),
+    ),
+  );
+  return { articles: rows.length, changed, ms: Date.now() - started };
+}
 
 export async function reclusterAll(): Promise<{ articles: number; clusters: number; multiSource: number; deleted: number; ms: number }> {
   const started = Date.now();
