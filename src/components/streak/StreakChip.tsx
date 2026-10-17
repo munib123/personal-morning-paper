@@ -6,7 +6,9 @@ import { ROUTES, StreakResponseSchema } from '@/contracts/api';
 import type { StreakView } from '@/contracts/streak';
 import { chipLabel, chipText } from './copy';
 import { useLiveStreak } from './live';
+import { AtRiskNote } from './AtRiskNote';
 import { MilestoneToast } from './MilestoneToast';
+import { useHideStreak } from './prefs';
 import { StreakSheet } from './StreakSheet';
 
 export interface StreakChipProps {
@@ -20,6 +22,7 @@ export function StreakChip({ streak }: StreakChipProps) {
   const [fetched, setFetched] = useState<StreakView | null>(null);
   const [open, setOpen] = useState(false);
   const v = useLiveStreak(streak ?? fetched);
+  const [hidden] = useHideStreak(); // the reader can hide the streak in Streak & settings
 
   useEffect(() => {
     if (streak) return;
@@ -34,7 +37,7 @@ export function StreakChip({ streak }: StreakChipProps) {
     return () => ctrl.abort();
   }, [streak]);
 
-  if (!v) return null;
+  if (!v || hidden) return null;
   return (
     <>
       <Button variant="ghost" aria-label={chipLabel(v)} aria-haspopup="dialog" aria-expanded={open} data-state={v.state} onClick={() => setOpen(true)}>
@@ -42,6 +45,7 @@ export function StreakChip({ streak }: StreakChipProps) {
       </Button>
       <StreakSheet open={open} onOpenChange={setOpen} streak={v} />
       <MilestoneToast streak={v} />
+      <AtRiskNote streak={v} />
     </>
   );
 }

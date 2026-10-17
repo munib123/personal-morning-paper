@@ -3,9 +3,11 @@ import type { Edition, EditionItem, Slot } from '@/contracts/edition';
 import { rootOf, type TopicSlug } from '@/contracts/taxonomy';
 import {
   DEFAULT_BUDGETS,
+  INNER_BRIEFS_MAX,
   INNER_PAGE_CAPACITY,
   MAX_INNER_PAGES,
   RAIL_MAX,
+  SPARSE_PAGE_MAX,
   TEASER_COUNT,
   type InnerPage,
   type PrintLayout,
@@ -50,9 +52,15 @@ export function buildPrintLayout(edition: Edition, budgets: WordBudgets = DEFAUL
     }
   }
   briefs.sort(byRank);
+  // Pages with few stories carry a strip of briefs, so the paper fills its sheets and the last page stays light.
+  for (const page of inner) {
+    if (page.items.length <= SPARSE_PAGE_MAX && briefs.length > 0) page.briefs = briefs.splice(0, INNER_BRIEFS_MAX);
+  }
 
   return { lead, rail, inner, beyond, briefs, budgets: { ...budgets } };
 }
+
+const innerBriefs = (page: InnerPage) => page.briefs ?? [];
 
 export function pageCount(layout: PrintLayout): number {
   return 2 + layout.inner.length;
@@ -62,27 +70,28 @@ export function pageCount(layout: PrintLayout): number {
 export function pageOf(layout: PrintLayout, articleId: string): number {
   const is = (i: EditionItem) => i.article.id === articleId;
   if (is(layout.lead) || layout.rail.some(is)) return 1;
-  const k = layout.inner.findIndex((p) => p.items.some(is));
+  const k = layout.inner.findIndex((p) => p.items.some(is) || innerBriefs(p).some(is));
   if (k >= 0) return k + 2;
   if (layout.beyond.some(is) || layout.briefs.some(is)) return pageCount(layout);
   return 0;
 }
 
-/** Pointers for the front-page teaser row: section leads first, then other inner stories, then briefs. */
+/** Pointers for the front-page teaser row: section leads first, then other inner stories, then briefs (by page). */
 export function teasers(layout: PrintLayout): { item: EditionItem; page: number }[] {
   const out: { item: EditionItem; page: number }[] = [];
   layout.inner.forEach((p, k) => out.push({ item: p.items[0], page: k + 2 }));
   layout.inner.forEach((p, k) => p.items.slice(1).forEach((item) => out.push({ item, page: k + 2 })));
+  layout.inner.forEach((p, k) => innerBriefs(p).forEach((item) => out.push({ item, page: k + 2 })));
   const last = pageCount(layout);
   layout.briefs.forEach((item) => out.push({ item, page: last }));
   return out.slice(0, TEASER_COUNT);
 }
 
-/** The "Inside" index: one row per inner page, then In brief on the last page. */
+/** The "Inside" index: one row per inner page, then the last page (Beyond your usual, else In brief). */
 export function insideIndex(edition: Edition, layout: PrintLayout): { label: string; page: number }[] {
   return [
     ...layout.inner.map((p, k) => ({ label: sectionName(edition, p.root), page: k + 2 })),
-    { label: 'In brief', page: pageCount(layout) },
+    { label: layout.beyond.length > 0 ? 'Beyond your usual' : 'In brief', page: pageCount(layout) },
   ];
 }
 
@@ -94,7 +103,7 @@ export function pickSummary(item: EditionItem, role: StoryRole, budgets: WordBud
     case 'lead':
       return clampWords(pick(s.deep, s.std, s.brief), budgets.lead);
     case 'rail':
-      return clampWords(pick(s.std, s.brief), budgets.rail);
+      return clampWords(pick(s.brief, s.std), budgets.rail);
     case 'section-lead':
       return clampWords(item.tier === 'deep' ? pick(s.deep, s.std, s.brief) : pick(s.std, s.brief), budgets.sectionLead);
     case 'secondary':
@@ -126,7 +135,7 @@ export function shrinkLayout(layout: PrintLayout, overflowingPages: number[]): P
   const next: PrintLayout = {
     ...layout,
     rail: [...layout.rail],
-    inner: layout.inner.map((p) => ({ ...p, items: [...p.items] })),
+    inner: layout.inner.map((p) => ({ ...p, items: [...p.items], briefs: [...innerBriefs(p)] })),
     beyond: [...layout.beyond],
     briefs: [...layout.briefs],
     budgets: { ...layout.budgets },
@@ -138,7 +147,7 @@ export function shrinkLayout(layout: PrintLayout, overflowingPages: number[]): P
       if (next.budgets.lead > 120) {
         next.budgets.lead = 120;
         changed = true;
-      } else if (next.rail.length > 1) {
+      } else if (next.rail.length > 0) {
         next.briefs.unshift(next.rail.pop()!);
         changed = true;
       }
@@ -152,7 +161,10 @@ export function shrinkLayout(layout: PrintLayout, overflowingPages: number[]): P
       }
     } else if (p >= 2 && p < last) {
       const page = next.inner[p - 2];
-      if (page && page.items.length > 1) {
+      if (page?.briefs?.length) {
+        next.briefs.unshift(page.briefs.pop()!);
+        changed = true;
+      } else if (page && page.items.length > 1) {
         next.briefs.unshift(page.items.pop()!);
         changed = true;
       }
@@ -185,7 +197,7 @@ export function shortLink(href: string): string {
 
 /** Distinct outlets across every printed story (the footer's "from N sources"). */
 export function countSources(layout: PrintLayout): number {
-  const all = [layout.lead, ...layout.rail, ...layout.inner.flatMap((p) => p.items), ...layout.beyond, ...layout.briefs];
+  const all = [layout.lead, ...layout.rail, ...layout.inner.flatMap((p) => [...p.items, ...innerBriefs(p)]), ...layout.beyond, ...layout.briefs];
   return new Set(all.map((i) => i.article.sourceName)).size;
 }
 

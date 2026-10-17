@@ -1,21 +1,39 @@
 // L0 smoke test for the §9.3 server stubs. Each owner deletes or adapts the case for their module when replacing its stub.
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import { SIGNAL_TYPES } from '@/contracts/signals';
+import { FIXTURE_USER_ID } from '@/contracts/fixtures';
 import { callLLM, geminiStatus } from '@/server/ai';
+import { __setUsageStore } from '@/server/ai/usage';
 import { buildEdition, getEdition } from '@/server/edition';
 import { writeEditorNote, type EditorNoteInput } from '@/server/enrich';
 import { DEFAULT_PARAMS, RANK_VERSION } from '@/server/rank';
 
-const USER_ID = '00000000-0000-4000-8000-000000000001';
 
 afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllEnvs();
 });
 
-describe('ai stub (L2)', () => {
+describe('ai (L2) with no Gemini key and no database', () => {
+  // The real geminiStatus() reads today's llm_usage row through Supabase. CI only has a placeholder
+  // project, where that read retries for seconds, so these cases run against an in-memory store.
+  const usage = new Map<string, number>();
+  beforeEach(() => {
+    usage.clear();
+    __setUsageStore({
+      get: async (day, model) => usage.get(`${day}|${model}`) ?? 0,
+      add: async (day, model, d) => {
+        const n = (usage.get(`${day}|${model}`) ?? 0) + d.requests;
+        usage.set(`${day}|${model}`, n);
+        return n;
+      },
+    });
+  });
+  afterEach(() => __setUsageStore(null));
+
   it('callLLM returns the fallback without calling fetch', async () => {
+    vi.stubEnv('GEMINI_API_KEY', '');
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() => Promise.reject(new Error('fetch must not be called')));
     const fallback = vi.fn(() => ({ note: 'template note' }));
     const res = await callLLM('editor_note', { instructions: 'i', prompt: 'p' }, z.object({ note: z.string() }), { fallback, model: 'smart' });
@@ -42,15 +60,17 @@ describe('rank stub (L3)', () => {
   });
 });
 
-describe('edition stub (L3)', () => {
+// L3 replaced its stub (adapted by L3): real readers hit Supabase (covered in src/server/edition); the
+// fixture reader (FIXTURE_USER_ID) keeps the L0 fixtures, so other lanes' stub pages keep rendering.
+describe('edition (L3) fixture mode', () => {
   it('buildEdition resolves to an edition with 20 items', async () => {
-    const edition = await buildEdition(USER_ID, new Date('2026-10-17T02:00:00Z'));
+    const edition = await buildEdition(FIXTURE_USER_ID, new Date('2026-10-17T02:00:00Z'));
     expect(edition.items).toHaveLength(20);
   });
 
   it('getEdition resolves the fixture for 2026-10-17 and null for any other date', async () => {
-    await expect(getEdition(USER_ID, '1999-01-01')).resolves.toBeNull();
-    expect((await getEdition(USER_ID, '2026-10-17'))?.date).toBe('2026-10-17');
+    await expect(getEdition(FIXTURE_USER_ID, '1999-01-01')).resolves.toBeNull();
+    expect((await getEdition(FIXTURE_USER_ID, '2026-10-17'))?.date).toBe('2026-10-17');
   });
 });
 

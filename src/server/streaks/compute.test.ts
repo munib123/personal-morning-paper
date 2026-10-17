@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeStreak, type DayRecord } from './compute';
+import { computeStreak, INITIAL_FREEZE, type DayRecord, type FreezeState } from './compute';
 
 const T = '2026-10-17';
 
@@ -17,7 +17,7 @@ describe('computeStreak', () => {
     const { view, lastStreakDate } = computeStreak([], T);
     expect(view.state).toBe('new');
     expect(view.current).toBe(0);
-    expect(view.freezesAvailable).toBe(0);
+    expect(view.freezesAvailable).toBe(1);
     expect(view.todayStoriesRead).toBe(0);
     expect(view.editionComplete).toBe(false);
     expect(view.last7).toHaveLength(7);
@@ -76,16 +76,61 @@ describe('computeStreak', () => {
     expect(computeStreak(reads('2026-10-10', '2026-10-16'), T).view.milestone).toBeNull();
   });
 
-  it('a missed day breaks the streak', () => {
-    const { view, lastStreakDate } = computeStreak(reads('2026-10-10', '2026-10-15'), T, 9);
-    expect(view.state).toBe('broken');
-    expect(view.current).toBe(0);
-    expect(view.longest).toBe(6);
-    expect(view.totalDays).toBe(6);
+  it('auto-applies a freeze', () => {
+    const { view, autoFrozen, freeze } = computeStreak(reads('2026-10-10', '2026-10-15'), T, 9);
+    expect(view.state).toBe('frozen');
+    expect(view.current).toBe(6);
     expect(view.freezesAvailable).toBe(0);
-    expect(view.last7[5]).toEqual({ date: '2026-10-16', status: 'missed' });
-    expect(view.last7[4]).toEqual({ date: '2026-10-15', status: 'read' });
-    expect(lastStreakDate).toBe('2026-10-15');
+    expect(freeze.available).toBe(0);
+    expect(autoFrozen).toEqual(['2026-10-16']);
+    expect(view.last7[5]).toEqual({ date: '2026-10-16', status: 'frozen' });
+    const persisted = computeStreak([...reads('2026-10-10', '2026-10-15'), { date: '2026-10-16', status: 'frozen', qualifyingReads: 0, storiesRead: 0, editionComplete: false }], T, 9);
+    expect(persisted.view).toEqual(view);
+    expect(persisted.autoFrozen).toEqual([]);
+  });
+
+  it('earns a freeze every 7 days, capped at 2', () => {
+    const none: FreezeState = { available: 0, progress: 0, lastRepairDate: null };
+    expect(computeStreak(reads('2026-10-11', '2026-10-17'), T, 12, none).view.freezesAvailable).toBe(1);
+    expect(computeStreak(reads('2026-10-04', '2026-10-17'), T).view.freezesAvailable).toBe(2);
+    expect(INITIAL_FREEZE).toEqual({ available: 1, progress: 0, lastRepairDate: null });
+  });
+
+  it('repairable yesterday', () => {
+    const none: FreezeState = { available: 0, progress: 0, lastRepairDate: null };
+    const held = computeStreak(reads('2026-10-11', '2026-10-15'), T, 12, none);
+    expect(held.view.state).toBe('repairable');
+    expect(held.view.current).toBe(5);
+    expect(held.repairableDate).toBe('2026-10-16');
+    const repaired: DayRecord = { date: '2026-10-16', status: 'repaired', qualifyingReads: 0, storiesRead: 0, editionComplete: false };
+    const after = computeStreak([...reads('2026-10-11', '2026-10-15'), repaired], T, 12, none);
+    expect(after.view).toMatchObject({ state: 'pending', current: 6 });
+    expect(after.view.last7[5]).toEqual({ date: '2026-10-16', status: 'repaired' });
+    const today = computeStreak([...reads('2026-10-11', '2026-10-15'), repaired, ...reads(T, T)], T, 12, none);
+    expect(today.view).toMatchObject({ state: 'done_today', current: 7, milestone: 7, totalDays: 6 });
+  });
+
+  it('repairable within 48 h', () => {
+    const none: FreezeState = { available: 0, progress: 0, lastRepairDate: null };
+    const within = computeStreak([...reads('2026-10-10', '2026-10-14'), ...reads('2026-10-16', '2026-10-16')], T, 12, none);
+    expect(within.view).toMatchObject({ state: 'repairable', current: 6 });
+    expect(within.repairableDate).toBe('2026-10-15');
+    const late = computeStreak([...reads('2026-10-09', '2026-10-13'), ...reads('2026-10-15', '2026-10-16')], T, 12, none);
+    expect(late.view).toMatchObject({ state: 'pending', current: 2, longest: 5 });
+    expect(late.repairableDate).toBeNull();
+  });
+
+  it('repair cooldown 14 days', () => {
+    const recent = computeStreak(reads('2026-10-11', '2026-10-15'), T, 12, { available: 0, progress: 0, lastRepairDate: '2026-10-08' });
+    expect(recent.view).toMatchObject({ state: 'broken', current: 0, longest: 5 });
+    const old = computeStreak(reads('2026-10-11', '2026-10-15'), T, 12, { available: 0, progress: 0, lastRepairDate: '2026-10-02' });
+    expect(old.view.state).toBe('repairable');
+  });
+
+  it('two misses after the freeze runs out break the streak', () => {
+    const { view, autoFrozen } = computeStreak(reads('2026-10-10', '2026-10-13'), T);
+    expect(view).toMatchObject({ state: 'broken', current: 0, longest: 4, totalDays: 4 });
+    expect(autoFrozen).toEqual(['2026-10-14']);
   });
 
   it('broken keeps longest and totalDays', () => {

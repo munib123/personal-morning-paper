@@ -1,12 +1,12 @@
-// STUB (L0) — owner: L3. Replace freely; keep the signature.
-import { FIXTURE_USER_ID } from '@/contracts/fixtures';
+// GET /api/editions/today (L3, §9.2) → today's Edition, built on first open.
+import { requireUser } from '@/server/auth/session';
 import { buildEdition } from '@/server/edition';
+import { route } from '@/server/edition/http';
 import { requestNow } from '@/server/time';
 
 export const maxDuration = 60;
 
-// GET → today's Edition, built if missing (a reader never waits for a cron).
-// Real version: requireUser(). Stub: no auth; buildEdition returns the fixture edition.
-export async function GET(): Promise<Response> {
-  return Response.json(await buildEdition(FIXTURE_USER_ID, await requestNow()));
-}
+export const GET = route(async () => {
+  const { userId } = await requireUser();
+  return Response.json(await buildEdition(userId, await requestNow()));
+});
