@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom">
+  <id>https://arxiv.org/api/cs-ai-latest</id>
+  <title>arXiv Query: search_query=cat:cs.AI&amp;id_list=&amp;start=0&amp;max_results=10</title>
+  <updated>2026-10-17T00:00:00-04:00</updated>
+  <link href="https://arxiv.org/api/query?search_query=cat:cs.AI&amp;start=0&amp;max_results=10" type="application/atom+xml"/>
+  <opensearch:totalResults>98765</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <opensearch:itemsPerPage>10</opensearch:itemsPerPage>
+  <entry>
+    <id>http://arxiv.org/abs/2610.01234v2</id>
+    <updated>2026-10-16T17:59:59Z</updated>
+    <published>2026-10-15T17:59:59Z</published>
+    <title>Sparse
+  Attention</title>
+    <summary>  We study sparse attention for long-context language models and show that a learned routing of
+  tokens to a small set of memory slots keeps accuracy within one point of dense attention while cutting
+  memory use by a factor of eight on documents of up to one million tokens.
+</summary>
+    <author>
+      <name>Ada Lovelace</name>
+    </author>
+    <author>
+      <name>Alan Turing</name>
+    </author>
+    <arxiv:comment>12 pages, 4 figures</arxiv:comment>
+    <link href="http://arxiv.org/abs/2610.01234v2" rel="alternate" type="text/html"/>
+    <link title="pdf" href="http://arxiv.org/pdf/2610.01234v2" rel="related" type="application/pdf"/>
+    <arxiv:primary_category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2610.05678v1</id>
+    <updated>2026-10-16T12:00:00Z</updated>
+    <published>2026-10-16T12:00:00Z</published>
+    <title>Agents That Check Their Own Work</title>
+    <summary>We present a verifier loop for tool-using agents that catches most planning errors before execution.</summary>
+    <author>
+      <name>Grace Hopper</name>
+    </author>
+    <link href="http://arxiv.org/abs/2610.05678v1" rel="alternate" type="text/html"/>
+    <link title="pdf" href="http://arxiv.org/pdf/2610.05678v1" rel="related" type="application/pdf"/>
+    <arxiv:primary_category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+  </entry>
+</feed>

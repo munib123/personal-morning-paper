@@ -93,6 +93,59 @@ describe('feedback notes', () => {
   });
 });
 
+describe('server toasts', () => {
+  it('shows EventsResult.toast once, not on every flush that repeats it', () => {
+    const view = renderReader();
+    const result = { accepted: 1, streak: FIXTURE_STREAK, deltas: [], toast: 'You reached a 7-day streak.' };
+    const rerenderWith = (r: typeof result) => {
+      (signals as { lastResult: unknown }).lastResult = r;
+      view.rerender(
+        <EditionReader
+          edition={FIXTURE_EDITION}
+          nowIso={FIXTURE_EDITION.createdAt}
+          initialView="front"
+          streak={FIXTURE_STREAK}
+          readOnly={false}
+          readerName="Ayesha"
+          city="Lahore"
+        />,
+      );
+    };
+    rerenderWith(result);
+    rerenderWith({ ...result });
+    rerenderWith({ ...result, toast: 'Something new.' });
+    expect(sonner.toast.mock.calls.map((c) => c[0])).toEqual(['You reached a 7-day streak.', 'Something new.']);
+    (signals as { lastResult: unknown }).lastResult = null;
+  });
+});
+
+describe('why popover and story sheet', () => {
+  it('why popover actions reuse the feedback path; Hide this source is its own signal', () => {
+    renderReader();
+    fireEvent.click(within(storyOf(lead.article.id)).getByRole('button', { name: /why this story/i }));
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'More like this' }));
+    expect(signals.track).toHaveBeenCalledWith({ type: 'more', articleId: lead.article.id });
+    expect(sonner.toast).toHaveBeenCalledWith(`Got it. More ${leadSection} tomorrow.`, expect.anything());
+    fireEvent.click(within(storyOf(lead.article.id)).getByRole('button', { name: /why this story/i }));
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Hide this source' }));
+    expect(signals.track).toHaveBeenCalledWith({ type: 'hide_source', articleId: lead.article.id, meta: { sourceId: lead.article.sourceId } });
+  });
+
+  it('Read here opens the story sheet, which marks the story read; Escape closes it', async () => {
+    renderReader();
+    const readHere = within(storyOf(lead.article.id)).getByRole('button', { name: 'Read here' });
+    readHere.focus();
+    fireEvent.click(readHere);
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByRole('heading', { name: lead.article.headline })).toBeInTheDocument();
+    expect(signals.track).toHaveBeenCalledWith({ type: 'open', articleId: lead.article.id, meta: { mode: 'sheet' } });
+    expect(storyOf(lead.article.id).querySelector('article')).toHaveClass('is-read');
+    fireEvent.keyDown(dialog, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await waitFor(() => expect(document.activeElement).toBe(within(storyOf(lead.article.id)).getByRole('button', { name: 'Read here' })));
+  });
+});
+
 describe('skip with reasons and undo', () => {
   it('skip offers Undo and the three reasons; a reason is tracked exactly once', async () => {
     renderReader();

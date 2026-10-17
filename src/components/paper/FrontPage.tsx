@@ -3,23 +3,28 @@
 // note, above the fold (lead | recall, "Three things to know", the second story), the sections in
 // affinity order, "Beyond your usual", then "In brief" beside one "Long read". Columns are separated
 // by a 1px rule, never by colour; rank shows by headline size and position.
-import { useMemo, type ReactNode } from 'react';
+import { useMemo } from 'react';
 import { SectionHeader, TakeawayBox } from '@/components/morrow';
 import { MorningRecallCard } from '@/components/recall/MorningRecallCard';
 import { PaperStory } from '@/components/story/PaperStory';
 import { sectionLabel, takeawaysOf, type CardVariant } from '@/components/story/format';
 import type { Edition, EditionItem } from '@/contracts/edition';
 import { useEdition } from './EditionContext';
-import { layoutFrontPage } from './layout';
+import { EndOfPaper } from './EndOfPaper';
 import { FadeSlot } from './FadeSlot';
+import { HOW_MADE_ID } from './HowThisPaperWasMade';
+import { layoutFrontPage } from './layout';
 import { PaperMasthead } from './PaperMasthead';
 
 export interface FrontPageProps {
   readerName: string | null;
   city: string | null;
-  /** The end of paper (Task 10) closes the page. */
-  end?: ReactNode;
-  onHowMade?: () => void;
+}
+
+/** The masthead link opens the panel, then lets the anchor scroll to it. */
+export function openHowMade(): void {
+  const panel = document.getElementById(HOW_MADE_ID);
+  if (panel instanceof HTMLDetailsElement) panel.open = true;
 }
 
 const slugId = (slug: string) => `section-${slug.replace(/[^a-z0-9]+/gi, '-')}`;
@@ -79,7 +84,7 @@ function EditorNote({ edition }: { edition: Edition }) {
   );
 }
 
-export function FrontPage({ readerName, city, end, onHowMade }: FrontPageProps) {
+export function FrontPage({ readerName, city }: FrontPageProps) {
   const { edition, state, readOnly } = useEdition();
   const layout = useMemo(
     () => layoutFrontPage(state.items, edition.sectionOrder, edition.leadArticleId),
@@ -90,7 +95,7 @@ export function FrontPage({ readerName, city, end, onHowMade }: FrontPageProps) 
 
   return (
     <div className="mx-auto w-full max-w-(--page-max) px-4 pb-16 md:px-6">
-      <PaperMasthead readerName={readerName} city={city} onHowMade={onHowMade} />
+      <PaperMasthead readerName={readerName} city={city} onHowMade={openHowMade} />
       <EditorNote edition={edition} />
 
       <section aria-labelledby="above-the-fold" className="mt-8 grid gap-8 lg:grid-cols-[2fr_1fr] lg:gap-0 lg:divide-x lg:divide-rule">
@@ -130,7 +135,7 @@ export function FrontPage({ readerName, city, end, onHowMade }: FrontPageProps) 
         ) : null}
       </div>
 
-      {end}
+      <EndOfPaper />
     </div>
   );
 }

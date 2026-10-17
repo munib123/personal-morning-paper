@@ -17,7 +17,7 @@ function storiesWithQr(l: PrintLayout): EditionItem[] {
   return [l.lead, ...l.rail, ...l.inner.flatMap((p) => p.items)];
 }
 function printed(l: PrintLayout): EditionItem[] {
-  return [...storiesWithQr(l), ...l.beyond, ...l.briefs];
+  return [...storiesWithQr(l), ...l.inner.flatMap((p) => p.briefs ?? []), ...l.beyond, ...l.briefs];
 }
 
 /** The fixture model with faked assets: a marker SVG per QR and no images at all. */
@@ -92,6 +92,17 @@ describe('PrintEdition', () => {
 
   it('prints every story of the layout', () => {
     for (const item of printed(m.layout)) expect(out).toContain(esc(item.article.headline));
+  });
+
+  it('sets the briefs of an inner page under In brief on that page, linked like every story', () => {
+    const k = m.layout.inner.findIndex((p) => (p.briefs ?? []).length > 0);
+    const page = pages(out)[k + 1];
+    expect(page).toContain('In brief');
+    for (const b of m.layout.inner[k].briefs!) {
+      expect(page).toContain(esc(b.article.headline));
+      expect(page).toContain(`href="${m.extras.appUrl}/r/${b.article.id}?src=print&amp;e=${E.id}"`);
+      expect(page).toContain(esc(b.article.sourceDomain));
+    }
   });
 
   it('draws the paper-sunk fallback, never a broken <img>, when an image is missing', () => {

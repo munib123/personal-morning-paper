@@ -69,7 +69,7 @@ export async function runIngest(opts?: { sourceIds?: string[]; maxPerSource?: nu
 
   // 3. Article pages, for new items only: og:image / twitter:image, and Readability when the text is thin.
   const fresh = await enrichFromPages(drafts, now);
-  const pageFetches = drafts.filter(needsPage).length;
+  const missingImageOrText = drafts.filter(needsPage).length;
 
   // 4. Insert (ON CONFLICT (url_hash) DO NOTHING).
   const { inserted, errors, bySource } = fresh.length ? await insertArticles(fresh) : { inserted: 0, errors: [], bySource: {} };
@@ -87,7 +87,7 @@ export async function runIngest(opts?: { sourceIds?: string[]; maxPerSource?: nu
     `ingest detail ${JSON.stringify({
       imageShare: fresh.length ? Number((withImage / fresh.length).toFixed(3)) : null,
       candidates: fresh.length,
-      neededPage: pageFetches,
+      missingImageOrText,
       stillThin: fresh.filter((a) => a.needsText).length,
       insertedBySource: bySource ?? {},
       insertErrors: errors,

@@ -18,7 +18,16 @@ import {
   storyHref,
   teasers,
 } from './layout';
-import { DEFAULT_BUDGETS, INNER_PAGE_CAPACITY, MAX_INNER_PAGES, RAIL_MAX, TEASER_COUNT, type PrintLayout } from './types';
+import {
+  DEFAULT_BUDGETS,
+  INNER_BRIEFS_MAX,
+  INNER_PAGE_CAPACITY,
+  MAX_INNER_PAGES,
+  RAIL_MAX,
+  SPARSE_PAGE_MAX,
+  TEASER_COUNT,
+  type PrintLayout,
+} from './types';
 
 const E = FIXTURE_EDITION;
 const BEYOND = new Set(['bigstory', 'explore', 'serendipity']);
@@ -26,9 +35,18 @@ const words = (t: string) => t.split(/\s+/).filter(Boolean).length;
 
 /** Every story the layout prints, in print order. */
 function printedIds(l: PrintLayout): string[] {
-  return [l.lead, ...l.rail, ...l.inner.flatMap((p) => p.items), ...l.beyond, ...l.briefs].map((i) => i.article.id);
+  return [l.lead, ...l.rail, ...l.inner.flatMap((p) => [...p.items, ...(p.briefs ?? [])]), ...l.beyond, ...l.briefs].map(
+    (i) => i.article.id,
+  );
 }
 const innerStories = (l: PrintLayout) => l.inner.reduce((n, p) => n + p.items.length, 0);
+const allBriefs = (l: PrintLayout) => [...l.inner.flatMap((p) => p.briefs ?? []), ...l.briefs];
+/** The same paper with every brief back on the last page. */
+const briefsOnLastPage = (l: PrintLayout): PrintLayout => ({
+  ...l,
+  inner: l.inner.map((p) => ({ ...p, briefs: [] })),
+  briefs: allBriefs(l),
+});
 
 /** A thin edition: 12 items, no `top` slot, a sectionOrder root with no core items, no key facts. */
 function thinEdition(): Edition {
@@ -119,12 +137,24 @@ describe('buildPrintLayout on the fixture edition', () => {
   it('numbers pages: front, one per inner section, last', () => {
     expect(pageCount(layout)).toBe(2 + layout.inner.length);
     expect(pageOf(layout, layout.inner[0].items[0].article.id)).toBe(2);
-    expect(pageOf(layout, layout.briefs[0].article.id)).toBe(pageCount(layout));
+    const last = briefsOnLastPage(layout);
+    expect(pageOf(last, last.briefs[0].article.id)).toBe(pageCount(last));
     expect(pageOf(layout, 'not-in-this-paper')).toBe(0);
   });
 
-  it('keeps the briefs in rank order', () => {
-    const ranks = layout.briefs.map((i) => i.rank);
+  it('fills inner pages that have room (at most SPARSE_PAGE_MAX stories) with briefs', () => {
+    expect(allBriefs(layout).length).toBeGreaterThan(0);
+    layout.inner.forEach((page, k) => {
+      const briefs = page.briefs ?? [];
+      if (page.items.length > SPARSE_PAGE_MAX) expect(briefs).toHaveLength(0);
+      expect(briefs.length).toBeLessThanOrEqual(INNER_BRIEFS_MAX);
+      for (const b of briefs) expect(pageOf(layout, b.article.id)).toBe(k + 2);
+    });
+    expect(layout.inner.some((p) => (p.briefs ?? []).length > 0)).toBe(true);
+  });
+
+  it('keeps the briefs in rank order, inner pages first', () => {
+    const ranks = allBriefs(layout).map((i) => i.rank);
     expect(ranks).toEqual([...ranks].sort((a, b) => a - b));
   });
 });
@@ -134,19 +164,21 @@ describe('teasers and the Inside index', () => {
 
   it('points up to 5 teasers at inner pages, section leads first', () => {
     const list = teasers(layout);
-    expect(list).toHaveLength(Math.min(TEASER_COUNT, innerStories(layout) + layout.briefs.length));
+    expect(list).toHaveLength(Math.min(TEASER_COUNT, innerStories(layout) + allBriefs(layout).length));
     expect(list[0].item.article.id).toBe(layout.inner[0].items[0].article.id);
     expect(list[0].page).toBe(2);
     for (const t of list) expect(t.page).toBe(pageOf(layout, t.item.article.id));
     expect(new Set(list.map((t) => t.item.article.id)).size).toBe(list.length);
   });
 
-  it('lists each inner page by section name, then In brief on the last page', () => {
+  it('lists each inner page by section name, then the last page', () => {
     const index = insideIndex(E, layout);
     expect(index).toEqual([
       ...layout.inner.map((p, k) => ({ label: sectionName(E, p.root), page: k + 2 })),
-      { label: 'In brief', page: pageCount(layout) },
+      { label: 'Beyond your usual', page: pageCount(layout) },
     ]);
+    const noBeyond = { ...briefsOnLastPage(layout), beyond: [] };
+    expect(insideIndex(E, noBeyond).at(-1)).toEqual({ label: 'In brief', page: pageCount(noBeyond) });
   });
 });
 
@@ -189,7 +221,7 @@ describe('pickSummary', () => {
     expect(pickSummary(item('std'), 'section-lead', DEFAULT_BUDGETS)).toBe(clampWords(s.std, 120));
     expect(pickSummary(item('brief'), 'secondary', DEFAULT_BUDGETS)).toBe(clampWords(s.brief, 70));
     expect(pickSummary(item('deep'), 'secondary', DEFAULT_BUDGETS)).toBe(clampWords(s.std, 70));
-    expect(pickSummary(item('deep'), 'rail', DEFAULT_BUDGETS)).toBe(clampWords(s.std, 70));
+    expect(pickSummary(item('deep'), 'rail', DEFAULT_BUDGETS)).toBe(clampWords(s.brief, 45));
     expect(pickSummary(item('deep'), 'brief', DEFAULT_BUDGETS)).toBe(clampWords(s.brief, 45));
   });
 });
@@ -198,6 +230,7 @@ describe('shrinkLayout', () => {
   const layout = buildPrintLayout(E);
 
   it('moves the last story of an overflowing inner page to the top of the briefs', () => {
+    expect(layout.inner[0].briefs ?? []).toHaveLength(0);
     const last = layout.inner[0].items[layout.inner[0].items.length - 1];
     const next = shrinkLayout(layout, [2]);
     expect(next).not.toBeNull();
@@ -206,28 +239,40 @@ describe('shrinkLayout', () => {
     expect(layout.inner[0].items).toContain(last); // pure: the input is untouched
   });
 
-  it('shortens the lead first, then moves the second rail story, when page 1 overflows', () => {
+  it('sends an overflowing inner page’s own briefs back to the last page before its stories', () => {
+    const k = layout.inner.findIndex((p) => (p.briefs ?? []).length > 0);
+    expect(k).toBeGreaterThanOrEqual(0);
+    const briefs = layout.inner[k].briefs!;
+    const next = shrinkLayout(layout, [k + 2])!;
+    expect(next.inner[k].briefs).toHaveLength(briefs.length - 1);
+    expect(next.inner[k].items).toHaveLength(layout.inner[k].items.length);
+    expect(next.briefs[0].article.id).toBe(briefs[briefs.length - 1].article.id);
+    expect(pageOf(next, next.briefs[0].article.id)).toBe(pageCount(next));
+  });
+
+  it('shortens the lead first, then moves the rail story into the briefs, when page 1 overflows', () => {
     const once = shrinkLayout(layout, [1]);
     expect(once!.budgets.lead).toBe(120);
-    expect(once!.rail).toHaveLength(2);
+    expect(once!.rail).toHaveLength(layout.rail.length);
     const twice = shrinkLayout(once!, [1]);
-    expect(twice!.rail).toHaveLength(1);
-    expect(twice!.briefs[0].article.id).toBe(layout.rail[1].article.id);
+    expect(twice!.rail).toHaveLength(layout.rail.length - 1);
+    expect(twice!.briefs[0].article.id).toBe(layout.rail[layout.rail.length - 1].article.id);
   });
 
   it('shortens the briefs first, then drops the last one, when the last page overflows', () => {
-    const last = pageCount(layout);
-    const once = shrinkLayout(layout, [last]);
+    const full = briefsOnLastPage(layout);
+    const last = pageCount(full);
+    const once = shrinkLayout(full, [last]);
     expect(once!.budgets.brief).toBe(30);
-    expect(once!.briefs).toHaveLength(layout.briefs.length);
+    expect(once!.briefs).toHaveLength(full.briefs.length);
     const twice = shrinkLayout(once!, [last]);
-    expect(twice!.briefs).toHaveLength(layout.briefs.length - 1);
+    expect(twice!.briefs).toHaveLength(full.briefs.length - 1);
   });
 
   it('returns null when nothing can move', () => {
     const stuck: PrintLayout = {
       ...layout,
-      rail: layout.rail.slice(0, 1),
+      rail: [],
       inner: [{ root: layout.inner[0].root, items: layout.inner[0].items.slice(0, 1) }],
       briefs: [],
       budgets: { ...DEFAULT_BUDGETS, lead: 120, brief: 30 },

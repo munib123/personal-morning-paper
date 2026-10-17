@@ -9,10 +9,11 @@ import { formatEditionDate, readingTimeLabel } from '@/components/story/format';
 import { BRAND } from '@/lib/brand';
 import { useEdition } from './EditionContext';
 import { progressLabel, progressOf } from './edition-state';
+import { HOW_MADE_ID } from './HowThisPaperWasMade';
 import { useScrolledPast } from './use-scrolled-past';
 import { persistView, type ReaderView } from './view-pref';
 
-export const HOW_MADE_HREF = '#how-this-paper-was-made';
+const HOW_MADE_HREF = `#${HOW_MADE_ID}`;
 
 const VIEW_OPTIONS = [
   { value: 'front', label: 'Front page' },
