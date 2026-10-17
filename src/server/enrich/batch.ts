@@ -79,6 +79,7 @@ export async function enrichBatch(batch: EnrichCandidate[], slugs: string[], opt
       for (const c of pending) outcomes.set(c.id, fallbackOutcome(c, false));
     } else {
       const provider = `gemini:${result.model}`;
+      const failed: Record<string, number> = {};
       const byArticle = new Map<string, EnrichmentItem>();
       for (const item of result.output.items) {
         const articleId = idMap[item.id];
@@ -87,10 +88,12 @@ export async function enrichBatch(batch: EnrichCandidate[], slugs: string[], opt
       for (const c of pending) {
         const item = byArticle.get(c.id);
         if (!item) {
+          failed.missing = (failed.missing ?? 0) + 1;
           outcomes.set(c.id, opts.final ? fallbackOutcome(c, true) : retryOutcome(c));
           continue;
         }
         const check = checkEnrichment(item, source(c), validSlugs);
+        for (const f of check.failures) failed[f] = (failed[f] ?? 0) + 1;
         let fields: EnrichmentItem | null = check.ok ? { ...check.cleaned, id: c.id } : null;
         // Morrow fallback: on the final pass, a headline whose only fault is its voice becomes the source title.
         if (!fields && opts.final && check.failures.length === 1 && check.failures[0] === 'headline_voice') {
@@ -103,6 +106,7 @@ export async function enrichBatch(batch: EnrichCandidate[], slugs: string[], opt
         if (fields.usable) await putCached(cacheKeyFor('enrich', result.model, c.urlHash), 'enrich', provider, fields);
         outcomes.set(c.id, { id: c.id, kind: fields.usable ? 'enriched' : 'unusable', fields, provider, attempted: true });
       }
+      if (Object.keys(failed).length > 0) console.log(`[enrich] ${opts.final ? 're-batch' : 'batch'} guardrail failures ${JSON.stringify(failed)}`);
     }
   }
 

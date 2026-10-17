@@ -1,6 +1,6 @@
 // L2 dev CLI (worker only, never on Vercel):
 //   npx tsx --env-file=.env.local src/server/enrich/cli.ts <command>
-//   nlp [--limit n] | recluster | extractive | enrich [--limit n] | reset-sample <n> | stats | ping | note-demo [--smart] | describe "<text>"
+//   nlp [--limit n] | recluster | extractive | enrich [--limit n] | reset-sample <n> | revive-unusable | stats | ping | note-demo [--smart] | describe "<text>"
 import '../../../scripts/lib/env';
 
 import { createSupabaseAdminClient } from '@/server/db/admin';
@@ -9,7 +9,7 @@ import { pacificDay } from '@/server/ai/usage';
 import { extractiveBackfill } from './backfill';
 import { CANDIDATE_COLUMNS, enrichRows, type CandidateRow } from './run';
 
-const USAGE = 'usage: cli.ts nlp [--limit n] | recluster | extractive | enrich [--limit n] | reset-sample <n> | stats | ping | note-demo [--smart] | describe "<text>"';
+const USAGE = 'usage: cli.ts nlp [--limit n] | recluster | extractive | enrich [--limit n] | reset-sample <n> | revive-unusable | stats | ping | note-demo [--smart] | describe "<text>"';
 const STATUSES = ['raw', 'embedded', 'enriched', 'fallback', 'unusable'] as const;
 
 class UsageError extends Error {}
@@ -169,6 +169,9 @@ async function main(argv: string[]): Promise<number> {
         await resetSample(n);
         return 0;
       }
+      case 'revive-unusable':
+        console.log(JSON.stringify({ revived: await extractiveBackfill('unusable') }));
+        return 0;
       case 'extractive':
         console.log(JSON.stringify({ fallback: await extractiveBackfill() }));
         return 0;
