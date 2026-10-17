@@ -68,6 +68,63 @@ We copy **mechanics**: the ~60-word byte, the card anatomy (`time ago · Source 
 
 ---
 
+## 3a. Design system: Morrow (BINDING for visuals; supersedes the fonts, colours and motion in §3)
+
+The team's design system lives in `design/project/`: `README.md` (principles, layout, PDF, onboarding, voice), `tokens.json`, `components/src/index.tsx` (15 React components), `components/bundle.css` (`mw-*` classes) and `fonts/`. **Read `design/project/README.md` before any UI work.**
+
+- **Brand.** The product is **Morrow**. The nameplate is **"The Morrow"** in UnifrakturMaguntia: it is the wordmark and is never used for anything else. The masthead ears read "Edition No. N" and **"Prepared for {first name}"**. `BRAND.defaultPaperName()` returns `'The Morrow'`. Internal identifiers stay as they are (`subah_now`, `SubahBot`).
+- **Type.** Newsreader (headlines, decks, summaries; optical sizing) and Libre Franklin (all UI) are self-hosted from `design/project/fonts` via `next/font/local`. Use the type-style classes `headline-xl|lg|md|sm`, `deck`, `pull-quote`, `body-text`, `body-sm`, `kicker`, `dateline`, `ui-label`, `ui-text`, `ui-button`, `ui-meta` and `print-*`. Headline size follows rank: lead = xl, top = lg, core = md, briefs = sm.
+- **Colour.** Warm newsprint `paper` and near-black `ink`. **`press`** (red) is the one brand accent: kickers, at most one accent button per screen. **`pen`** (blue) means *"the paper learned this"*: WhyTag, pressed feedback, links, focus. Never anything else. **No section colour-coding.** Themes are `data-theme="morning"` (default) and `data-theme="night"`. The PDF is always Morning.
+- **Tailwind names:**
+  - colours: `bg-paper`, `bg-paper-raised`, `bg-paper-sunk`, `border-rule`, `border-rule-strong`, `text-ink`, `text-ink-soft`, `text-ink-muted`, `text-on-ink`, `text-press`, `bg-press-soft`, `text-on-press`, `text-pen`, `bg-pen-soft`, `text-on-pen`, `bg-highlight`
+  - fonts: `font-nameplate`, `font-news`, `font-ui`
+  - shape: `rounded-control`, `rounded-card`, `rounded-chip`, `shadow-floating`
+  - spacing: `space-1…9` = Tailwind `1, 2, 3, 4, 6, 8, 12, 16, 24`
+- **Shape and motion.** Paper content has square corners. Only controls round (2 px controls, 6 px cards, pill chips). Use borders, not shadows. Motion is quiet: 150 ms colour changes and 300 ms progress fills, **no slide-in cards, no confetti, no parallax**, and honour reduced motion. A skip collapses or fades the card, and the reserve story fades in, with no slide.
+- **Components (`@/components/morrow`, owned by L0, edited only through a contract commit):** `Icon`, `Button` (primary/accent/secondary/ghost), `Masthead` (full/compact), `SectionHeader`, `StoryCard` (lead/standard/brief/compact), `WhyTag`, `FeedbackBar` (More/Less/Save/Skip), `TakeawayBox`, `PullQuote`, `TopicChip`, `Segmented`, `TextField`, `OnboardingStep`, `ReadingProgress`, `EditionCard`.
+  - Lanes **compose** these, never restyle them.
+  - The §9.6 components are our wrappers: `WhyChip` = WhyTag + score popover; `StorySheet` = reader view; and so on.
+  - Icons come from Morrow `Icon` or lucide-react at `strokeWidth={1.75}`. No emoji, stars, hearts or thumbs.
+- **Front page** (design README "Layout: the web paper"):
+  1. Full **Masthead**, which becomes the compact masthead plus **ReadingProgress** once scrolled.
+  2. **Above the fold**, a 2fr/1fr grid:
+     - left: the **lead StoryCard**;
+     - right: the **MorningRecallCard** (when present), then the **TakeawayBox "Three things to know"** (key facts of the top stories), then one second-rank story.
+  3. **Sections** in affinity order: a SectionHeader plus a 3-column grid of standard StoryCards. "Beyond your usual" (explore, serendipity, big story) is a section with its own header.
+  4. **In brief** + **Long read**, side by side.
+  5. **End of paper:**
+     - "That's your paper for today."
+     - one sentence on what tomorrow will change (from the movers)
+     - "3 things you learned" (`DoneForToday`)
+     - the quiet streak line
+     - **Download PDF** (the accent button) and **Past editions**
+     - the "How this paper was made" panel
+  - Every story gets a **WhyTag** and a **FeedbackBar** (More, Less, Save, Skip). Pressing More or Less shows a one-line note: "Got it. More climate tech tomorrow."
+  - Read stories keep their place, and their headline dims to `ink-muted` with a check.
+- **Onboarding** (design README "Onboarding"): 4 `OnboardingStep`s, each with one question:
+  1. **Welcome**: the full masthead, the promise "One paper, every morning, about what you care about", and a first name.
+  2. **Topics**: TopicChips grouped under the 9 root labels (Arts, Science, Technical …). Chips that have children open in place for the **hierarchical drill-down** (Technical → Computer Science → web dev, AI, …). Minimum 3.
+  3. **In your words**: a multiline TextField. `mapTextToTopics` turns it into removable chips (`/api/onboarding/describe`). Optional.
+  4. **Your routine**: Segmented paper length **Quick 5 / Standard 15 / Deep 30**, delivery time, and city.
+  - The flow finishes on a **live preview of their first front page** with **"Build my paper"**. Loading shows skeletons plus a dateline status ("Setting today's paper · 8 of 12 stories"). No confetti, no typesetting animation.
+  - The taste test is dropped. `OnboardingInput.taste` stays and is sent as `[]`.
+- **Streaks** (R8): the team explicitly asked for them, so they stay, presented quietly: a dateline-style "7-DAY READING STREAK" line, a 7-day strip, and milestone copy in the end-of-paper note. No flames, emoji, badges or confetti.
+- **Archive:** a grid of **EditionCard**s, newest first, grouped by week. Each opens the edition as published and offers its PDF.
+- **PDF** (design README "Layout: the PDF"). This replaces the §10.8 grid details:
+  - **Page 1:** the nameplate at ~60 px, ears, a double rule, and a dateline strip (date · city · "Page 1 of N"). Below it a **5-column** grid:
+    - lead in columns 1–3 (`print-lead`, deck, image, body in 2 text columns with a drop cap);
+    - columns 4–5: "Three things to know", 1–2 stories, and an "Inside" index;
+    - then a heavy rule and a row of 5 teasers.
+  - **Inner pages:** a running head (`masthead-sm` · date · page), one section per page, 3–5 columns with `column-rule`.
+  - **Every story** ends with its source and a QR or short link.
+  - **Footer:** "Prepared for {name} · from N sources".
+  - **Never** put interactive affordances in the PDF.
+- **Voice:**
+  - calm, short, concrete; sentence case
+  - "you" and "your paper", never "I" or "our AI"
+  - buttons are verbs ("Build my paper", "Download PDF", "Past editions")
+  - dates are full on the paper ("Saturday, 17 October 2026") and short in lists ("Sat 17 Oct")
+
 ## 4. System architecture
 
 ```mermaid
@@ -301,10 +358,10 @@ create index articles_cluster_idx on articles (cluster_id);
 create table profiles (
   user_id      uuid primary key references auth.users(id) on delete cascade,
   display_name text,
-  paper_name   text not null default 'Your Morning Paper',
+  paper_name   text not null default 'The Morrow',
   tz           text not null default 'Asia/Karachi',
   city         text not null default 'Islamabad',
-  time_budget  smallint not null default 10 check (time_budget in (5,10,20)),
+  time_budget  smallint not null default 15 check (time_budget in (5,15,30)),
   depth        text not null default 'basics' check (depth in ('new','basics','expert')),
   lang         text not null default 'en' check (lang in ('en','ur')),
   delivery_hour smallint not null default 7,
@@ -485,7 +542,7 @@ export const rootOf = (s: TopicSlug): TopicSlug => s.split('.')[0];
 export const ancestorsOf = (s: TopicSlug): TopicSlug[] => { const p = s.split('.'); return p.slice(0, -1).map((_, i) => p.slice(0, i + 1).join('.')); }; // root first: 'technical.cs.web-dev' → ['technical','technical.cs']
 
 // profile.ts
-export type TimeBudget = 5 | 10 | 20;
+export type TimeBudget = 5 | 15 | 30;   // Morrow: Quick 5 / Standard 15 / Deep 30 (default 15)
 export type Depth = 'new' | 'basics' | 'expert';
 export type Lang = 'en' | 'ur';
 export interface Presentation { timeBudget: TimeBudget; depth: Depth; lang: Lang; }
@@ -714,7 +771,7 @@ export function useSignals(editionId: string | null): {
 ```
 
 ### 9.5 Brand constant (L0)
-`src/lib/brand.ts`: `export const BRAND = { name: 'Subah', tagline: 'Your personal morning paper', defaultPaperName: (first?: string | null) => first ? \`The ${first} Times\` : 'Your Morning Paper' };`
+`src/lib/brand.ts`: `export const BRAND = { name: 'Morrow', nameplate: 'The Morrow', tagline: 'One paper, every morning, about what you care about', defaultPaperName: (_first?: string | null) => 'The Morrow' };` (Morrow design system, §3a. The reader's first name appears in the masthead ear "Prepared for {name}".)
 
 ### 9.6 Cross-lane stubs L0 must create (each returns a neutral value until its owner replaces it)
 Component props (binding):
@@ -882,8 +939,8 @@ Muted topics or sources → excluded. Pinned → +0.10. Items seen in the last 7
 
 **Tiers** (presentation adapts with zero LLM calls):
 - `θ̂ ≥ 0.70 → deep`, `≥ 0.40 → std`, else `brief`, shifted by `depthPref`.
-- timeBudget 5: max 1 deep (the lead) and 4 std.
-- timeBudget 20: shift everything up one tier.
+- timeBudget 5 (Quick): max 1 deep (the lead) and 4 std.
+- timeBudget 30 (Deep): shift everything up one tier. 15 (Standard) is the default rule above.
 - The lead is always deep.
 
 **Reasons (chips):**

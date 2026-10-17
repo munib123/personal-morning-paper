@@ -57,7 +57,11 @@ Every team member must be able to explain the architecture, the models and the i
 - **Gemini stays off the request path.** The only exception is `describe`, which has a timeout and a keyword fallback. Every AI step has a deterministic fallback.
 - **Time:** never call `new Date()` in route logic. Use `requestNow()` (it respects the demo clock) and pass `now` down into pure functions.
 - **Supabase:** use the publishable/secret keys and `getClaims()`. Vectors come back as strings, so parse them with `src/server/db/vector.ts`.
-- **UI:** use only semantic token classes (`bg-paper`, `text-ink`, `border-rule`, `bg-sec-<root>`, `font-headline/body/ui`). Read the frontend-design skill (path in ARCHITECTURE §3). Check pages in a real browser at 390 px and 1280 px.
+- **UI:** the **Morrow design system is binding** (`design/project/README.md`, ARCHITECTURE §3a).
+  - Compose the components from `@/components/morrow` (Masthead, StoryCard, WhyTag, FeedbackBar, TakeawayBox, TopicChip, Segmented, OnboardingStep, EditionCard…). Never restyle them.
+  - Use only Morrow tokens and classes: `bg-paper`, `text-ink`, `text-ink-soft`, `text-ink-muted`, `border-rule`, `text-press`, `text-pen`, `bg-pen-soft`, `font-news`, `font-ui`, `rounded-control`, and the type classes `headline-*`, `deck`, `kicker`, `dateline`, `ui-*`.
+  - No section colours, no emoji, no confetti; motion stays quiet.
+  - Check pages in a real browser at 390 px and 1280 px.
 - **Tests:** write Vitest tests first for pure modules. Before saying "done", `npm run typecheck && npm run lint && npm test && npm run build` must all pass.
 
 ## Parallel agent workflow
