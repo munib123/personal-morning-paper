@@ -1,0 +1,72 @@
+%%{init: {"theme": "neutral", "flowchart": {"curve": "basis", "nodeSpacing": 26, "rankSpacing": 48, "htmlLabels": true, "padding": 12}, "themeVariables": {"fontFamily": "Libre Franklin, Helvetica Neue, Arial, sans-serif", "fontSize": "16px", "primaryColor": "#fbf8f1", "primaryBorderColor": "#1b1813", "primaryTextColor": "#1b1813", "lineColor": "#1b1813", "clusterBkg": "#f5f0e6", "clusterBorder": "#665c4f", "edgeLabelBackground": "#f5f0e6"}}}%%
+flowchart TB
+  %% The Morrow: the system as built on main (docs/ARCHITECTURE.md section 4 and the code in src/).
+  %% Five bands, top to bottom: sources, the once-a-day worker, Supabase, the per-reader app, the learning loop.
+  %% Solid edges are the daily data path; the dotted edge is the loop back into tomorrow's paper.
+
+  subgraph SRC["Sources: 117 seeded (114 RSS feeds + 3 keyless APIs)"]
+    direction LR
+    FEEDS["RSS and Atom feeds<br/>Dawn, BBC, Guardian,<br/>Ars Technica, Nature,<br/>Cricinfo ..."]
+    APIS["Keyless APIs<br/>Hacker News, Dev.to,<br/>arXiv"]
+  end
+
+  subgraph WORKER["Worker, once a day for every reader: npm run job:ingest (Node 24; never on Vercel)"]
+    direction LR
+    ING["Ingest<br/>fetch, decode charset,<br/>canonical URL + url_hash,<br/>48 h window"]
+    NLP["NLP, local and free<br/>gte-small 384-d vectors,<br/>zero-shot topic labels,<br/>leader clusters (cos 0.90),<br/>importance"]
+    ENR["Gemini enrichment<br/>10 articles per request:<br/>headline, 3 summary tiers,<br/>why it matters, key fact,<br/>recall question"]
+    LLM["callLLM<br/>llm_cache, daily budget<br/>(llm_usage), RPM pacing,<br/>ladder SMART, FAST,<br/>FALLBACK, deterministic"]
+    GUARD["Guardrails, deterministic<br/>numbers in source,<br/>word bands, entities,<br/>grounded answers; else<br/>extractive summary"]
+    ING -->|"raw articles"| NLP
+    NLP -->|"embedded,<br/>labelled, clustered"| ENR
+    ENR --> LLM
+    ENR --> GUARD
+  end
+
+  GEM["Gemini API, free tier<br/>flash-lite models from env"]
+
+  subgraph SB["Supabase"]
+    direction LR
+    PG[("Postgres + pgvector<br/>articles, clusters, topics,<br/>editions, edition_items,<br/>events, user_interests,<br/>interest_snapshots, streaks")]
+    AUTH["Auth<br/>anonymous readers,<br/>the demo persona"]
+    STORE["Storage<br/>papers bucket,<br/>signed URLs"]
+  end
+
+  subgraph APP["Vercel, Next.js 16: the paper, built per reader in pure TypeScript, 0 LLM calls on the request path"]
+    direction LR
+    ONB["/start onboarding<br/>hierarchical topics,<br/>in your words, routine"]
+    CLOCK["requestNow()<br/>demo clock cookie<br/>subah_now (DEMO_MODE)"]
+    CRON["Vercel cron 00:00 UTC<br/>/api/cron/editions"]
+    BUILD["buildEdition(), rank-v1<br/>Beta(α,β) per topic +<br/>profile EMA, MMR λ 0.7,<br/>2 Thompson explore slots,<br/>1 serendipity, 1 big story,<br/>receipt; editor's note<br/>via after()"]
+    READ["/today, /paper/date,<br/>/archive<br/>why-tags, skip promotes<br/>a reserve story, Morning<br/>Recall, streak, /r links"]
+    PDF["/api/editions/date/pdf<br/>Puppeteer A4 + QR codes,<br/>stored; print route<br/>as the fallback"]
+    ONB -->|"Beta priors (2,1) (3,1)<br/>(4,1) (1,3); first paper"| BUILD
+    CLOCK -.->|"now"| BUILD
+    CRON -.->|"daily batch"| BUILD
+    BUILD -->|"20 stories +<br/>8 reserve"| READ
+    READ -->|"Download PDF"| PDF
+  end
+
+  subgraph LOOP["The learning loop: every signal updates the reader model at once, and the paper shows it"]
+    direction LR
+    SIG["/api/events, /r/id<br/>open, dwell, read_original,<br/>skip, more, less, save,<br/>recall_answer, qr_scan"]
+    LEARN["applySignal()<br/>reward to α or β (parent<br/>0.3, grandparent 0.1),<br/>pos/neg EMA, 14-day<br/>refold toward the prior"]
+    ME["/me learning page<br/>interest bars, movers,<br/>change summary, timeline,<br/>fast-forward 7 days;<br/>pin, mute, set"]
+    SIG --> LEARN
+    LEARN -->|"snapshots,<br/>movers"| ME
+  end
+
+  SRC -->|"fetched by the worker"| WORKER
+  WORKER <-->|"batched JSON, maxRetries 0,<br/>retryDelay once, then step down"| GEM
+  WORKER -->|"vectors, labels, clusters, summaries:<br/>enriched or extractive, always rankable"| SB
+  SB <-->|"down: pool (36 h, cached 10 min), user model, sessions<br/>up: editions, receipts, interest snapshots, PDFs"| APP
+  APP -->|"reading signals: flushed every 2 s,<br/>sendBeacon on leave"| LOOP
+  SB <-->|"events; updated α, β<br/>and profile vectors"| LOOP
+  LOOP -.->|"tomorrow re-ranks"| APP
+
+  classDef learn fill:#e7eef8,stroke:#1f4e80,color:#1b1813;
+  classDef ext fill:#f5f0e6,stroke:#665c4f,stroke-dasharray:4 3,color:#1b1813;
+  classDef store fill:#efe8da,stroke:#1b1813,color:#1b1813;
+  class SIG,LEARN,ME,ONB learn;
+  class GEM,CRON ext;
+  class PG,STORE,AUTH store;
