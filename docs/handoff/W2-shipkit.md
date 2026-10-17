@@ -1,6 +1,6 @@
 # W2-shipkit: handoff (DEMO_FALLBACK snapshot)
 
-Status: ready for merge (branch `lane/W2-shipkit`). PLAN §6 infra line: "`DEMO_FALLBACK=1` serves the snapshot with the network off" (ARCHITECTURE §12).
+Status: ready for merge (branch `lane/W2-shipkit`, PR #48). PLAN §6 infra line: "`DEMO_FALLBACK=1` serves the snapshot with the network off" (ARCHITECTURE §12).
 
 The lane ships the snapshot and the read functions. It does **not** edit the owners' files: each owner (or the integrator) adds the two-line guards under "Integration patches" below. Until those land, `DEMO_FALLBACK=1` only changes `/api/health` and L7's storage-error fallbacks, as before.
 
