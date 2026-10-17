@@ -11,7 +11,7 @@
 import type { mapTextToTopics } from '@/server/enrich';
 import type { InterestEdit } from '@/server/learn';
 import type { InterestWeight } from '@/contracts/profile';
-import type { TopicNode, TopicSlug } from '@/contracts/taxonomy';
+import { ancestorsOf, type TopicNode, type TopicSlug } from '@/contracts/taxonomy';
 import { DEFAULT_PARAMS } from '@/server/rank/params';
 
 export type EditorAction = 'raise' | 'lower' | 'pin' | 'mute' | 'add';
@@ -297,7 +297,9 @@ export function proposeChanges({ text, picks, interests, topics = [] }: ProposeI
       slug: m.slug, name: t?.name ?? m.slug, level, theta: UNPICKED_MEAN, alpha: 1, beta: 3, picked: false, muted: false, pinned: false,
     };
     const before = r4(clamp01(w.theta));
-    const absent = !byWeight.has(m.slug) || (!w.picked && !w.pinned && before < ADD_WEIGHT);
+    // New territory: never picked (nor any section above it), not pinned, and still below a middle weight.
+    const followed = w.picked || ancestorsOf(m.slug).some((a) => byWeight.get(a)?.picked === true);
+    const absent = !byWeight.has(m.slug) || (!followed && !w.pinned && before < ADD_WEIGHT);
     const action = actionFor(m.dir, absent);
     let after = before;
     if (action === 'mute') {

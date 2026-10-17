@@ -68,6 +68,11 @@ describe('proposeChanges: each verb', () => {
     expect(c.reason).toContain('"curious about astronomy"');
   });
 
+  it('a topic under a section the reader follows is raised, not added (it is already in their paper)', () => {
+    const interests = [w('sports', 0.75), w('sports.cricket', 0.4, { picked: false })];
+    expect(propose('more cricket', ['sports.cricket'], [], interests).changes[0].action).toBe('raise');
+  });
+
   it.each(['less crypto', 'fewer crypto stories', 'stop crypto', 'no more crypto'])('"%s" lowers', (text) => {
     const [c] = propose(text, ['business.crypto']).changes;
     expect(c).toMatchObject({ slug: 'business.crypto', action: 'lower', before: 0.5 });
