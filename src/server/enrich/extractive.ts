@@ -24,11 +24,25 @@ const BOILERPLATE =
 // A "sentence" under four words is a scraping leftover such as "(dcr)" or a photo credit.
 const MIN_WORDS = 4;
 
-export const isBoilerplate = (sentence: string): boolean => BOILERPLATE.test(sentence) || wordCount(sentence) < MIN_WORDS;
+// Site navigation scraped into the text ("Home News Sport Weather iPlayer Sounds …"): a run of six or
+// more capitalised menu words. A run alone is dropped; a run glued to the first real sentence is cut off.
+const NAV_TOKEN = String.raw`[A-Za-z]*[A-Z][\w'’&-]*`;
+const NAV_ONLY = new RegExp(String.raw`^(?:${NAV_TOKEN}\s+){5,}${NAV_TOKEN}[.!?]?$`);
+const NAV_PREFIX = new RegExp(String.raw`^(?:${NAV_TOKEN}\s+){6,}?(?=${NAV_TOKEN}\s+[a-z])`);
+const stripNav = (sentence: string): string => sentence.replace(NAV_PREFIX, '');
+
+// Page text glued together without spaces ("…outside the UK.Find out how…", "stationsEpisode detailsRadio").
+// Two product names (TypeScript, GitHub) are fine; three joins or a glued full stop are scraping.
+const GLUED_STOP = /[A-Za-z][.!?][A-Z][a-z]/;
+const CAMEL_JOIN = /[a-z]{2}[A-Z][a-z]/g;
+const isGlued = (sentence: string): boolean => GLUED_STOP.test(sentence) || (sentence.match(CAMEL_JOIN)?.length ?? 0) >= 3;
+
+export const isBoilerplate = (sentence: string): boolean =>
+  BOILERPLATE.test(sentence) || NAV_ONLY.test(sentence) || isGlued(sentence) || wordCount(sentence) < MIN_WORDS;
 
 /** The article's sentences minus page boilerplate and a trailing fragment the publisher cut off (when others remain). */
 function completeSentences(text: string): string[] {
-  const sentences = splitSentences(text).filter((s) => !isBoilerplate(s));
+  const sentences = splitSentences(text).map(stripNav).filter((s) => !isBoilerplate(s));
   if (sentences.length > 1 && !ENDS_SENTENCE.test(sentences[sentences.length - 1])) sentences.pop();
   return sentences;
 }

@@ -54,6 +54,29 @@ describe('scraped boilerplate', () => {
     }
   });
 
+  it('skips a scraped navigation menu run together into one sentence', () => {
+    const nav = 'Home News Sport Weather iPlayer Sounds Bitesize CBeebies CBBC Food Home News Sport Business Technology Health';
+    const real = sentence(18, 'Arsenal');
+    const out = extractiveEnrichment({ title: TITLE, lede: null, contentText: `${nav} ${real} ${sentence(12, 'Analysts')}` });
+    expect(out.key_fact).toBe(real);
+  });
+
+  it('drops scraped text glued together without spaces (the real BBC podcast page)', () => {
+    const content = 'Home News Sport Weather iPlayer Sounds Bitesize CBeebies CBBC Food Home News Sport Business Technology Health Culture Arts Travel Earth Audio Video Live Use BBC.com or the new BBC App to listen to BBC podcasts, Radio 4 and the World Service outside the UK.Find out how to listen to other BBC stationsEpisode detailsRadio 5 Live,·17 Oct 2026,·13 minsAvailable for over a yearAlex Scott sits down with Kasper and Peter Schmeichel on the latest Football Interview on the Football Daily podcast. The father-son duo reflect on their Premier League title wins, and discuss what it was like for Kasper growing up as the son of Peter Schmeichel. And with Kasper having just retired, how do footballers deal with the end of a career?';
+    const out = extractiveEnrichment({ title: 'Football Daily', lede: 'Alex Scott sits down with Kasper and Peter Schmeichel.', contentText: content });
+    expect(out.key_fact).toBe('The father-son duo reflect on their Premier League title wins, and discuss what it was like for Kasper growing up as the son of Peter Schmeichel.');
+  });
+
+  it('keeps a sentence with a couple of camel-case product names', () => {
+    const real = 'Teams using TypeScript and GitHub Actions ship faster, the annual developer survey found.';
+    expect(extractiveEnrichment({ title: TITLE, lede: null, contentText: real }).key_fact).toBe(real);
+  });
+
+  it('keeps a real sentence that starts with a few capitalised names', () => {
+    const real = 'Arsenal, Chelsea and Manchester United all won on Saturday as the title race tightened.';
+    expect(extractiveEnrichment({ title: TITLE, lede: null, contentText: real }).key_fact).toBe(real);
+  });
+
   it('falls back to the title when every sentence is boilerplate', () => {
     const out = extractiveEnrichment({ title: TITLE, lede: null, contentText: BOILER.join(' ') });
     expect(out.key_fact).toBe(TITLE);
