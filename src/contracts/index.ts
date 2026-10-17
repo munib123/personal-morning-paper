@@ -8,4 +8,6 @@ export * from './signals';
 export * from './streak';
 export * from './learning';
 export * from './engine';
+export * from './api';
+export * from './fixtures';
 export type { Database, Json } from './database.types';
