@@ -43,6 +43,32 @@ export function rowToProfile(r: ProfileRow): Profile {
  */
 export const isFixtureUser = (userId: string): boolean => userId === FIXTURE_USER_ID;
 
+export interface ProfilePatch {
+  paperName?: string;
+  presentation?: Partial<Profile['presentation']>;
+  city?: string;
+}
+
+/** PATCH /api/me/profile: the next build uses it ("Rebuild" shows the change at once). */
+export async function updateProfile(userId: string, patch: ProfilePatch): Promise<Profile> {
+  if (isFixtureUser(userId)) {
+    return { ...FIXTURE_PROFILE, ...(patch.paperName ? { paperName: patch.paperName } : {}), ...(patch.city ? { city: patch.city } : {}), presentation: { ...FIXTURE_PROFILE.presentation, ...patch.presentation } };
+  }
+  const row: { paper_name?: string; city?: string; time_budget?: number; depth?: string; lang?: string } = {};
+  if (patch.paperName !== undefined) row.paper_name = patch.paperName;
+  if (patch.city !== undefined) row.city = patch.city;
+  if (patch.presentation?.timeBudget !== undefined) row.time_budget = patch.presentation.timeBudget;
+  if (patch.presentation?.depth !== undefined) row.depth = patch.presentation.depth;
+  if (patch.presentation?.lang !== undefined) row.lang = patch.presentation.lang;
+  if (Object.keys(row).length > 0) {
+    const { error } = await createSupabaseAdminClient().from('profiles').update(row).eq('user_id', userId);
+    if (error) throw new Error(`updateProfile: ${error.message}`);
+  }
+  const profile = await getProfile(userId);
+  if (!profile) throw Response.json({ error: 'not_onboarded' }, { status: 409 });
+  return profile;
+}
+
 /** null = not onboarded (no row, or onboarded_at is null) → pages redirect('/start'). */
 export async function getProfile(userId: string): Promise<Profile | null> {
   if (isFixtureUser(userId)) return FIXTURE_PROFILE;
