@@ -69,6 +69,15 @@ describe('POST /api/onboarding/describe', () => {
     }
   });
 
+  test("when L2 answers from its own keyword matcher, L5's matcher answers (it understands 'less')", async () => {
+    const text = 'more cricket, less celebrity gossip';
+    enrich.mapTextToTopics.mockResolvedValue({ picks: ['sports.cricket', 'entertainment.pakistani-showbiz'], blocked: [], provider: 'keyword' });
+    const body = await (await post({ text })).json();
+    expect(body).toEqual({ ...keywordTopics(text, FIXTURE_TAXONOMY), provider: 'keyword' });
+    expect(body.blocked).toEqual(['entertainment.pakistani-showbiz']);
+    expect(body.picks).not.toContain('entertainment.pakistani-showbiz');
+  });
+
   test('falls back to keywords when the model is too slow', async () => {
     vi.useFakeTimers();
     enrich.mapTextToTopics.mockReturnValue(new Promise(() => {}));

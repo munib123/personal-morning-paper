@@ -35,7 +35,9 @@ export async function POST(request: Request): Promise<Response> {
 
   if (withinBurst(clientKey(request))) {
     const model = await fromModel(text);
-    if (model) {
+    // Only a real model answer is passed through. When L2 itself fell back to keyword matching, L5's
+    // matcher answers instead: it understands "less"/"fewer", clause breaks and the longest match.
+    if (model && model.provider === 'gemini') {
       const picks = clean(model.picks);
       const blocked = clean(model.blocked);
       if (picks.length > 0 || blocked.length > 0) return Response.json({ picks, blocked, provider: model.provider });
