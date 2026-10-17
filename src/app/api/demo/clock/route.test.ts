@@ -13,10 +13,10 @@ afterEach(() => {
 });
 
 describe('POST /api/demo/clock', () => {
-  it('404 unless DEMO_MODE=1', async () => {
+  it('403 unless DEMO_MODE=1 (as the L0 route contract test pins)', async () => {
     vi.stubEnv('DEMO_MODE', '');
     const res = await post({ now: '2026-10-18T02:00:00.000Z' });
-    expect(res.status).toBe(404);
+    expect(res.status).toBe(403);
     expect(res.headers.get('set-cookie')).toBeNull();
   });
 

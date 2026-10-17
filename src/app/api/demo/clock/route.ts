@@ -12,7 +12,8 @@ const MAX_AGE_S = 60 * 60 * 24 * 30;
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request): Promise<Response> {
-  if (process.env.DEMO_MODE !== '1') return NextResponse.json({ error: 'not found' }, { status: 404 });
+  // 403 like /api/demo/fast-forward (pinned by tests/l0/routes.test.ts on main).
+  if (process.env.DEMO_MODE !== '1') return NextResponse.json({ error: 'demo mode is off' }, { status: 403 });
 
   const parsed = DemoClockRequestSchema.safeParse(await readJson(request));
   if (!parsed.success) return invalid(parsed.error.issues);
