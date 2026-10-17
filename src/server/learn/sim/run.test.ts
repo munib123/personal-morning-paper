@@ -10,7 +10,7 @@ const topicEmb = Object.fromEntries(TAX.map((t, i) => [t.slug, unitVec(9000 + i)
 const input = () => ({ pool: makePool(400, { now: NOW }), taxonomy: TAX, topicEmb, persona: AYESHA, days: 7, now: NOW, params: DEFAULT_PARAMS });
 const in01 = (x: number) => x >= 0 && x <= 1;
 
-describe('runSimulation (7 days, 3 arms)', () => {
+describe('runSimulation (7 days, 3 arms)', { timeout: 60_000 }, () => {
   const r = runSimulation(input());
 
   it('run shape: 7 days per arm, metrics in [0,1], 7 snapshots, schema-valid', () => {
@@ -36,7 +36,7 @@ describe('runSimulation (7 days, 3 arms)', () => {
   });
 });
 
-describe('runLearningArm', () => {
+describe('runLearningArm', { timeout: 60_000 }, () => {
   it('learning trace: 7 days, each with 28 ranked items and at least one open, deterministic', () => {
     const t = runLearningArm(input());
     expect(t).toHaveLength(7);

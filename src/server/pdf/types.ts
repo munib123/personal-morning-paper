@@ -63,4 +63,5 @@ export const TEASER_COUNT = 5;
 /** An inner page with at most this many stories has room for a strip of up to INNER_BRIEFS_MAX briefs. */
 export const SPARSE_PAGE_MAX = 3;
 export const INNER_BRIEFS_MAX = 3;
-export const MAX_OVERFLOW_RETRIES = 2;
+// Real (extractive) editions can need the whole page-1 ladder plus an inner-page step: up to 5 renders.
+export const MAX_OVERFLOW_RETRIES = 4;

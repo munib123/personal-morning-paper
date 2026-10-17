@@ -122,6 +122,29 @@ describe.skipIf(!run)('buildEdition against the shared Supabase', () => {
     const ids = (e: { items: { article: { id: string } }[] }) => e.items.map((i) => i.article.id).join(',');
     expect(ids(after)).not.toBe(ids(before));
   }, 120_000);
+
+  it('the archive, an interest edit and a profile patch work against the real tables', async () => {
+    const { ArchiveEntrySchema, InterestWeightSchema, ProfileSchema } = await import('@/contracts/api');
+    const { listArchive } = await import('./index');
+    const { editInterest } = await import('@/server/learn');
+    const { updateProfile } = await import('@/server/profile');
+    const archive = await listArchive(userId, 60);
+    expect(archive).toHaveLength(1);
+    expect(ArchiveEntrySchema.safeParse(archive[0]).success).toBe(true);
+    expect(archive[0]).toMatchObject({ number: 1 });
+    expect(archive[0].leadHeadline.length).toBeGreaterThan(0);
+
+    const weights = await editInterest(userId, { slug: 'sports.cricket', action: 'set', value: 0.8 }, new Date());
+    const cricket = weights.find((w) => w.slug === 'sports.cricket')!;
+    expect(InterestWeightSchema.safeParse(cricket).success).toBe(true);
+    expect(cricket.alpha / (cricket.alpha + cricket.beta)).toBeCloseTo(0.8, 2);
+    const pinned = await editInterest(userId, { slug: 'science.space', action: 'pin' }, new Date());
+    expect(pinned.find((w) => w.slug === 'science.space')?.pinned).toBe(true);
+
+    const p = await updateProfile(userId, { city: 'Lahore', presentation: { timeBudget: 30 } });
+    expect(ProfileSchema.safeParse(p).success).toBe(true);
+    expect(p).toMatchObject({ city: 'Lahore', presentation: { timeBudget: 30, depth: 'basics', lang: 'en' } });
+  }, 120_000);
 });
 
 describe.skipIf(!run)('the seeded demo persona (scripts/seed-demo-persona.ts)', () => {

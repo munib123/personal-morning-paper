@@ -239,24 +239,26 @@ describe('shrinkLayout', () => {
     expect(layout.inner[0].items).toContain(last); // pure: the input is untouched
   });
 
-  it('sends an overflowing inner page’s own briefs back to the last page before its stories', () => {
+  it('sends an overflowing inner page’s whole brief strip back to the last page before its stories', () => {
     const k = layout.inner.findIndex((p) => (p.briefs ?? []).length > 0);
     expect(k).toBeGreaterThanOrEqual(0);
     const briefs = layout.inner[k].briefs!;
     const next = shrinkLayout(layout, [k + 2])!;
-    expect(next.inner[k].briefs).toHaveLength(briefs.length - 1);
+    expect(next.inner[k].briefs).toHaveLength(0);
     expect(next.inner[k].items).toHaveLength(layout.inner[k].items.length);
-    expect(next.briefs[0].article.id).toBe(briefs[briefs.length - 1].article.id);
-    expect(pageOf(next, next.briefs[0].article.id)).toBe(pageCount(next));
+    expect(next.briefs.slice(0, briefs.length).map((b) => b.article.id)).toEqual(briefs.map((b) => b.article.id));
+    for (const b of briefs) expect(pageOf(next, b.article.id)).toBe(pageCount(next));
   });
 
-  it('shortens the lead first, then moves the rail story into the briefs, when page 1 overflows', () => {
+  it('shortens the lead, moves the rail story into the briefs, then shortens the lead again, when page 1 overflows', () => {
     const once = shrinkLayout(layout, [1]);
     expect(once!.budgets.lead).toBe(120);
     expect(once!.rail).toHaveLength(layout.rail.length);
     const twice = shrinkLayout(once!, [1]);
     expect(twice!.rail).toHaveLength(layout.rail.length - 1);
     expect(twice!.briefs[0].article.id).toBe(layout.rail[layout.rail.length - 1].article.id);
+    const thrice = shrinkLayout(twice!, [1]);
+    expect(thrice!.budgets.lead).toBe(60);
   });
 
   it('shortens the briefs first, then drops the last one, when the last page overflows', () => {
@@ -269,13 +271,21 @@ describe('shrinkLayout', () => {
     expect(twice!.briefs).toHaveLength(full.briefs.length - 1);
   });
 
+  it('drops the last "Beyond your usual" story once the last page has no briefs left', () => {
+    const bare: PrintLayout = { ...layout, briefs: [], budgets: { ...layout.budgets, brief: 30 } };
+    const next = shrinkLayout(bare, [pageCount(bare)])!;
+    expect(next.beyond).toHaveLength(layout.beyond.length - 1);
+    expect(next.beyond).toEqual(layout.beyond.slice(0, -1));
+  });
+
   it('returns null when nothing can move', () => {
     const stuck: PrintLayout = {
       ...layout,
       rail: [],
       inner: [{ root: layout.inner[0].root, items: layout.inner[0].items.slice(0, 1) }],
+      beyond: [],
       briefs: [],
-      budgets: { ...DEFAULT_BUDGETS, lead: 120, brief: 30 },
+      budgets: { ...DEFAULT_BUDGETS, lead: 60, brief: 30 },
     };
     expect(shrinkLayout(stuck, [1, 2, 3])).toBeNull();
     expect(shrinkLayout(layout, [])).toBeNull();
