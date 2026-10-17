@@ -6,7 +6,7 @@
 //     404 missing, 501 not built yet, 503 degraded/fallback), never a crash (500);
 //   - security rules: cron routes refuse unauthenticated callers, demo routes need DEMO_MODE.
 // Owners test the real behaviour of their routes in their own lane tests.
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import {
   ArchiveEntrySchema,
@@ -85,8 +85,20 @@ const onboardingInput = {
   tz: 'Asia/Karachi',
 };
 
+beforeEach(() => {
+  // Real handlers must degrade fast when the DB is unreachable. Point Supabase at a closed local
+  // port so every network call fails at once (CI's placeholder host can take seconds to fail DNS).
+  vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'http://127.0.0.1:9');
+  vi.stubEnv('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY', 'sb_publishable_test');
+  vi.stubEnv('SUPABASE_SECRET_KEY', 'sb_secret_test');
+  // postgrest-js retries idempotent reads with backoff (~7 s per lookup on a dead host). A fast,
+  // non-retryable 400 makes every DB read fail at once and deterministically.
+  vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ message: 'db unavailable in tests' }), { status: 400, headers: { 'content-type': 'application/json' } })));
+});
+
 afterEach(() => {
   vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
 });
 
 describe('every §9.2 route answers with its contract (or a sanctioned error, never a 500)', () => {
