@@ -43,10 +43,11 @@ export async function shareLink(data: ShareData, target: ShareTarget): Promise<S
 }
 
 export interface ShareButtonProps extends ShareData {
+  size?: 'sm' | 'md';
   className?: string;
 }
 
-export function ShareButton({ title, url, className }: ShareButtonProps) {
+export function ShareButton({ title, url, size = 'md', className }: ShareButtonProps) {
   const [busy, setBusy] = useState(false);
 
   async function onClick() {
@@ -62,7 +63,7 @@ export function ShareButton({ title, url, className }: ShareButtonProps) {
   }
 
   return (
-    <Button variant="secondary" className={className} onClick={onClick} aria-busy={busy || undefined}>
+    <Button variant={size === 'sm' ? 'ghost' : 'secondary'} size={size} className={className} onClick={onClick} aria-busy={busy || undefined}>
       Share
     </Button>
   );
