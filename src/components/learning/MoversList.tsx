@@ -1,4 +1,3 @@
-import { Icon } from '@/components/morrow';
 import type { WeightDelta } from '@/contracts/signals';
 import { deltaLabel, splitMovers } from './learning-view';
 
@@ -8,18 +7,13 @@ function MoverColumn({ title, movers }: { title: string; movers: WeightDelta[] }
     <div className="flex flex-col gap-2">
       <h3 className="kicker m-0 text-ink-muted">{title}</h3>
       <ul className="flex flex-col">
-        {movers.map((m) => {
-          const up = m.after > m.before;
-          return (
-            <li key={m.slug} className="flex items-baseline justify-between gap-4 border-t border-rule py-2 first:border-t-0">
-              <span className="ui-text text-ink">{m.name}</span>
-              <span className="ui-meta inline-flex shrink-0 items-center gap-1 text-pen">
-                <Icon name={up ? 'plus' : 'minus'} size={14} />
-                {deltaLabel(m.before, m.after)}
-              </span>
-            </li>
-          );
-        })}
+        {/* The label carries its own sign ("+12 pts", "−3 pts"); a plus/minus icon beside it read "+ +12 pts". */}
+        {movers.map((m) => (
+          <li key={m.slug} className="flex items-baseline justify-between gap-4 border-t border-rule py-2 first:border-t-0">
+            <span className="ui-text text-ink">{m.name}</span>
+            <span className="ui-meta shrink-0 text-pen">{deltaLabel(m.before, m.after)}</span>
+          </li>
+        ))}
       </ul>
     </div>
   );

@@ -142,11 +142,13 @@ describe('FrontPage', () => {
 
   it('compact masthead on scroll', () => {
     const { container } = renderFront();
-    expect(container.querySelector('.mw-masthead--compact')).toBeNull();
+    // W3: the compact bar no longer renders Morrow's compact Masthead (a second nameplate under the
+    // TopBar); it is the date, the view toggle and the progress, marked data-masthead="compact".
+    expect(container.querySelector('[data-masthead="compact"]')).toBeNull();
     const full = container.querySelector('[data-masthead="full"]');
     expect(full).not.toBeNull();
     act(() => scrollPast(full as Element));
-    expect(container.querySelector('.mw-masthead--compact')).not.toBeNull();
+    expect(container.querySelector('[data-masthead="compact"]')).not.toBeNull();
     expect(screen.getByRole('progressbar', { name: '0 of 20 read' })).toBeInTheDocument();
   });
 

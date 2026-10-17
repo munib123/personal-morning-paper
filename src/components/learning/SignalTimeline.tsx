@@ -18,9 +18,15 @@ export function SignalTimeline({ timeline, nowIso }: { timeline: LearningView['t
               <span className="text-ink-soft">{t.headline}</span>
             </>
           ) : null}
-          <span aria-hidden="true"> → </span>
-          <span className="sr-only">, effect: </span>
-          <span className="text-pen">{t.effect}</span>
+          {/* The server falls back to the raw signal type ("dwell", "audio_play") when a signal moved
+              nothing; show an effect only when there is one, never an internal event name. */}
+          {t.effect && t.effect !== t.type ? (
+            <>
+              <span aria-hidden="true"> → </span>
+              <span className="sr-only">, effect: </span>
+              <span className="text-pen">{t.effect}</span>
+            </>
+          ) : null}
         </li>
       ))}
     </ol>

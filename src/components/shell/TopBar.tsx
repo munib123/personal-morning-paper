@@ -15,12 +15,13 @@ export interface TopBarProps {
 export function TopBar({ right }: TopBarProps) {
   return (
     <header className="sticky top-0 z-40 border-b border-rule bg-paper-raised">
-      <div className="mx-auto flex h-14 max-w-(--page-max) items-center gap-6 px-4 md:px-6">
+      {/* Tighter gaps below md: at 390px the nameplate, streak chip and theme toggle overflowed by 1px. */}
+      <div className="mx-auto flex h-14 max-w-(--page-max) items-center gap-3 px-4 md:gap-6 md:px-6">
         <Link href={ROUTES.today} className="masthead-sm shrink-0 whitespace-nowrap text-ink no-underline">
           {BRAND.nameplate}
         </Link>
         <NavLinks className="hidden md:block" />
-        <div className="ml-auto flex items-center gap-3">
+        <div className="ml-auto flex min-w-0 items-center gap-1 sm:gap-3">
           {right}
           <ThemeToggle />
         </div>
