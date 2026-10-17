@@ -1,0 +1,33 @@
+{
+  "v": 3,
+  "assetGroups": {},
+  "blobs": {},
+  "createdOnFiles": {
+    "at": "2026-10-17T06:21:31Z",
+    "v": 1
+  },
+  "docs": {
+    "sections": []
+  },
+  "groups": [],
+  "lastChange": {
+    "at": "2026-10-17T06:21:31Z",
+    "by": "Dark Devil",
+    "note": "First version: broadsheet tokens, Newsreader / Libre Franklin / blackletter type, 15 React components, web front page and PDF page showcases.",
+    "via": "Claude (Cowork)"
+  },
+  "layout": "files",
+  "libraries": [
+    {
+      "name": "react",
+      "version": "18"
+    },
+    {
+      "name": "react-dom",
+      "version": "18"
+    }
+  ],
+  "namespace": "Morrow",
+  "sections": {},
+  "title": "Morrow"
+}
