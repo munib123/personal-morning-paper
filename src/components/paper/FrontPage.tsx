@@ -110,7 +110,9 @@ export function FrontPage({ readerName, city }: FrontPageProps) {
       />
       <EditorNote edition={edition} />
 
-      <section aria-labelledby="above-the-fold" className="mt-8 grid gap-8 lg:grid-cols-[2fr_1fr] lg:gap-0 lg:divide-x lg:divide-rule">
+      {/* The stories settle in on first paint (globals.css .reader-enter). Not the masthead: its compact
+          bar is position: fixed, which a transformed ancestor would capture. */}
+      <section aria-labelledby="above-the-fold" className="reader-enter mt-8 grid gap-8 lg:grid-cols-[2fr_1fr] lg:gap-0 lg:divide-x lg:divide-rule">
         <h2 id="above-the-fold" className="sr-only">
           Top stories
         </h2>
@@ -127,7 +129,7 @@ export function FrontPage({ readerName, city }: FrontPageProps) {
         </div>
       </section>
 
-      <div className="mt-8 space-y-8 md:mt-12 md:space-y-12">
+      <div className="reader-enter mt-8 space-y-8 md:mt-12 md:space-y-12">
         {layout.sections.map((s) => (
           <PaperSection key={s.slug} id={slugId(s.slug)} title={sectionLabel(s.slug, edition.sectionNames)} items={s.items} />
         ))}

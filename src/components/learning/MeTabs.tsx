@@ -69,7 +69,15 @@ export function MeTabs({ initialTab, data }: MeTabsProps) {
           );
         })}
       </div>
-      <div role="tabpanel" id={`me-panel-${tab}`} aria-labelledby={`me-tab-${tab}`} tabIndex={0} className="outline-none focus-visible:shadow-(--focus-ring)">
+      {/* Keyed by tab, so a new tab's panel settles in (each tab is its own panel anyway). */}
+      <div
+        key={tab}
+        role="tabpanel"
+        id={`me-panel-${tab}`}
+        aria-labelledby={`me-tab-${tab}`}
+        tabIndex={0}
+        className="reader-enter outline-none focus-visible:shadow-(--focus-ring)"
+      >
         {panel(tab, data)}
       </div>
     </div>
