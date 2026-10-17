@@ -16,7 +16,7 @@ export function EndOfPaper() {
   const { edition, state, liveStreak, signals } = useEdition();
   const line = tomorrowLine(signals.lastResult?.deltas ?? [], state.feedback, state.items, edition.sectionNames);
   return (
-    <div id="end-of-paper" className="mx-auto mt-12 flex max-w-(--measure) flex-col gap-6 border-t border-rule pt-24 md:mt-16">
+    <div id="end-of-paper" className="mx-auto mt-12 flex max-w-(--measure) flex-col gap-6 border-t border-rule pt-12 md:mt-16 md:pt-16">
       <DoneForToday edition={edition} readIds={state.read} streak={liveStreak} />
       <p className="deck text-ink-soft">{line}</p>
       <div className="flex flex-wrap items-center gap-3">

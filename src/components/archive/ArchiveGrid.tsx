@@ -9,10 +9,10 @@ const storiesLine = (n: number) => (n === 1 ? '1 story read' : `${n} stories rea
  */
 export function ArchiveGrid({ weeks }: { weeks: ArchiveWeek[] }) {
   if (weeks.length === 0) {
-    return <p className="ui-text text-ink-muted">Your first paper lands here tomorrow morning.</p>;
+    return <p className="reader-enter ui-text text-ink-muted">Your first paper lands here tomorrow morning.</p>;
   }
   return (
-    <div className="flex flex-col gap-10">
+    <div className="reader-enter flex flex-col gap-10">
       {weeks.map((week) => (
         <section key={week.weekStart} aria-label={week.label}>
           <SectionHeader title={week.label} meta={week.cards.length === 1 ? '1 edition' : `${week.cards.length} editions`} />

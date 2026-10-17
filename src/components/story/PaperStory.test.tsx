@@ -12,7 +12,7 @@ import type { EditionItem } from '@/contracts/edition';
 import { initEditionState } from '@/components/paper/edition-state';
 import { EditionContext, type EditionContextValue } from '@/components/paper/EditionContext';
 import { useImageFallback } from './image-fallback';
-import { PaperStory } from './PaperStory';
+import { PaperStory, fadeInWhenLoaded } from './PaperStory';
 import { faithfulnessBadge, topReasons } from './format';
 
 beforeAll(() => {
@@ -169,5 +169,45 @@ describe('PaperStory', () => {
     const { container } = renderStory(<PaperStory item={withArticle(lead, { imageUrl: null })} variant="lead" />);
     expect(container.querySelector('img')).toBeNull();
     expect(container.querySelector('figure')).toBeNull();
+  });
+
+  it('holds a still-loading image back and fades it in on load', () => {
+    const { container } = renderStory(<PaperStory item={withArticle(lead, { imageUrl: 'https://img.example/lead.jpg' })} variant="lead" />);
+    const img = container.querySelector('img')!;
+    // jsdom never loads images, so the card's image is still loading here.
+    expect(img.getAttribute('data-img')).toBe('pending');
+    fireEvent.load(img);
+    expect(img.getAttribute('data-img')).toBe('ready');
+  });
+});
+
+describe('fadeInWhenLoaded', () => {
+  const image = (complete: boolean) => {
+    const img = document.createElement('img');
+    Object.defineProperty(img, 'complete', { value: complete });
+    return img;
+  };
+
+  it('leaves an image that has already loaded alone, so nothing blinks', () => {
+    const img = image(true);
+    fadeInWhenLoaded(img);
+    expect(img.hasAttribute('data-img')).toBe(false);
+  });
+
+  it('marks a loading image pending, then ready on load or on error', () => {
+    for (const event of ['load', 'error']) {
+      const img = image(false);
+      fadeInWhenLoaded(img);
+      expect(img.getAttribute('data-img')).toBe('pending');
+      img.dispatchEvent(new Event(event));
+      expect(img.getAttribute('data-img')).toBe('ready');
+    }
+  });
+
+  it('never leaves an image hidden after cleanup', () => {
+    const img = image(false);
+    const stop = fadeInWhenLoaded(img);
+    stop();
+    expect(img.getAttribute('data-img')).not.toBe('pending');
   });
 });
