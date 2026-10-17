@@ -4,6 +4,7 @@
 // tomorrow will change, Download PDF (the one accent button, L6) and Past editions, then the closed
 // "How this paper was made" panel.
 import { Button } from '@/components/morrow';
+import { TellYourEditorEntry } from '@/components/editor/TellYourEditor';
 import { PdfButton } from '@/components/pdf/PdfButton';
 import { DoneForToday } from '@/components/recall/DoneForToday';
 import { ROUTES } from '@/contracts/api';
@@ -24,6 +25,7 @@ export function EndOfPaper() {
           Past editions
         </Button>
       </div>
+      <TellYourEditorEntry />
       <HowThisPaperWasMade edition={edition} />
     </div>
   );

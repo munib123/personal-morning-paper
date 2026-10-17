@@ -55,6 +55,32 @@ describe('rewardOf', () => {
   });
 });
 
+describe('reward semantics (Ruling W3): a topic learns her read-through, not how often we showed it', () => {
+  const story = () => cricket({ wordCount: 460 }); // expected dwell 120 s
+  const net = (evs: SignalEvent[]) => evs.reduce((s, e) => s + rewardOf(e, story(), DEFAULT_PARAMS), 0);
+  const imp = ev('impression');
+
+  it('scrolled past = a weak no; a skim nets about zero; a full read = a clear yes; a skip = a no', () => {
+    expect(net([imp])).toBeCloseTo(-0.25, 9);
+    expect(Math.abs(net([imp, ev('open'), ev('dwell', { value: 43_000 })]))).toBeLessThan(0.01); // 36% of the expected time
+    expect(net([imp, ev('open'), ev('dwell', { value: 120_000 })])).toBeCloseTo(0.45, 9);
+    expect(net([imp, ev('skip', { meta: { reason: 'not_interested' } })])).toBeLessThan(net([imp]));
+  });
+
+  it('an open alone is neutral: the dwell after it carries the evidence', () => {
+    expect(rewardOf(ev('open'), story(), DEFAULT_PARAMS)).toBe(0);
+  });
+
+  it('an impression moves the topic Beta (β) but never the neg vector; an explicit "less" does', () => {
+    const u = sportsUser();
+    const item = cricket({ embedding: new Float32Array([0, 1]) });
+    const { model } = apply(ev('impression'), item, u);
+    expect(model.interests['sports.cricket'].beta).toBeGreaterThan(u.interests['sports.cricket'].beta);
+    expect(model.neg).toBeNull();
+    expect(apply(ev('less'), item, u).model.neg).not.toBeNull();
+  });
+});
+
 describe('applySignal', () => {
   it('more on cricket conf 1: cricket α 1.5 → 3.0, sports α 2 → 2.45', () => {
     const { model } = apply(ev('more'));
@@ -116,7 +142,7 @@ describe('applySignal', () => {
   });
 
   it('a null pos starts from the item embedding', () => {
-    const { model } = apply(ev('open'), cricket({ embedding: new Float32Array([3, 4]) }));
+    const { model } = apply(ev('dwell', { value: 30_000 }), cricket({ embedding: new Float32Array([3, 4]) }));
     expect(model.pos![0]).toBeCloseTo(0.6, 6);
     expect(model.pos![1]).toBeCloseTo(0.8, 6);
   });

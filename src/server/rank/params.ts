@@ -7,9 +7,12 @@ export const RANK_VERSION = 'rank-v1';
 
 // §10.4 rewards table. `dwell` holds its max (+0.70 · min(1, ms/expected)); `recall_answer` the
 // correct-answer reward (a wrong answer is RANK_V1_FIXED.recallWrongReward). Unknown types → 0.
+// Ruling W3: every shown story is a trial. Scrolled past = −0.25 (a weak no), the open itself = 0 (a click
+// is a question, the dwell is the answer), so per story: skim ≈ 0, full read +0.45, skip −0.75, less −1.75.
+// With the old −0.05 / +0.30 every topic we showed drifted up, whether she liked it or not.
 const REWARDS: Record<SignalType, number> = {
-  impression: -0.05,
-  open: 0.3,
+  impression: -0.25,
+  open: 0,
   dwell: 0.7,
   read_original: 0.6,
   qr_scan: 0.6,
@@ -70,4 +73,6 @@ export const RANK_V1_FIXED = {
   seenEditions: 7, // items of the last 7 editions are never shown again
   engagedDays: 14, // the 'similar' chip looks back 14 days…
   engagedMax: 50, // …at up to 50 engaged articles
+  centerMinPool: 20, // cosines are taken around the pool's mean vector once it has this many embedded stories (Ruling W3)
+  betaOnlyTypes: ['impression'], // implicit signals move the topic Beta only, never the pos / neg vectors (Ruling W3)
 } as const;

@@ -32,10 +32,10 @@ describe('applyEdit (optimistic update)', () => {
 });
 
 describe('InterestEditor', () => {
-  it('renders the header, the reserved slot, a slider per visible row and pressed-state buttons', () => {
+  it('renders the header, the Tell your editor entry, a slider per visible row and pressed-state buttons', () => {
     const html = renderToStaticMarkup(createElement(InterestEditor, { weights: FIXTURE_INTEREST_WEIGHTS }));
     expect(html).toContain('Your interests');
-    expect(html).toContain('data-slot="tell-your-editor"');
+    expect(html).toContain('Tell your editor in your own words.'); // wave 2 mount in the slot L7 reserved
     const roots = FIXTURE_INTEREST_WEIGHTS.filter((w) => w.level === 1).length;
     expect(html.match(/type="range"/g)).toHaveLength(roots);
     expect(html).toContain('aria-pressed');
