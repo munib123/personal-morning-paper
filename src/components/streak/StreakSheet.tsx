@@ -66,7 +66,8 @@ export function StreakSheet({ open, onOpenChange, streak, heatmap }: StreakSheet
           <Button variant="ghost" icon="x" aria-label="Close" onClick={close} />
         </div>
         <StreakPanel streak={streak} heatmap={heatmap} />
-        <div className="flex flex-col gap-2 border-t border-rule pt-4 sm:flex-row sm:items-center sm:justify-between">
+        {/* Pinned to the panel's bottom edge, so the way on stays in reach while the panel scrolls. */}
+        <div className="sticky bottom-0 -mx-5 -mb-6 flex flex-col gap-2 border-t border-rule bg-paper px-5 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:-mx-6 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:pb-4">
           <Button
             variant="primary"
             iconRight="arrow-right"
