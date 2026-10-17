@@ -10,10 +10,12 @@ import { FIXTURE_EDITION } from '@/contracts/fixtures';
 import { getSessionUser } from '@/server/auth/session';
 import { getEdition } from '@/server/edition';
 import { isPaperDate, wantsFixture } from '@/server/pdf/access';
+import { loadPrintExtras } from '@/server/pdf/extras';
 import { fixtureExtras } from '@/server/pdf/fixture';
 import { preparePrintModel } from '@/server/pdf/model';
 import type { PrintExtras } from '@/server/pdf/types';
 import { getProfile } from '@/server/profile';
+import { requestNow } from '@/server/time';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Print edition' };
@@ -35,7 +37,7 @@ export default async function PrintPage({ params, searchParams }: PageProps<'/pa
     const found = await getEdition(user.userId, date);
     if (!found) notFound();
     edition = found;
-    extras = fixtureExtras();
+    extras = await loadPrintExtras(found, await requestNow());
   }
 
   const model = await preparePrintModel(edition, extras);
