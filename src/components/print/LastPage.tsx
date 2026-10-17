@@ -1,22 +1,30 @@
-// The last page: "Beyond your usual" and "In brief" in ruled columns, then what the paper learned:
-// "Why these stories" (movers and reasons) and "Three things you learned".
+// The last page: "Beyond your usual" and any remaining briefs in columns 1-3, and what the paper learned in
+// columns 4-5: "Why these stories" (movers and reasons) and "Three things you learned".
 import { TakeawayBox } from '@/components/morrow';
 import type { EditionItem, ReasonCode } from '@/contracts/edition';
 import { pageCount, pickSummary } from '@/server/pdf/layout';
 import type { PrintModel } from '@/server/pdf/types';
 import { knowItems, takeawayOf } from './FrontPage';
-import { hrefOf, kickerOf, MoverBars, PageFoot, RunningHead, SectionHead } from './parts';
+import { BriefStrip, hrefOf, kickerOf, MoverBars, PageFoot, RunningHead, SectionHead } from './parts';
+
+const innerBriefs = (model: PrintModel) => model.layout.inner.flatMap((p) => p.briefs ?? []);
 
 const printedItems = (model: PrintModel): EditionItem[] => {
   const l = model.layout;
-  return [l.lead, ...l.rail, ...l.inner.flatMap((p) => p.items), ...l.beyond, ...l.briefs];
+  return [l.lead, ...l.rail, ...l.inner.flatMap((p) => p.items), ...innerBriefs(model), ...l.beyond, ...l.briefs];
 };
 
 /** The stories behind "Three things you learned": inner section leads, then other inner stories, never page 1's. */
 export function learnedItems(model: PrintModel): EditionItem[] {
   const used = new Set(knowItems(model).map((i) => i.article.id));
   const l = model.layout;
-  const pool = [...l.inner.map((p) => p.items[0]), ...l.inner.flatMap((p) => p.items.slice(1)), ...l.beyond, ...l.briefs];
+  const pool = [
+    ...l.inner.map((p) => p.items[0]),
+    ...l.inner.flatMap((p) => p.items.slice(1)),
+    ...l.beyond,
+    ...innerBriefs(model),
+    ...l.briefs,
+  ];
   return pool.filter((i) => !used.has(i.article.id)).slice(0, 3);
 }
 
@@ -49,11 +57,12 @@ export function reasonLine(model: PrintModel): string {
     .join(' · ');
 }
 
-function Brief({ model, item, why }: { model: PrintModel; item: EditionItem; why?: boolean }) {
+/** A "Beyond your usual" story: why the paper reached for it (in pen), then a short summary. */
+function BeyondStory({ model, item }: { model: PrintModel; item: EditionItem }) {
   const href = hrefOf(model, item);
-  const reason = why ? item.reasons[0]?.text : null;
+  const reason = item.reasons[0]?.text;
   return (
-    <article className="story story--brief">
+    <article className="story story--beyond">
       <header className="story__head">
         <p className="print-kicker">{kickerOf(model.edition, item)}</p>
         <h3 className="print-headline">
@@ -80,23 +89,14 @@ export function LastPage({ model }: { model: PrintModel }) {
           {layout.beyond.length ? (
             <>
               <SectionHead title="Beyond your usual" />
-              <div className="cols cols--3">
+              <div className="beyond">
                 {layout.beyond.map((item) => (
-                  <Brief key={item.article.id} model={model} item={item} why />
+                  <BeyondStory key={item.article.id} model={model} item={item} />
                 ))}
               </div>
             </>
           ) : null}
-          {layout.briefs.length ? (
-            <>
-              <SectionHead title="In brief" />
-              <div className="cols cols--3">
-                {layout.briefs.map((item) => (
-                  <Brief key={item.article.id} model={model} item={item} />
-                ))}
-              </div>
-            </>
-          ) : null}
+          {layout.briefs.length ? <BriefStrip model={model} items={layout.briefs} /> : null}
         </div>
         <aside className="last__rail">
           <SectionHead title="Why these stories" />
