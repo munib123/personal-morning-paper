@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { agoLabel, pickFrontPage, sectionName, toStory, type FrontPageCandidate } from './front-page';
+import { agoLabel, pickFrontPage, sectionName, sectionOf, toStory, type FrontPageCandidate } from './front-page';
 
 const NOW = new Date('2026-10-17T12:00:00.000Z');
 
@@ -67,6 +67,18 @@ describe('sectionName', () => {
 
   test('falls back to plain News for a slug it does not know', () => {
     expect(sectionName('nonsense.topic')).toBe('News');
+  });
+});
+
+describe('sectionOf', () => {
+  test('files a story under its most confident label', () => {
+    expect(sectionOf([{ slug: 'technical.cs', conf: 0.41 }, { slug: 'news.global-affairs', conf: 0.5 }])).toBe('news.global-affairs');
+  });
+
+  test('files an unsure story under plain News rather than guess a section', () => {
+    expect(sectionOf([{ slug: 'technical.cs.security', conf: 0.33 }])).toBe('');
+    expect(sectionName(sectionOf([]))).toBe('News');
+    expect(sectionOf('not labels')).toBe('');
   });
 });
 

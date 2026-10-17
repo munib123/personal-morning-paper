@@ -56,6 +56,19 @@ export function pickFrontPage(candidates: FrontPageCandidate[], limit: number): 
 }
 
 const NAMES = new Map(FIXTURE_TAXONOMY.map((t) => [t.slug, t.name]));
+const SURE = 0.4;
+
+/** The most confident label's slug, or '' (plain "News") when no label reaches 0.4: the topic labels are
+ *  zero-shot, and a wrong kicker on the front page reads worse than a generic one. */
+export function sectionOf(labels: unknown): TopicSlug {
+  if (!Array.isArray(labels)) return '';
+  let best: { slug: string; conf: number } | null = null;
+  for (const l of labels as { slug?: unknown; conf?: unknown }[]) {
+    const conf = Number(l?.conf);
+    if (typeof l?.slug === 'string' && Number.isFinite(conf) && (!best || conf > best.conf)) best = { slug: l.slug, conf };
+  }
+  return best && best.conf >= SURE ? best.slug : '';
+}
 
 /** The section a story sits in: its second-level topic ("Cricket"), or its root when that is all it has. */
 export function sectionName(slug: TopicSlug): string {
