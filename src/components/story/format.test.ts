@@ -6,6 +6,7 @@ import {
   breakdownRows,
   faithfulnessBadge,
   feedbackNote,
+  firstName,
   formatEditionDate,
   matchPct,
   outboundHref,
@@ -118,6 +119,16 @@ describe('faithfulness badge and feedback note', () => {
   it('confirms more and less in one calm line', () => {
     expect(feedbackNote('more', 'Climate tech')).toBe('Got it. More Climate tech tomorrow.');
     expect(feedbackNote('less', 'Cricket')).toBe('Got it. Less Cricket tomorrow.');
+  });
+});
+
+describe('firstName', () => {
+  it('takes the first word of the display name, or null', () => {
+    expect(firstName('Ayesha Khan')).toBe('Ayesha');
+    expect(firstName('  Bilal  ')).toBe('Bilal');
+    expect(firstName('')).toBeNull();
+    expect(firstName('   ')).toBeNull();
+    expect(firstName(null)).toBeNull();
   });
 });
 

@@ -15,9 +15,11 @@ export interface StoryFooterProps {
   onSave(saved: boolean): void;
   onSkip?: () => void;
   onRead?: () => void;
+  /** Icon-only feedback buttons (labels move to aria-label + title) for narrow columns. */
+  compact?: boolean;
 }
 
-export function StoryFooter({ item, showBadge, feedback, saved, onFeedback, onSave, onSkip, onRead }: StoryFooterProps) {
+export function StoryFooter({ item, showBadge, feedback, saved, onFeedback, onSave, onSkip, onRead, compact }: StoryFooterProps) {
   const also = alsoCoveredLabel(item.article.alsoCoveredBy);
   return (
     <div className="flex flex-col items-start gap-2">
@@ -33,7 +35,7 @@ export function StoryFooter({ item, showBadge, feedback, saved, onFeedback, onSa
             Read here
           </Button>
         ) : null}
-        <FeedbackBar value={feedback} saved={saved} onChange={onFeedback} onSave={onSave} onSkip={onSkip} />
+        <FeedbackBar value={feedback} saved={saved} onChange={onFeedback} onSave={onSave} onSkip={onSkip} compact={compact} />
       </div>
     </div>
   );

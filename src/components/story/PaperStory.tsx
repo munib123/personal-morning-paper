@@ -15,9 +15,11 @@ export interface PaperStoryProps {
   variant: CardVariant;
   withDeck?: boolean;
   readOnly?: boolean;
+  /** Icon-only FeedbackBar, for the narrow columns of the front page. */
+  compactFeedback?: boolean;
 }
 
-export function PaperStory({ item, variant, withDeck, readOnly }: PaperStoryProps) {
+export function PaperStory({ item, variant, withDeck, readOnly, compactFeedback }: PaperStoryProps) {
   const ctx = useEdition();
   const { state, edition } = ctx;
   const id = item.article.id;
@@ -49,6 +51,7 @@ export function PaperStory({ item, variant, withDeck, readOnly }: PaperStoryProp
             onSave={(saved) => ctx.onSave(item, saved)}
             onSkip={canSkip ? () => ctx.onSkip(item) : undefined}
             onRead={() => ctx.openSheet(id)}
+            compact={compactFeedback}
           />
         }
         onOpen={() => ctx.dispatch({ type: 'markRead', articleId: id })}

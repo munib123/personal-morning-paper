@@ -124,6 +124,16 @@ describe('PaperStory', () => {
     expect(value.onSkip).toHaveBeenCalledWith(standard);
   });
 
+  it('can show the feedback bar icon-only for narrow columns', () => {
+    renderStory(<PaperStory item={standard} variant="standard" compactFeedback />);
+    const more = screen.getByRole('button', { name: 'More like this' });
+    expect(more).toHaveAttribute('title', 'More like this');
+    expect(more.textContent).toBe('');
+    cleanup();
+    renderStory(<PaperStory item={lead} variant="lead" />);
+    expect(screen.getByRole('button', { name: 'More like this' }).textContent).toBe('More like this');
+  });
+
   it('a read-only edition offers no skip', () => {
     renderStory(<PaperStory item={standard} variant="standard" />, makeValue({ readOnly: true }));
     expect(screen.queryByRole('button', { name: 'Skip' })).toBeNull();

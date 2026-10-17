@@ -136,6 +136,11 @@ export function faithfulnessBadge(p: ArticleCard['aiProvider']): { label: string
   };
 }
 
+/** The masthead ear's "Prepared for {first name}": the first word of the display name, or null. */
+export function firstName(displayName: string | null): string | null {
+  return displayName?.trim().split(/\s+/)[0] || null;
+}
+
 /** The one-line note after More / Less: "Got it. More Climate tech tomorrow." */
 export function feedbackNote(kind: 'more' | 'less', topic: string): string {
   return `Got it. ${kind === 'more' ? 'More' : 'Less'} ${topic} tomorrow.`;
