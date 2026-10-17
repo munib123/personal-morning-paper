@@ -13,6 +13,20 @@ export const PAGE_MAX_FETCHES = 400;
 export const PAGE_BUDGET_MS = 150_000;
 
 const PAGE_ACCEPT = 'text/html,application/xhtml+xml;q=0.9,*/*;q=0.5';
+
+/** Hosts whose og:image is always the site logo: a page fetch can add nothing (and arXiv rate-limits). */
+export const NO_PAGE_HOSTS = ['arxiv.org'];
+
+function pageCanHelp(d: PreparedArticle): boolean {
+  if (!needsPage(d)) return false;
+  let host: string;
+  try {
+    host = new URL(d.url).hostname.toLowerCase();
+  } catch {
+    return false;
+  }
+  return !NO_PAGE_HOSTS.some((h) => host === h || host.endsWith(`.${h}`));
+}
 const collapse = (t: string | null | undefined) => (t ? t.replace(/\s+/g, ' ').trim() : '');
 
 /**
@@ -82,7 +96,7 @@ export async function enrichFromPages(
 
   const queue = drafts
     .map((d, index) => ({ d, index }))
-    .filter(({ d }) => needsPage(d))
+    .filter(({ d }) => pageCanHelp(d))
     .sort((a, b) => Number(b.d.needsImage) - Number(a.d.needsImage) || Number(b.d.needsText) - Number(a.d.needsText))
     .slice(0, Math.max(0, maxFetches));
 
