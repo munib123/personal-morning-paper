@@ -46,8 +46,11 @@ export async function fetchFeed(
     items: cache?.items ?? 0,
     at: new Date().toISOString(), // ops timestamp (real clock, not the demo clock)
   };
+  const headers: Record<string, string> = { accept: FEED_ACCEPT };
+  if (cache?.etag) headers['if-none-match'] = cache.etag; // conditional GET (§10.1)
+  if (cache?.lastModified) headers['if-modified-since'] = cache.lastModified;
   try {
-    const res = await fetchWithTimeout(url, { headers: { accept: FEED_ACCEPT } }, FEED_TIMEOUT_MS);
+    const res = await fetchWithTimeout(url, { headers }, FEED_TIMEOUT_MS);
     const next: FeedCache = { ...base, httpStatus: res.status };
     if (res.status === 304) return { status: 'not_modified', body: null, cache: next };
     if (!res.ok) {
