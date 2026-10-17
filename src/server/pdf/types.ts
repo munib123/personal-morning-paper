@@ -22,15 +22,16 @@ export interface WordBudgets {
   brief: number;
 }
 
-export const DEFAULT_BUDGETS: WordBudgets = { lead: 180, rail: 70, sectionLead: 120, secondary: 70, brief: 45 };
+export const DEFAULT_BUDGETS: WordBudgets = { lead: 180, rail: 45, sectionLead: 120, secondary: 70, brief: 45 };
 
-/** One section on its own page. items[0] is the section lead. */
+/** One section on its own page. items[0] is the section lead; a page with room also carries a strip of briefs. */
 export interface InnerPage {
   root: TopicSlug;
   items: EditionItem[];
+  briefs?: EditionItem[];
 }
 
-/** Page 1 = lead + rail, pages 2… = inner, last page = beyond + briefs. */
+/** Page 1 = lead + rail, pages 2… = inner (+ their briefs), last page = beyond + the remaining briefs. */
 export interface PrintLayout {
   lead: EditionItem;
   rail: EditionItem[];
@@ -54,8 +55,12 @@ export interface PrintModel {
   assets: PrintAssets;
 }
 
-export const RAIL_MAX = 2;
+// Measured on A4: next to the Morrow TakeawayBox and the Inside index, columns 4-5 hold one rail story.
+export const RAIL_MAX = 1;
 export const MAX_INNER_PAGES = 3;
 export const INNER_PAGE_CAPACITY = 5;
 export const TEASER_COUNT = 5;
+/** An inner page with at most this many stories has room for a strip of up to INNER_BRIEFS_MAX briefs. */
+export const SPARSE_PAGE_MAX = 3;
+export const INNER_BRIEFS_MAX = 3;
 export const MAX_OVERFLOW_RETRIES = 2;

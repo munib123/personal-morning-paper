@@ -1,26 +1,44 @@
-// STUB (L0) — owner: L6. Replace freely; keep the signature.
-import { NextResponse } from 'next/server';
-import { ROUTES } from '@/contracts/api';
-import { FIXTURE_USER_ID } from '@/contracts/fixtures';
+// GET /api/editions/[date]/pdf (ARCHITECTURE §9.2): 302 to the stored PDF's signed URL; on a miss, render and
+// store it where full Puppeteer runs (local, Actions); otherwise 503 { fallback: '/paper/{date}/print' }.
+import { PdfFallbackSchema, ROUTES } from '@/contracts/api';
+import { requireUser } from '@/server/auth/session';
 import { getEdition } from '@/server/edition';
 import { getEditionPdfUrl, renderAndStoreEditionPdf } from '@/server/pdf';
+import { isPaperDate } from '@/server/pdf/access';
+import { canRenderHere } from '@/server/pdf/browser';
 
 export const maxDuration = 60;
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
-// GET → 302 to the stored PDF's signed URL · or render, store and 302 · or 503 { fallback: '/paper/{date}/print' }.
-// Stub: no auth; nothing is stored and rendering always rejects, so the fixture date gets the 503 fallback.
+const printFallback = (date: string) => Response.json(PdfFallbackSchema.parse({ fallback: ROUTES.print(date) }), { status: 503 });
+
 export async function GET(_request: Request, { params }: { params: Promise<{ date: string }> }): Promise<Response> {
   const { date } = await params;
-  const edition = await getEdition(FIXTURE_USER_ID, date);
-  if (!edition) return Response.json({ error: 'not found' }, { status: 404 });
+  if (!isPaperDate(date)) return Response.json({ error: 'bad_date' }, { status: 400 });
+
+  let userId: string;
   try {
-    const stored = await getEditionPdfUrl(edition.id);
-    if (stored) return NextResponse.redirect(stored, 302);
+    ({ userId } = await requireUser());
+  } catch (err) {
+    if (err instanceof Response) return err;
+    throw err;
+  }
+
+  const edition = await getEdition(userId, date);
+  if (!edition) return Response.json({ error: 'no_edition' }, { status: 404 });
+
+  const stored = await getEditionPdfUrl(edition.id).catch(() => null);
+  if (stored) return Response.redirect(stored, 302);
+  if (!canRenderHere()) return printFallback(date); // Vercel: no browser, the print route prints it
+
+  try {
     await renderAndStoreEditionPdf(edition);
     const fresh = await getEditionPdfUrl(edition.id);
-    if (fresh) return NextResponse.redirect(fresh, 302);
-  } catch {
-    // Storage or Chromium failed: the reader can still print the HTML edition.
+    if (fresh) return Response.redirect(fresh, 302);
+    throw new Error('stored PDF could not be signed');
+  } catch (err) {
+    console.error('[pdf] render failed', { date, userId, err });
+    return printFallback(date);
   }
-  return Response.json({ fallback: ROUTES.print(date) }, { status: 503 });
 }
