@@ -106,7 +106,7 @@ function useBuildPaper(draft: OnboardingDraft) {
   return { ...state, build };
 }
 
-function Flow({ taxonomy, date, initial, persist }: OnboardingFlowProps & { initial: OnboardingDraft; persist: boolean }) {
+function Flow({ taxonomy, date, demoUnavailable, initial, persist }: OnboardingFlowProps & { initial: OnboardingDraft; persist: boolean }) {
   const [draft, setDraft] = useState<OnboardingDraft>(initial);
   const update = (patch: Partial<OnboardingDraft>) => setDraft((d) => ({ ...d, ...patch }));
   const go = (step: DraftStep) => update({ step });
@@ -229,6 +229,11 @@ function Flow({ taxonomy, date, initial, persist }: OnboardingFlowProps & { init
         </>
       ) : null}
       <main className="mx-auto flex w-full max-w-(--page-max) flex-col gap-8 px-4 pt-6 pb-16 md:px-6 md:pt-10">
+        {demoUnavailable ? (
+          <p role="status" className="ui-meta mx-auto w-full max-w-(--measure) text-ink-muted">
+            The demo reader isn&apos;t available right now. You can build your own paper instead.
+          </p>
+        ) : null}
         {header}
         <div className="mx-auto flex w-full max-w-(--measure) flex-col gap-4">
           {back}
