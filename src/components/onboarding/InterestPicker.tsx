@@ -1,68 +1,92 @@
-// STUB (L0) — owner: L5. Replace freely; keep the props.
 'use client';
-
-import { useId } from 'react';
-import type { InterestPick } from '@/contracts/profile';
+// InterestPicker (ARCHITECTURE §9.6, owner L5; L7 reuses it on /me with mode="edit").
+// Morrow TopicChips grouped under the 9 root labels. Each group starts with "All of {root}" (a tile
+// pick), then the root's topics (chip picks). A topic with sub-topics has a › disclosure that opens
+// them in place: Technical → Computer Science → AI & Machine Learning. Every decision lives in the
+// pure pickerReducer; this component only renders it and reports picks/blocked through onChange.
+import { Fragment, useId, useState } from 'react';
+import { Button, TopicChip } from '@/components/morrow';
 import type { TopicNode, TopicSlug } from '@/contracts/taxonomy';
-import { TopicChip } from '@/components/morrow';
+import {
+  chipHint,
+  childrenOf,
+  pickCounterText,
+  pickerReducer,
+  type InterestPickerProps,
+  type PickerAction,
+} from './lib/picker-state';
 
-export interface InterestPickerValue {
-  picks: InterestPick[];
-  blocked: TopicSlug[];
-}
+export type { InterestPickerProps, InterestPickerValue } from './lib/picker-state';
 
-export interface InterestPickerProps {
-  taxonomy: TopicNode[];
-  value: InterestPickerValue;
-  onChange: (v: InterestPickerValue) => void;
-  mode: 'onboarding' | 'edit';
-}
-
-// TopicChips grouped under the root labels (Arts, Science, Technical …). A picked topic with
-// children opens them in place underneath (Technical → Computer Science → web dev, AI …).
-// Stub: no search, no mute UI (blocked passes through); L5 owns the real picker, L7 reuses it on /me.
 export function InterestPicker({ taxonomy, value, onChange, mode }: InterestPickerProps) {
   const baseId = useId();
+  const [open, setOpen] = useState<TopicSlug[]>([]);
   const picked = new Set(value.picks.map((p) => p.slug));
-  const childrenOf = (slug: TopicSlug) => taxonomy.filter((n) => n.parentSlug === slug);
-  const roots = taxonomy.filter((n) => n.level === 1);
 
-  const toggle = (node: TopicNode, on: boolean) => {
-    if (on) {
-      if (picked.has(node.slug)) return;
-      onChange({ picks: [...value.picks, { slug: node.slug, via: 'chip' }], blocked: value.blocked.filter((b) => b !== node.slug) });
-    } else {
-      // Unpicking a topic also drops its sub-topics, which are only shown while it is picked.
-      const inside = (s: TopicSlug) => s === node.slug || s.startsWith(`${node.slug}.`);
-      onChange({ picks: value.picks.filter((p) => !inside(p.slug)), blocked: value.blocked });
-    }
+  const dispatch = (action: PickerAction) => {
+    const next = pickerReducer({ ...value, open }, action, taxonomy);
+    if (next.open !== open) setOpen(next.open);
+    if (next.picks !== value.picks || next.blocked !== value.blocked) onChange({ picks: next.picks, blocked: next.blocked });
   };
 
-  const chip = (n: TopicNode) => <TopicChip key={n.slug} label={n.name} selected={picked.has(n.slug)} onToggle={(on) => toggle(n, on)} />;
+  const chip = (n: TopicNode, label = n.name) => (
+    <TopicChip
+      key={n.slug}
+      label={label}
+      selected={picked.has(n.slug)}
+      hint={chipHint(n.slug, value.picks)}
+      onToggle={() => dispatch({ type: 'toggle', slug: n.slug })}
+    />
+  );
 
   return (
-    <div className="flex flex-col gap-6" data-mode={mode}>
-      {roots.map((root) => {
-        const topics = childrenOf(root.slug);
-        const chips = topics.length > 0 ? topics : [root];
+    <div className="flex flex-col gap-6">
+      {mode === 'onboarding' ? (
+        <p className="ui-meta text-ink-muted" aria-live="polite">
+          {pickCounterText(value.picks.length)}
+        </p>
+      ) : null}
+      {childrenOf(taxonomy, null).map((root) => {
         const labelId = `${baseId}-${root.slug}`;
         return (
           <section key={root.slug} aria-labelledby={labelId} className="flex flex-col gap-3">
-            <h3 id={labelId} className="kicker text-ink-muted">
+            <h3 id={labelId} className="ui-label text-ink-muted">
               {root.name}
             </h3>
-            <div className="flex flex-wrap gap-3">{chips.map(chip)}</div>
-            {chips
-              .filter((n) => picked.has(n.slug))
-              .map((n) => {
-                const deeper = childrenOf(n.slug);
-                if (deeper.length === 0) return null;
+            <div className="flex flex-wrap items-center gap-2">
+              {chip(root, `All of ${root.name}`)}
+              {childrenOf(taxonomy, root.slug).map((topic) => {
+                const subtopics = childrenOf(taxonomy, topic.slug);
+                if (subtopics.length === 0) return chip(topic);
+                const isOpen = open.includes(topic.slug);
+                const panelId = `panel-${topic.slug}`;
                 return (
-                  <div key={n.slug} role="group" aria-label={`More in ${n.name}`} className="flex flex-wrap gap-3 border-l border-rule pl-4">
-                    {deeper.map(chip)}
-                  </div>
+                  <Fragment key={topic.slug}>
+                    <span className="inline-flex items-center gap-1">
+                      {chip(topic)}
+                      {/* The chevron turns down while the panel is open (a static turn, no animation). */}
+                      <span className={isOpen ? 'inline-flex rotate-90' : 'inline-flex'}>
+                        <Button
+                          variant="ghost"
+                          icon="chevron-right"
+                          aria-expanded={isOpen}
+                          aria-controls={panelId}
+                          aria-label={`Show ${topic.name} topics`}
+                          onClick={() => dispatch({ type: 'toggleDisclosure', slug: topic.slug })}
+                        />
+                      </span>
+                    </span>
+                    {isOpen ? (
+                      <div id={panelId} role="group" aria-label={`${topic.name} topics`} className="flex basis-full flex-wrap gap-2 border-l border-rule pl-3">
+                        {subtopics.map((s) => chip(s))}
+                      </div>
+                    ) : (
+                      <div id={panelId} hidden />
+                    )}
+                  </Fragment>
                 );
               })}
+            </div>
           </section>
         );
       })}

@@ -1,0 +1,30 @@
+[
+  {
+    "type_of": "article",
+    "id": 3001,
+    "title": "Signals are coming to JavaScript",
+    "description": "A look at the TC39 signals proposal and what it means for frameworks.",
+    "url": "https://dev.to/ana/signals-are-coming-to-javascript-1abc",
+    "canonical_url": "https://ana.dev/blog/signals",
+    "cover_image": "https://media2.dev.to/dynamic/image/width=1000/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fsignals.png",
+    "social_image": "https://media2.dev.to/dynamic/image/width=1000,height=500/social-signals.png",
+    "published_timestamp": "2026-10-17T03:15:00Z",
+    "published_at": "2026-10-17T03:15:00Z",
+    "tag_list": ["javascript", "webdev"],
+    "user": { "name": "Ana Torres", "username": "ana" }
+  },
+  {
+    "type_of": "article",
+    "id": 3002,
+    "title": "Ship faster with smaller pull requests",
+    "description": "Why small PRs get reviewed sooner and break less.",
+    "url": "https://dev.to/sam/ship-faster-with-smaller-pull-requests-2def",
+    "canonical_url": "https://dev.to/sam/ship-faster-with-smaller-pull-requests-2def",
+    "cover_image": null,
+    "social_image": "https://media2.dev.to/dynamic/image/width=1000,height=500/social-small-prs.png",
+    "published_timestamp": "2026-10-16T21:40:00Z",
+    "published_at": "2026-10-16T21:40:00Z",
+    "tag_list": ["webdev", "productivity"],
+    "user": { "name": "Sam Lee", "username": "sam" }
+  }
+]
