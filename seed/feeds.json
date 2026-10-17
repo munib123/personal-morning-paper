@@ -1,0 +1,2843 @@
+[
+  {
+    "url": "https://feeds.bbci.co.uk/news/world/rss.xml",
+    "name": "BBC News - World",
+    "kind": "rss",
+    "taxonomy": [
+      "news.global-affairs"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=32, last24h~24, newest=2026-10-17 05:20 UTC, fields title/link/date/desc ok; tier=core"
+  },
+  {
+    "url": "https://feeds.bbci.co.uk/news/world/asia/rss.xml",
+    "name": "BBC News - Asia",
+    "kind": "rss",
+    "taxonomy": [
+      "news.south-asia",
+      "news.pakistan"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=18, last24h~4, newest=2026-10-17 00:41 UTC, fields title/link/date/desc ok; tier=core"
+  },
+  {
+    "url": "https://feeds.bbci.co.uk/news/business/rss.xml",
+    "name": "BBC News - Business",
+    "kind": "rss",
+    "taxonomy": [
+      "business.global-economy"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=49, last24h~3, newest=2026-10-17 06:01 UTC, fields title/link/date/desc ok; tier=core"
+  },
+  {
+    "url": "https://feeds.bbci.co.uk/news/technology/rss.xml",
+    "name": "BBC News - Technology",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.industry"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=21, last24h~5, newest=2026-10-16 18:11 UTC, fields title/link/date/desc ok; tier=core"
+  },
+  {
+    "url": "https://feeds.bbci.co.uk/news/science_and_environment/rss.xml",
+    "name": "BBC News - Science & Environment",
+    "kind": "rss",
+    "taxonomy": [
+      "science.discoveries",
+      "science.climate-environment"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=42, last24h~9, newest=2026-10-17 05:10 UTC, fields title/link/date/desc ok; tier=core"
+  },
+  {
+    "url": "https://feeds.bbci.co.uk/news/health/rss.xml",
+    "name": "BBC News - Health",
+    "kind": "rss",
+    "taxonomy": [
+      "health.medicine",
+      "health.public-health"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=56, last24h~15, newest=2026-10-16 23:49 UTC, fields title/link/date/desc ok; tier=core"
+  },
+  {
+    "url": "https://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml",
+    "name": "BBC News - Entertainment & Arts",
+    "kind": "rss",
+    "taxonomy": [
+      "entertainment.film",
+      "entertainment.tv-streaming",
+      "arts"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=26, last24h~10, newest=2026-10-17 01:34 UTC, fields title/link/date/desc ok; tier=core"
+  },
+  {
+    "url": "https://feeds.bbci.co.uk/sport/rss.xml",
+    "name": "BBC Sport",
+    "kind": "rss",
+    "taxonomy": [
+      "sports",
+      "sports.tennis",
+      "sports.motorsport",
+      "sports.other"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=76, last24h~38, newest=2026-10-17 05:56 UTC, fields title/link/date/desc ok; tier=core"
+  },
+  {
+    "url": "https://feeds.bbci.co.uk/sport/cricket/rss.xml",
+    "name": "BBC Sport - Cricket",
+    "kind": "rss",
+    "taxonomy": [
+      "sports.cricket.international"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=31, last24h~5, newest=2026-10-16 15:14 UTC, fields title/link/date/desc ok; tier=core"
+  },
+  {
+    "url": "https://feeds.bbci.co.uk/sport/football/rss.xml",
+    "name": "BBC Sport - Football",
+    "kind": "rss",
+    "taxonomy": [
+      "sports.football"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=89, last24h~35, newest=2026-10-17 05:56 UTC, fields title/link/date/desc ok; tier=core"
+  },
+  {
+    "url": "https://www.aljazeera.com/xml/rss/all.xml",
+    "name": "Al Jazeera English - All",
+    "kind": "rss",
+    "taxonomy": [
+      "news.global-affairs",
+      "news.middle-east",
+      "news.south-asia"
+    ],
+    "region": "global",
+    "verified": false,
+    "httpStatus": 0,
+    "hasImages": false,
+    "notes": "TLS handshake reset (curl schannel + Node ECONNRESET) from our network on 2026-10-17, twice; known-good public feed, so retry from the deploy region before dropping; tier=core"
+  },
+  {
+    "url": "https://www.theguardian.com/world/rss",
+    "name": "The Guardian - World",
+    "kind": "rss",
+    "taxonomy": [
+      "news.global-affairs"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=45, last24h~31, newest=2026-10-17 05:00 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.theguardian.com/science/rss",
+    "name": "The Guardian - Science",
+    "kind": "rss",
+    "taxonomy": [
+      "science.discoveries"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=28, last24h~2, newest=2026-10-17 01:05 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.theguardian.com/artanddesign/rss",
+    "name": "The Guardian - Art & Design",
+    "kind": "rss",
+    "taxonomy": [
+      "arts.visual-arts",
+      "arts.design-architecture"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=23, last24h~9, newest=2026-10-17 05:00 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.theguardian.com/books/rss",
+    "name": "The Guardian - Books",
+    "kind": "rss",
+    "taxonomy": [
+      "arts.books-literature"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=27, last24h~5, newest=2026-10-16 11:00 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.theguardian.com/film/rss",
+    "name": "The Guardian - Film",
+    "kind": "rss",
+    "taxonomy": [
+      "entertainment.film"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=32, last24h~7, newest=2026-10-16 19:24 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.theguardian.com/music/rss",
+    "name": "The Guardian - Music",
+    "kind": "rss",
+    "taxonomy": [
+      "entertainment.music"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=26, last24h~8, newest=2026-10-16 11:00 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.theguardian.com/lifeandstyle/rss",
+    "name": "The Guardian - Life & Style",
+    "kind": "rss",
+    "taxonomy": [
+      "lifestyle.home-living",
+      "health.mental-health"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=46, last24h~15, newest=2026-10-17 05:00 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.theguardian.com/food/rss",
+    "name": "The Guardian - Food",
+    "kind": "rss",
+    "taxonomy": [
+      "lifestyle.food"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=29, last24h~3, newest=2026-10-17 05:00 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.theguardian.com/travel/rss",
+    "name": "The Guardian - Travel",
+    "kind": "rss",
+    "taxonomy": [
+      "lifestyle.travel"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=22, last24h~2, newest=2026-10-17 06:00 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.theguardian.com/environment/rss",
+    "name": "The Guardian - Environment",
+    "kind": "rss",
+    "taxonomy": [
+      "science.climate-environment"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=25, last24h~10, newest=2026-10-16 23:15 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.theguardian.com/football/rss",
+    "name": "The Guardian - Football",
+    "kind": "rss",
+    "taxonomy": [
+      "sports.football"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=58, last24h~14, newest=2026-10-17 05:00 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.theguardian.com/sport/cricket/rss",
+    "name": "The Guardian - Cricket",
+    "kind": "rss",
+    "taxonomy": [
+      "sports.cricket.international"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=20, last24h~2, newest=2026-10-16 16:32 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.theguardian.com/business/rss",
+    "name": "The Guardian - Business",
+    "kind": "rss",
+    "taxonomy": [
+      "business.global-economy"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=37, last24h~26, newest=2026-10-16 23:15 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.theguardian.com/technology/rss",
+    "name": "The Guardian - Technology",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.industry"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=32, last24h~7, newest=2026-10-17 04:00 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.theguardian.com/culture/rss",
+    "name": "The Guardian - Culture",
+    "kind": "rss",
+    "taxonomy": [
+      "entertainment",
+      "arts"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=64, last24h~14, newest=2026-10-17 05:15 UTC, fields title/link/date/desc ok, full content:encoded; tier=extra"
+  },
+  {
+    "url": "https://feeds.npr.org/1001/rss.xml",
+    "name": "NPR - News",
+    "kind": "rss",
+    "taxonomy": [
+      "news.global-affairs"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=10, last24h~10, newest=2026-10-16 16:29 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://feeds.npr.org/1128/rss.xml",
+    "name": "NPR - Health",
+    "kind": "rss",
+    "taxonomy": [
+      "health.medicine",
+      "health.public-health"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=10, last24h~3, newest=2026-10-16 13:45 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://feeds.npr.org/1007/rss.xml",
+    "name": "NPR - Science",
+    "kind": "rss",
+    "taxonomy": [
+      "science.discoveries"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=10, last24h~3, newest=2026-10-16 13:45 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://feeds.npr.org/1032/rss.xml",
+    "name": "NPR - Books",
+    "kind": "rss",
+    "taxonomy": [
+      "arts.books-literature"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=10, last24h~3, newest=2026-10-16 07:30 UTC, fields title/link/date/desc ok, full content:encoded; tier=extra"
+  },
+  {
+    "url": "https://www.theverge.com/rss/index.xml",
+    "name": "The Verge",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.gadgets",
+      "technical.industry"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=10, last24h~10, newest=2026-10-16 19:36 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://feeds.arstechnica.com/arstechnica/index",
+    "name": "Ars Technica - All",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.industry",
+      "technical.cs",
+      "science.discoveries"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=20, last24h~16, newest=2026-10-16 20:59 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://feeds.arstechnica.com/arstechnica/science",
+    "name": "Ars Technica - Science",
+    "kind": "rss",
+    "taxonomy": [
+      "science.discoveries"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=20, last24h~5, newest=2026-10-15 19:10 UTC, fields title/link/date/desc ok, full content:encoded; tier=extra"
+  },
+  {
+    "url": "https://www.wired.com/feed/rss",
+    "name": "WIRED",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.industry",
+      "technical.gadgets"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=50, last24h~21, newest=2026-10-16 21:31 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.wired.com/feed/tag/ai/latest/rss",
+    "name": "WIRED - AI",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.ai-ml"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=10, last24h~5, newest=2026-10-16 20:05 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://techcrunch.com/feed/",
+    "name": "TechCrunch",
+    "kind": "rss",
+    "taxonomy": [
+      "business.startups",
+      "technical.industry"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=20, last24h~14, newest=2026-10-17 02:36 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=core"
+  },
+  {
+    "url": "https://techcrunch.com/category/artificial-intelligence/feed/",
+    "name": "TechCrunch - AI",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.ai-ml"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=20, last24h~10, newest=2026-10-16 21:22 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=core"
+  },
+  {
+    "url": "https://hnrss.org/frontpage",
+    "name": "Hacker News front page (hnrss.org)",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "first request 502 (transient), retry 200; hnrss.org is a third-party mirror, prefer the official HN Firebase API for production; items=20, last24h~20, newest=2026-10-17 05:44 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=core"
+  },
+  {
+    "url": "https://hnrss.org/frontpage?points=100",
+    "name": "Hacker News front page, 100+ points (hnrss.org)",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=17, last24h~14, newest=2026-10-17 02:21 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://hnrss.org/best",
+    "name": "Hacker News best (hnrss.org)",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=30, last24h~12, newest=2026-10-16 19:04 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://dev.to/feed",
+    "name": "DEV Community - latest",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=12, last24h~12, newest=2026-10-17 06:01 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://dev.to/feed/tag/javascript",
+    "name": "DEV Community - #javascript",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.web-dev"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=12, last24h~12, newest=2026-10-17 06:00 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=core"
+  },
+  {
+    "url": "https://dev.to/feed/tag/python",
+    "name": "DEV Community - #python",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.languages-tools"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=12, last24h~12, newest=2026-10-17 06:00 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=core"
+  },
+  {
+    "url": "https://dev.to/feed/tag/ai",
+    "name": "DEV Community - #ai",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.ai-ml"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=12, last24h~12, newest=2026-10-17 06:01 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=core"
+  },
+  {
+    "url": "https://dev.to/feed/tag/devops",
+    "name": "DEV Community - #devops",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.devops-cloud"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=12, last24h~12, newest=2026-10-17 06:09 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=core"
+  },
+  {
+    "url": "https://dev.to/feed/tag/webdev",
+    "name": "DEV Community - #webdev",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.web-dev"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=12, last24h~12, newest=2026-10-17 06:07 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=core"
+  },
+  {
+    "url": "https://github.blog/feed/",
+    "name": "The GitHub Blog",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.languages-tools"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=10, last24h~3, newest=2026-10-15 19:39 UTC, fields title/link/date/desc ok, full content:encoded, no image in feed: fetch og:image; tier=core"
+  },
+  {
+    "url": "https://feed.infoq.com/",
+    "name": "InfoQ",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs",
+      "technical.cs.devops-cloud"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=15, last24h~13, newest=2026-10-17 06:00 UTC, fields title/link/date/desc ok; tier=core"
+  },
+  {
+    "url": "https://www.smashingmagazine.com/feed/",
+    "name": "Smashing Magazine",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.web-dev",
+      "arts.design-architecture"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=40, last24h~1, newest=2026-10-16 10:00 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://css-tricks.com/feed/",
+    "name": "CSS-Tricks",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.web-dev"
+    ],
+    "region": "global",
+    "verified": false,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "stale (newest 2026-08-31); tier=skip"
+  },
+  {
+    "url": "https://web.dev/feed.xml",
+    "name": "web.dev blog",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.web-dev"
+    ],
+    "region": "global",
+    "verified": false,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "valid feed, low frequency (newest 2026-10-02); tier=extra"
+  },
+  {
+    "url": "https://developer.chrome.com/static/blog/feed.xml",
+    "name": "Chrome for Developers blog",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.web-dev"
+    ],
+    "region": "global",
+    "verified": false,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "valid feed, low frequency (newest 2026-10-07); tier=extra"
+  },
+  {
+    "url": "https://blog.cloudflare.com/rss/",
+    "name": "The Cloudflare Blog",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.devops-cloud",
+      "technical.cs.security"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=20, last24h~3, newest=2026-10-16 13:00 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://aws.amazon.com/blogs/aws/feed/",
+    "name": "AWS News Blog",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.devops-cloud"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=20, last24h~1, newest=2026-10-14 19:30 UTC, fields title/link/date/desc ok, full content:encoded; tier=extra"
+  },
+  {
+    "url": "https://kubernetes.io/feed.xml",
+    "name": "Kubernetes Blog",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.devops-cloud"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=50, last24h~1, newest=2026-10-14 10:35 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://developers.googleblog.com/feeds/posts/default",
+    "name": "Google Developers Blog",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items have no date element; needs fallback to first-seen time; items=20, last24h~None, newest=None UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://android-developers.googleblog.com/feeds/posts/default",
+    "name": "Android Developers Blog",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.mobile-dev"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=20, last24h~2, newest=2026-10-13 00:00 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=core"
+  },
+  {
+    "url": "https://krebsonsecurity.com/feed/",
+    "name": "Krebs on Security",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.security"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "served with text/html content-type but body is valid RSS; items=10, last24h~2, newest=2026-10-14 14:22 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://feeds.feedburner.com/TheHackersNews",
+    "name": "The Hacker News (security)",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.security"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=50, last24h~10, newest=2026-10-16 23:18 UTC, fields title/link/date/desc ok; tier=core"
+  },
+  {
+    "url": "https://www.bleepingcomputer.com/feed/",
+    "name": "BleepingComputer",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.security"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=15, last24h~8, newest=2026-10-16 16:00 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=core"
+  },
+  {
+    "url": "https://openai.com/news/rss.xml",
+    "name": "OpenAI News",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.ai-ml"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "1299 items (entire archive); keep only recent; items=1299, last24h~3, newest=2026-10-16 19:00 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://huggingface.co/blog/feed.xml",
+    "name": "Hugging Face Blog",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.ai-ml"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "880 items (entire archive); dedupe by link and keep only recent; items=880, last24h~3, newest=2026-10-16 01:44 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://deepmind.google/blog/rss.xml",
+    "name": "Google DeepMind Blog",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.ai-ml",
+      "technical.cs.research"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=100, last24h~1, newest=2026-10-15 16:08 UTC, fields title/link/date/desc ok, full content:encoded; tier=extra"
+  },
+  {
+    "url": "https://www.technologyreview.com/feed/",
+    "name": "MIT Technology Review",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.industry",
+      "technical.cs.ai-ml"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=10, last24h~6, newest=2026-10-16 18:00 UTC, fields title/link/date/desc ok, full content:encoded, no image in feed: fetch og:image; tier=core"
+  },
+  {
+    "url": "https://rss.arxiv.org/rss/cs.AI",
+    "name": "arXiv cs.AI (RSS)",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.research",
+      "technical.cs.ai-ml"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "returned 453 items today, but arXiv RSS skips Sat/Sun; papers have no images; cap volume (top N); items=453, last24h~453, newest=2026-10-17 00:00 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://rss.arxiv.org/rss/cs.LG",
+    "name": "arXiv cs.LG (RSS)",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.research",
+      "technical.cs.ai-ml"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "valid but EMPTY today: arXiv RSS has skipDays Saturday/Sunday; use the arXiv API (export.arxiv.org) on weekends; items=0, last24h~None, newest=None UTC, fields title/link/date/desc ok, full content:encoded, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://rss.arxiv.org/rss/cs.CL",
+    "name": "arXiv cs.CL (RSS)",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.research",
+      "technical.cs.ai-ml"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "empty on weekends (skipDays Sat/Sun); use arXiv API; items=0, last24h~None, newest=None UTC, fields title/link/date/desc ok, full content:encoded, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://rss.arxiv.org/rss/cs.SE",
+    "name": "arXiv cs.SE (RSS)",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.research"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "empty on weekends (skipDays Sat/Sun); use arXiv API; items=0, last24h~None, newest=None UTC, fields title/link/date/desc ok, full content:encoded, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://rss.arxiv.org/rss/cs.CR",
+    "name": "arXiv cs.CR (RSS)",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.research",
+      "technical.cs.security"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "empty on weekends (skipDays Sat/Sun); use arXiv API; items=0, last24h~None, newest=None UTC, fields title/link/date/desc ok, full content:encoded, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://rss.arxiv.org/rss/cs.CV",
+    "name": "arXiv cs.CV (RSS)",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.research",
+      "technical.cs.ai-ml"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "empty on weekends (skipDays Sat/Sun); use arXiv API; items=0, last24h~None, newest=None UTC, fields title/link/date/desc ok, full content:encoded, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://www.nature.com/nature.rss",
+    "name": "Nature - latest research",
+    "kind": "rss",
+    "taxonomy": [
+      "science.discoveries",
+      "science.life-sciences"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=75, last24h~7, newest=2026-10-16 00:00 UTC, fields title/link/date/desc ok, full content:encoded, no image in feed: fetch og:image; tier=core"
+  },
+  {
+    "url": "https://www.sciencedaily.com/rss/all.xml",
+    "name": "ScienceDaily - all",
+    "kind": "rss",
+    "taxonomy": [
+      "science.discoveries"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=60, last24h~12, newest=2026-10-16 08:46 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=core"
+  },
+  {
+    "url": "https://www.sciencedaily.com/rss/space_time.xml",
+    "name": "ScienceDaily - Space & Time",
+    "kind": "rss",
+    "taxonomy": [
+      "science.space"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=60, last24h~1, newest=2026-10-16 06:45 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://www.sciencedaily.com/rss/health_medicine.xml",
+    "name": "ScienceDaily - Health & Medicine",
+    "kind": "rss",
+    "taxonomy": [
+      "health.medicine"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=60, last24h~4, newest=2026-10-16 08:46 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://www.nasa.gov/news-release/feed/",
+    "name": "NASA - News Releases",
+    "kind": "rss",
+    "taxonomy": [
+      "science.space"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=10, last24h~5, newest=2026-10-17 04:05 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.nasa.gov/feed/",
+    "name": "NASA - all",
+    "kind": "rss",
+    "taxonomy": [
+      "science.space"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "duplicate of NASA news release feed; items=10, last24h~5, newest=2026-10-17 04:05 UTC, fields title/link/date/desc ok, full content:encoded; tier=skip"
+  },
+  {
+    "url": "https://api.quantamagazine.org/feed/",
+    "name": "Quanta Magazine",
+    "kind": "rss",
+    "taxonomy": [
+      "science.physics-math",
+      "science.life-sciences"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=5, last24h~2, newest=2026-10-16 13:25 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.newscientist.com/feed/home/",
+    "name": "New Scientist",
+    "kind": "rss",
+    "taxonomy": [
+      "science.discoveries"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=10, last24h~9, newest=2026-10-16 17:00 UTC, fields title/link/date/desc ok; tier=core"
+  },
+  {
+    "url": "https://www.space.com/feeds/all",
+    "name": "Space.com",
+    "kind": "rss",
+    "taxonomy": [
+      "science.space"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=50, last24h~15, newest=2026-10-16 22:00 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://phys.org/rss-feed/",
+    "name": "Phys.org",
+    "kind": "rss",
+    "taxonomy": [
+      "science.physics-math",
+      "science.discoveries"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=30, last24h~30, newest=2026-10-16 22:40 UTC, fields title/link/date/desc ok; tier=core"
+  },
+  {
+    "url": "https://www.scientificamerican.com/platform/syndication/rss/",
+    "name": "Scientific American",
+    "kind": "rss",
+    "taxonomy": [
+      "science.discoveries"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=50, last24h~5, newest=2026-10-16 19:48 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://www.espncricinfo.com/rss/content/story/feeds/0.xml",
+    "name": "ESPNcricinfo - global news",
+    "kind": "rss",
+    "taxonomy": [
+      "sports.cricket.international",
+      "sports.cricket.leagues"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=100, last24h~15, newest=2026-10-17 05:32 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.espncricinfo.com/rss/content/story/feeds/7.xml",
+    "name": "ESPNcricinfo - Pakistan",
+    "kind": "rss",
+    "taxonomy": [
+      "sports.cricket.pakistan"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=100, last24h~2, newest=2026-10-13 17:21 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.espncricinfo.com/rss/content/story/feeds/0.xml",
+    "name": "ESPNcricinfo - global news (dup check)",
+    "kind": "rss",
+    "taxonomy": [
+      "sports.cricket"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "duplicate of cricinfo; items=100, last24h~15, newest=2026-10-17 05:32 UTC, fields title/link/date/desc ok, full content:encoded; tier=skip"
+  },
+  {
+    "url": "https://www.espn.com/espn/rss/news",
+    "name": "ESPN - top news",
+    "kind": "rss",
+    "taxonomy": [
+      "sports"
+    ],
+    "region": "global",
+    "verified": false,
+    "httpStatus": 202,
+    "hasImages": false,
+    "notes": "HTTP 202 empty body (bot challenge); tier=skip"
+  },
+  {
+    "url": "https://www.espn.com/espn/rss/soccer/news",
+    "name": "ESPN - soccer",
+    "kind": "rss",
+    "taxonomy": [
+      "sports.football"
+    ],
+    "region": "global",
+    "verified": false,
+    "httpStatus": 202,
+    "hasImages": false,
+    "notes": "HTTP 202 empty body (bot challenge); tier=skip"
+  },
+  {
+    "url": "https://www.skysports.com/rss/12341",
+    "name": "Sky Sports - Cricket",
+    "kind": "rss",
+    "taxonomy": [
+      "sports.cricket.international"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=20, last24h~1, newest=2026-10-13 11:00 UTC, fields title/link/date/desc ok; tier=extra"
+  },
+  {
+    "url": "https://www.skysports.com/rss/11095",
+    "name": "Sky Sports - Football",
+    "kind": "rss",
+    "taxonomy": [
+      "sports.football"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=20, last24h~17, newest=2026-10-17 05:00 UTC, fields title/link/date/desc ok; tier=extra"
+  },
+  {
+    "url": "https://variety.com/feed/",
+    "name": "Variety",
+    "kind": "rss",
+    "taxonomy": [
+      "entertainment.film",
+      "entertainment.tv-streaming"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=10, last24h~10, newest=2026-10-17 05:37 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.hollywoodreporter.com/feed/",
+    "name": "The Hollywood Reporter",
+    "kind": "rss",
+    "taxonomy": [
+      "entertainment.film",
+      "entertainment.tv-streaming"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=10, last24h~10, newest=2026-10-17 04:48 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=core"
+  },
+  {
+    "url": "https://pitchfork.com/feed/feed-news/rss",
+    "name": "Pitchfork - news",
+    "kind": "rss",
+    "taxonomy": [
+      "entertainment.music"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=30, last24h~6, newest=2026-10-16 16:58 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.rollingstone.com/feed/",
+    "name": "Rolling Stone",
+    "kind": "rss",
+    "taxonomy": [
+      "entertainment.music"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=10, last24h~10, newest=2026-10-17 03:46 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://www.polygon.com/rss/index.xml",
+    "name": "Polygon",
+    "kind": "rss",
+    "taxonomy": [
+      "entertainment.gaming"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=10, last24h~10, newest=2026-10-17 04:01 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://feeds.feedburner.com/ign/all",
+    "name": "IGN - all",
+    "kind": "rss",
+    "taxonomy": [
+      "entertainment.gaming",
+      "entertainment.film"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=20, last24h~20, newest=2026-10-16 23:08 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://kotaku.com/rss",
+    "name": "Kotaku",
+    "kind": "rss",
+    "taxonomy": [
+      "entertainment.gaming"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=20, last24h~20, newest=2026-10-16 21:30 UTC, fields title/link/date/desc ok, full content:encoded; tier=extra"
+  },
+  {
+    "url": "https://hyperallergic.com/feed/",
+    "name": "Hyperallergic",
+    "kind": "rss",
+    "taxonomy": [
+      "arts.visual-arts"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=15, last24h~11, newest=2026-10-16 20:59 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://news.artnet.com/feed",
+    "name": "Artnet News",
+    "kind": "rss",
+    "taxonomy": [
+      "arts.visual-arts"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "RSS has no images and article pages return 403 to non-browser clients: show category illustration; items=10, last24h~10, newest=2026-10-16 18:18 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=core"
+  },
+  {
+    "url": "https://www.thisiscolossal.com/feed/",
+    "name": "Colossal",
+    "kind": "rss",
+    "taxonomy": [
+      "arts.visual-arts",
+      "arts.design-architecture"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=10, last24h~2, newest=2026-10-16 14:02 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.designboom.com/feed/",
+    "name": "designboom",
+    "kind": "rss",
+    "taxonomy": [
+      "arts.design-architecture"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=10, last24h~9, newest=2026-10-16 18:30 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.dezeen.com/feed/",
+    "name": "Dezeen",
+    "kind": "rss",
+    "taxonomy": [
+      "arts.design-architecture"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "feed has whitespace before the XML declaration; strict parsers fail, rss-parser/feedparser with trimming work. Parsed OK after trim; items=50, last24h~9, newest=2026-10-16 14:00 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://lithub.com/feed/",
+    "name": "Literary Hub",
+    "kind": "rss",
+    "taxonomy": [
+      "arts.books-literature"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=10, last24h~10, newest=2026-10-16 19:01 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.openculture.com/feed",
+    "name": "Open Culture",
+    "kind": "rss",
+    "taxonomy": [
+      "arts.culture-heritage"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=15, last24h~3, newest=2026-10-16 08:00 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.smithsonianmag.com/rss/latest_articles/",
+    "name": "Smithsonian Magazine",
+    "kind": "rss",
+    "taxonomy": [
+      "arts.culture-heritage",
+      "science.discoveries"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=10, last24h~10, newest=2026-10-16 20:16 UTC, fields title/link/date/desc ok; tier=core"
+  },
+  {
+    "url": "https://www.who.int/rss-feeds/news-english.xml",
+    "name": "WHO - news releases",
+    "kind": "rss",
+    "taxonomy": [
+      "health.public-health"
+    ],
+    "region": "global",
+    "verified": false,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "stale-ish (newest 2026-02-25); tier=skip"
+  },
+  {
+    "url": "https://www.statnews.com/feed/",
+    "name": "STAT News",
+    "kind": "rss",
+    "taxonomy": [
+      "health.medicine"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=20, last24h~10, newest=2026-10-17 02:38 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://medicalxpress.com/rss-feed/",
+    "name": "Medical Xpress",
+    "kind": "rss",
+    "taxonomy": [
+      "health.medicine",
+      "health.mental-health"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=30, last24h~30, newest=2026-10-16 22:00 UTC, fields title/link/date/desc ok; tier=core"
+  },
+  {
+    "url": "https://www.cnbc.com/id/100003114/device/rss/rss.html",
+    "name": "CNBC - top news",
+    "kind": "rss",
+    "taxonomy": [
+      "business.global-economy",
+      "business.markets"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=30, last24h~30, newest=2026-10-16 22:33 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=core"
+  },
+  {
+    "url": "https://www.ft.com/world?format=rss",
+    "name": "Financial Times - World",
+    "kind": "rss",
+    "taxonomy": [
+      "news.global-affairs",
+      "business.global-economy"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=25, last24h~25, newest=2026-10-17 04:00 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://www.economist.com/finance-and-economics/rss.xml",
+    "name": "The Economist - Finance & Economics",
+    "kind": "rss",
+    "taxonomy": [
+      "business.global-economy"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "300 items, no images; items=300, last24h~1, newest=2026-10-16 17:58 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://feeds.content.dowjones.io/public/rss/mw_topstories",
+    "name": "MarketWatch - top stories",
+    "kind": "rss",
+    "taxonomy": [
+      "business.markets",
+      "business.personal-finance"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=10, last24h~10, newest=2026-10-16 21:59 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.coindesk.com/arc/outboundfeeds/rss/",
+    "name": "CoinDesk",
+    "kind": "rss",
+    "taxonomy": [
+      "business.crypto"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=25, last24h~14, newest=2026-10-17 02:30 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://lifehacker.com/feed/rss",
+    "name": "Lifehacker",
+    "kind": "rss",
+    "taxonomy": [
+      "lifestyle.productivity"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=100, last24h~9, newest=2026-10-16 21:41 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.bonappetit.com/feed/rss",
+    "name": "Bon Appetit",
+    "kind": "rss",
+    "taxonomy": [
+      "lifestyle.food"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=30, last24h~11, newest=2026-10-17 02:30 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.cntraveler.com/feed/rss",
+    "name": "Conde Nast Traveler",
+    "kind": "rss",
+    "taxonomy": [
+      "lifestyle.travel"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=30, last24h~7, newest=2026-10-16 22:46 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.vogue.com/feed/rss",
+    "name": "Vogue",
+    "kind": "rss",
+    "taxonomy": [
+      "lifestyle.fashion-beauty"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=30, last24h~29, newest=2026-10-17 06:07 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.apartmenttherapy.com/main.rss",
+    "name": "Apartment Therapy",
+    "kind": "rss",
+    "taxonomy": [
+      "lifestyle.home-living"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=20, last24h~14, newest=2026-10-16 19:09 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://www.engadget.com/rss.xml",
+    "name": "Engadget",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.gadgets"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=20, last24h~12, newest=2026-10-17 01:50 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.gsmarena.com/rss-news-reviews.php3",
+    "name": "GSMArena news & reviews",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.gadgets"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=20, last24h~17, newest=2026-10-17 08:01 UTC, fields title/link/date/desc ok; tier=core"
+  },
+  {
+    "url": "https://www.theregister.com/headlines.atom",
+    "name": "The Register",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.industry",
+      "technical.cs.devops-cloud",
+      "technical.cs.security"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=50, last24h~18, newest=2026-10-17 01:07 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://lobste.rs/rss",
+    "name": "Lobsters",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs",
+      "technical.cs.languages-tools"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=25, last24h~18, newest=2026-10-17 00:08 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=core"
+  },
+  {
+    "url": "https://lwn.net/headlines/rss",
+    "name": "LWN.net headlines",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.languages-tools"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=15, last24h~5, newest=2026-10-16 19:05 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://simonwillison.net/atom/everything/",
+    "name": "Simon Willison's Weblog",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.ai-ml"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=30, last24h~1, newest=2026-10-16 22:06 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://blog.google/technology/ai/rss/",
+    "name": "Google - AI blog",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.ai-ml"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=20, last24h~1, newest=2026-10-13 16:00 UTC, fields title/link/date/desc ok, full content:encoded; tier=extra"
+  },
+  {
+    "url": "https://developer.nvidia.com/blog/feed",
+    "name": "NVIDIA Technical Blog",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.ai-ml",
+      "technical.engineering"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=100, last24h~3, newest=2026-10-16 17:00 UTC, fields title/link/date/desc ok, full content:encoded; tier=extra"
+  },
+  {
+    "url": "https://netflixtechblog.com/feed",
+    "name": "Netflix TechBlog",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.data-databases",
+      "technical.cs.devops-cloud"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=10, last24h~1, newest=2026-10-16 16:01 UTC, fields title/link/date/desc ok, full content:encoded; tier=extra"
+  },
+  {
+    "url": "https://stackoverflow.blog/feed/",
+    "name": "Stack Overflow Blog",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=40, last24h~3, newest=2026-10-16 07:40 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://www.freecodecamp.org/news/rss/",
+    "name": "freeCodeCamp News",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.web-dev",
+      "technical.cs.languages-tools"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=10, last24h~4, newest=2026-10-16 15:40 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.docker.com/blog/feed/",
+    "name": "Docker Blog",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.devops-cloud"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=10, last24h~1, newest=2026-10-16 16:00 UTC, fields title/link/date/desc ok, full content:encoded, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://www.postgresql.org/news.rss",
+    "name": "PostgreSQL News",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.data-databases"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=10, last24h~1, newest=2026-10-15 00:00 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://blog.rust-lang.org/feed.xml",
+    "name": "Rust Blog",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.languages-tools"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=10, last24h~1, newest=2026-10-15 00:00 UTC, fields title/link/date/desc ok, full content:encoded, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://go.dev/blog/feed.atom",
+    "name": "The Go Blog",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.languages-tools"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=10, last24h~1, newest=2026-10-16 00:00 UTC, fields title/link/date/desc ok, full content:encoded, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://nodejs.org/en/feed/blog.xml",
+    "name": "Node.js Blog",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.web-dev"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "1062 items (entire archive); keep only recent; items=1062, last24h~3, newest=2026-10-14 15:26 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://react.dev/rss.xml",
+    "name": "React Blog",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.web-dev"
+    ],
+    "region": "global",
+    "verified": false,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "low frequency (newest 2026-09-09); tier=extra"
+  },
+  {
+    "url": "https://devblogs.microsoft.com/typescript/feed/",
+    "name": "TypeScript Blog",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.web-dev"
+    ],
+    "region": "global",
+    "verified": false,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "low frequency (newest 2026-07-08); tier=extra"
+  },
+  {
+    "url": "https://martinfowler.com/feed.atom",
+    "name": "Martin Fowler",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=30, last24h~2, newest=2026-10-15 09:25 UTC, fields title/link/date/desc ok, full content:encoded, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://blog.python.org/feeds/posts/default",
+    "name": "Python Insider",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.cs.languages-tools"
+    ],
+    "region": "global",
+    "verified": false,
+    "httpStatus": 0,
+    "hasImages": false,
+    "notes": "timeout (000) from our network; tier=skip"
+  },
+  {
+    "url": "https://rss.dw.com/rdf/rss-en-all",
+    "name": "DW - all English",
+    "kind": "rss",
+    "taxonomy": [
+      "news.global-affairs"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=137, last24h~24, newest=2026-10-17 06:08 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=core"
+  },
+  {
+    "url": "https://www.france24.com/en/rss",
+    "name": "France 24 - English",
+    "kind": "rss",
+    "taxonomy": [
+      "news.global-affairs",
+      "news.middle-east"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=24, last24h~24, newest=2026-10-17 06:00 UTC, fields title/link/date/desc ok; tier=core"
+  },
+  {
+    "url": "https://www.science.org/rss/news_current.xml",
+    "name": "Science (AAAS) - news",
+    "kind": "rss",
+    "taxonomy": [
+      "science.discoveries"
+    ],
+    "region": "global",
+    "verified": false,
+    "httpStatus": 403,
+    "hasImages": false,
+    "notes": "403 Cloudflare challenge; tier=skip"
+  },
+  {
+    "url": "https://www.medicalnewstoday.com/rss",
+    "name": "Medical News Today",
+    "kind": "rss",
+    "taxonomy": [
+      "health.medicine"
+    ],
+    "region": "global",
+    "verified": false,
+    "httpStatus": 404,
+    "hasImages": false,
+    "notes": "404; tier=skip"
+  },
+  {
+    "url": "https://www.healthline.com/rss",
+    "name": "Healthline",
+    "kind": "rss",
+    "taxonomy": [
+      "health.fitness-nutrition"
+    ],
+    "region": "global",
+    "verified": false,
+    "httpStatus": 404,
+    "hasImages": false,
+    "notes": "404; tier=skip"
+  },
+  {
+    "url": "https://www.seriouseats.com/rss",
+    "name": "Serious Eats",
+    "kind": "rss",
+    "taxonomy": [
+      "lifestyle.food"
+    ],
+    "region": "global",
+    "verified": false,
+    "httpStatus": 404,
+    "hasImages": false,
+    "notes": "404; tier=skip"
+  },
+  {
+    "url": "https://finance.yahoo.com/news/rssindex",
+    "name": "Yahoo Finance",
+    "kind": "rss",
+    "taxonomy": [
+      "business.markets"
+    ],
+    "region": "global",
+    "verified": false,
+    "httpStatus": 404,
+    "hasImages": false,
+    "notes": "404; tier=skip"
+  },
+  {
+    "url": "https://www.dawn.com/feeds/home",
+    "name": "Dawn - Home",
+    "kind": "rss",
+    "taxonomy": [
+      "news.pakistan"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=27, last24h~27, newest=2026-10-17 11:06 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.dawn.com/feeds/latest-news",
+    "name": "Dawn - Latest News",
+    "kind": "rss",
+    "taxonomy": [
+      "news.pakistan",
+      "news.pakistan.politics"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=30, last24h~30, newest=2026-10-17 11:06 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.dawn.com/feeds/pakistan",
+    "name": "Dawn - Pakistan",
+    "kind": "rss",
+    "taxonomy": [
+      "news.pakistan",
+      "news.pakistan.politics",
+      "news.pakistan.law-security"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=30, last24h~30, newest=2026-10-17 11:06 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.dawn.com/feeds/business",
+    "name": "Dawn - Business",
+    "kind": "rss",
+    "taxonomy": [
+      "business.pakistan-economy"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=30, last24h~7, newest=2026-10-17 07:42 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.dawn.com/feeds/sport",
+    "name": "Dawn - Sport",
+    "kind": "rss",
+    "taxonomy": [
+      "sports.cricket.pakistan",
+      "sports.other"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=30, last24h~7, newest=2026-10-16 23:33 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.dawn.com/feeds/world",
+    "name": "Dawn - World",
+    "kind": "rss",
+    "taxonomy": [
+      "news.global-affairs",
+      "news.south-asia"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=30, last24h~17, newest=2026-10-17 10:02 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.dawn.com/feeds/tech",
+    "name": "Dawn - Tech",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.pakistan-tech",
+      "technical.industry"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=30, last24h~6, newest=2026-10-17 07:42 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.dawn.com/feeds/opinion",
+    "name": "Dawn - Opinion",
+    "kind": "rss",
+    "taxonomy": [
+      "news.opinion"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=30, last24h~9, newest=2026-10-17 08:48 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.dawn.com/feeds/culture",
+    "name": "Dawn - Culture",
+    "kind": "rss",
+    "taxonomy": [
+      "arts.culture-heritage"
+    ],
+    "region": "pakistan",
+    "verified": false,
+    "httpStatus": 404,
+    "hasImages": false,
+    "notes": "404; tier=skip"
+  },
+  {
+    "url": "https://www.dawn.com/feeds/lifestyle",
+    "name": "Dawn - Lifestyle",
+    "kind": "rss",
+    "taxonomy": [
+      "lifestyle"
+    ],
+    "region": "pakistan",
+    "verified": false,
+    "httpStatus": 404,
+    "hasImages": false,
+    "notes": "404; tier=skip"
+  },
+  {
+    "url": "https://images.dawn.com/feeds/home",
+    "name": "Dawn Images (showbiz & lifestyle)",
+    "kind": "rss",
+    "taxonomy": [
+      "entertainment.pakistani-showbiz",
+      "lifestyle.fashion-beauty"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=30, last24h~9, newest=2026-10-17 10:12 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://aurora.dawn.com/feeds/home",
+    "name": "Aurora (Dawn) - marketing",
+    "kind": "rss",
+    "taxonomy": [
+      "business.pakistan-economy"
+    ],
+    "region": "pakistan",
+    "verified": false,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "stale (newest 2025-08-31); tier=skip"
+  },
+  {
+    "url": "https://tribune.com.pk/feed/home",
+    "name": "Express Tribune - Home",
+    "kind": "rss",
+    "taxonomy": [
+      "news.pakistan"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=73, last24h~59, newest=2026-10-17 05:21 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://tribune.com.pk/feed/pakistan",
+    "name": "Express Tribune - Pakistan",
+    "kind": "rss",
+    "taxonomy": [
+      "news.pakistan",
+      "news.pakistan.politics",
+      "news.pakistan.cities"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=38, last24h~14, newest=2026-10-16 21:47 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://tribune.com.pk/feed/business",
+    "name": "Express Tribune - Business",
+    "kind": "rss",
+    "taxonomy": [
+      "business.pakistan-economy",
+      "business.markets"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=25, last24h~14, newest=2026-10-16 21:15 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://tribune.com.pk/feed/sports",
+    "name": "Express Tribune - Sports",
+    "kind": "rss",
+    "taxonomy": [
+      "sports.cricket.pakistan",
+      "sports.other"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=46, last24h~11, newest=2026-10-16 15:06 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://tribune.com.pk/feed/technology",
+    "name": "Express Tribune - Technology",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.pakistan-tech",
+      "technical.gadgets"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=28, last24h~4, newest=2026-10-16 21:00 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://tribune.com.pk/feed/life-style",
+    "name": "Express Tribune - Life & Style",
+    "kind": "rss",
+    "taxonomy": [
+      "entertainment.pakistani-showbiz",
+      "lifestyle"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=51, last24h~6, newest=2026-10-16 15:51 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://tribune.com.pk/feed/world",
+    "name": "Express Tribune - World",
+    "kind": "rss",
+    "taxonomy": [
+      "news.global-affairs",
+      "news.south-asia"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=23, last24h~11, newest=2026-10-16 21:00 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.geo.tv/rss/1/0",
+    "name": "Geo News - Top",
+    "kind": "rss",
+    "taxonomy": [
+      "news.pakistan"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=50, last24h~50, newest=2026-10-17 11:09 UTC, fields title/link/date/desc ok; tier=core"
+  },
+  {
+    "url": "https://www.geo.tv/rss/1/1",
+    "name": "Geo News - Pakistan",
+    "kind": "rss",
+    "taxonomy": [
+      "news.pakistan",
+      "news.pakistan.politics"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=20, last24h~11, newest=2026-10-17 09:28 UTC, fields title/link/date/desc ok; tier=core"
+  },
+  {
+    "url": "https://www.geo.tv/rss/1/2",
+    "name": "Geo News - World",
+    "kind": "rss",
+    "taxonomy": [
+      "news.global-affairs",
+      "news.south-asia"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=20, last24h~7, newest=2026-10-17 08:49 UTC, fields title/link/date/desc ok; tier=extra"
+  },
+  {
+    "url": "https://www.geo.tv/rss/1/3",
+    "name": "Geo News - Sports",
+    "kind": "rss",
+    "taxonomy": [
+      "sports.cricket.pakistan"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=20, last24h~2, newest=2026-10-17 09:57 UTC, fields title/link/date/desc ok; tier=core"
+  },
+  {
+    "url": "https://www.geo.tv/rss/1/7",
+    "name": "Geo News - Business",
+    "kind": "rss",
+    "taxonomy": [
+      "business.pakistan-economy"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=20, last24h~1, newest=2026-10-15 21:49 UTC, fields title/link/date/desc ok; tier=extra"
+  },
+  {
+    "url": "https://www.geo.tv/rss/1/4",
+    "name": "Geo News - Entertainment",
+    "kind": "rss",
+    "taxonomy": [
+      "entertainment.pakistani-showbiz"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=20, last24h~4, newest=2026-10-16 17:54 UTC, fields title/link/date/desc ok; tier=core"
+  },
+  {
+    "url": "https://www.thenews.com.pk/rss/1/1",
+    "name": "The News International - Top Story",
+    "kind": "rss",
+    "taxonomy": [
+      "news.pakistan"
+    ],
+    "region": "pakistan",
+    "verified": false,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "parses, but newest item 2025-11-21: stale; tier=skip"
+  },
+  {
+    "url": "https://www.thenews.com.pk/rss/2/16",
+    "name": "The News International - Latest",
+    "kind": "rss",
+    "taxonomy": [
+      "news.pakistan"
+    ],
+    "region": "pakistan",
+    "verified": false,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "body: \"No news print today in this section\"; tier=skip"
+  },
+  {
+    "url": "https://www.thenews.com.pk/rss/1/8",
+    "name": "The News International - National",
+    "kind": "rss",
+    "taxonomy": [
+      "news.pakistan"
+    ],
+    "region": "pakistan",
+    "verified": false,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "parses, but newest item 2026-05-30: stale; tier=skip"
+  },
+  {
+    "url": "https://www.thenews.com.pk/rss/1/3",
+    "name": "The News International - Business",
+    "kind": "rss",
+    "taxonomy": [
+      "business.pakistan-economy"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=50, last24h~1, newest=2026-10-16 00:42 UTC, fields title/link/date/desc ok; tier=extra"
+  },
+  {
+    "url": "https://www.thenews.com.pk/rss/1/2",
+    "name": "The News International - Sports",
+    "kind": "rss",
+    "taxonomy": [
+      "sports.cricket.pakistan",
+      "sports.other"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=50, last24h~22, newest=2026-10-16 23:41 UTC, fields title/link/date/desc ok; tier=core"
+  },
+  {
+    "url": "https://arynews.tv/feed/",
+    "name": "ARY News - all",
+    "kind": "rss",
+    "taxonomy": [
+      "news.pakistan"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=83, last24h~69, newest=2026-10-17 11:02 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://arynews.tv/category/pakistan/feed/",
+    "name": "ARY News - Pakistan",
+    "kind": "rss",
+    "taxonomy": [
+      "news.pakistan"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=20, last24h~20, newest=2026-10-17 11:02 UTC, fields title/link/date/desc ok, full content:encoded; tier=extra"
+  },
+  {
+    "url": "https://arynews.tv/category/sports/feed/",
+    "name": "ARY News - Sports",
+    "kind": "rss",
+    "taxonomy": [
+      "sports.cricket.pakistan"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=20, last24h~20, newest=2026-10-16 19:57 UTC, fields title/link/date/desc ok, full content:encoded; tier=extra"
+  },
+  {
+    "url": "https://www.brecorder.com/feeds/latest-news",
+    "name": "Business Recorder - latest",
+    "kind": "rss",
+    "taxonomy": [
+      "business.pakistan-economy"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=30, last24h~30, newest=2026-10-17 07:23 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.brecorder.com/feeds/markets",
+    "name": "Business Recorder - Markets",
+    "kind": "rss",
+    "taxonomy": [
+      "business.markets"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=30, last24h~30, newest=2026-10-16 20:56 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://propakistani.pk/feed/",
+    "name": "ProPakistani",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.pakistan-tech",
+      "business.pakistan-economy"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=10, last24h~10, newest=2026-10-16 17:54 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.techjuice.pk/feed/",
+    "name": "TechJuice",
+    "kind": "rss",
+    "taxonomy": [
+      "technical.pakistan-tech",
+      "business.startups"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=15, last24h~14, newest=2026-10-17 05:32 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://www.samaa.tv/feed/",
+    "name": "Samaa - /feed/",
+    "kind": "rss",
+    "taxonomy": [
+      "news.pakistan"
+    ],
+    "region": "pakistan",
+    "verified": false,
+    "httpStatus": 404,
+    "hasImages": false,
+    "notes": "404; tier=skip"
+  },
+  {
+    "url": "https://www.samaa.tv/rss",
+    "name": "Samaa - /rss",
+    "kind": "rss",
+    "taxonomy": [
+      "news.pakistan"
+    ],
+    "region": "pakistan",
+    "verified": false,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "returns HTML page, not a feed; tier=skip"
+  },
+  {
+    "url": "https://www.samaa.tv/feeds/latest",
+    "name": "Samaa - /feeds/latest",
+    "kind": "rss",
+    "taxonomy": [
+      "news.pakistan"
+    ],
+    "region": "pakistan",
+    "verified": false,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "returns HTML page, not a feed; tier=skip"
+  },
+  {
+    "url": "https://www.samaa.tv/rss/latest",
+    "name": "Samaa - /rss/latest",
+    "kind": "rss",
+    "taxonomy": [
+      "news.pakistan"
+    ],
+    "region": "pakistan",
+    "verified": false,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "returns HTML page, not a feed; tier=skip"
+  },
+  {
+    "url": "https://pakobserver.net/feed/",
+    "name": "Pakistan Observer",
+    "kind": "rss",
+    "taxonomy": [
+      "news.pakistan"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=10, last24h~10, newest=2026-10-17 06:07 UTC, fields title/link/date/desc ok, full content:encoded, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://mettisglobal.news/feed/",
+    "name": "Mettis Global",
+    "kind": "rss",
+    "taxonomy": [
+      "business.markets"
+    ],
+    "region": "pakistan",
+    "verified": false,
+    "httpStatus": 404,
+    "hasImages": false,
+    "notes": "404; tier=skip"
+  },
+  {
+    "url": "https://profit.pakistantoday.com.pk/feed/",
+    "name": "Profit (Pakistan Today)",
+    "kind": "rss",
+    "taxonomy": [
+      "business.pakistan-economy"
+    ],
+    "region": "pakistan",
+    "verified": false,
+    "httpStatus": 404,
+    "hasImages": false,
+    "notes": "404; tier=skip"
+  },
+  {
+    "url": "https://www.pakistantoday.com.pk/feed/",
+    "name": "Pakistan Today",
+    "kind": "rss",
+    "taxonomy": [
+      "news.pakistan"
+    ],
+    "region": "pakistan",
+    "verified": false,
+    "httpStatus": 404,
+    "hasImages": false,
+    "notes": "404; tier=skip"
+  },
+  {
+    "url": "https://www.urdupoint.com/en/rss/latest-news.rss",
+    "name": "UrduPoint English",
+    "kind": "rss",
+    "taxonomy": [
+      "news.pakistan"
+    ],
+    "region": "pakistan",
+    "verified": false,
+    "httpStatus": 403,
+    "hasImages": false,
+    "notes": "403 Cloudflare challenge; tier=skip"
+  },
+  {
+    "url": "https://www.cricket.com.pk/rss",
+    "name": "cricket.com.pk",
+    "kind": "rss",
+    "taxonomy": [
+      "sports.cricket.pakistan"
+    ],
+    "region": "pakistan",
+    "verified": false,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "stale (newest 2025-06-29); tier=skip"
+  },
+  {
+    "url": "https://www.pcb.com.pk/rss.xml",
+    "name": "Pakistan Cricket Board",
+    "kind": "rss",
+    "taxonomy": [
+      "sports.cricket.pakistan"
+    ],
+    "region": "pakistan",
+    "verified": false,
+    "httpStatus": 403,
+    "hasImages": false,
+    "notes": "403 Cloudflare \"Just a moment\" challenge; tier=skip"
+  },
+  {
+    "url": "https://www.arabnews.pk/rss.xml",
+    "name": "Arab News Pakistan",
+    "kind": "rss",
+    "taxonomy": [
+      "news.pakistan",
+      "news.middle-east"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=50, last24h~50, newest=2026-10-17 05:47 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://english.aaj.tv/feeds/latest-news",
+    "name": "Aaj English TV - latest",
+    "kind": "rss",
+    "taxonomy": [
+      "news.pakistan"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "items=30, last24h~30, newest=2026-10-17 11:05 UTC, fields title/link/date/desc ok, full content:encoded; tier=core"
+  },
+  {
+    "url": "https://dailytimes.com.pk/feed/",
+    "name": "Daily Times",
+    "kind": "rss",
+    "taxonomy": [
+      "news.pakistan",
+      "news.opinion"
+    ],
+    "region": "pakistan",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "items=10, last24h~10, newest=2026-10-17 06:04 UTC, fields title/link/date/desc ok, no image in feed: fetch og:image; tier=extra"
+  },
+  {
+    "url": "https://www.mangobaaz.com/feed",
+    "name": "MangoBaaz",
+    "kind": "rss",
+    "taxonomy": [
+      "lifestyle",
+      "entertainment.pakistani-showbiz"
+    ],
+    "region": "pakistan",
+    "verified": false,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "low frequency (newest 2026-10-07); tier=skip"
+  },
+  {
+    "url": "https://thefridaytimes.com/feed/",
+    "name": "The Friday Times",
+    "kind": "rss",
+    "taxonomy": [
+      "news.opinion"
+    ],
+    "region": "pakistan",
+    "verified": false,
+    "httpStatus": 404,
+    "hasImages": false,
+    "notes": "404; tier=skip"
+  },
+  {
+    "url": "https://www.nation.com.pk/rss/top-news",
+    "name": "The Nation - top news",
+    "kind": "rss",
+    "taxonomy": [
+      "news.pakistan"
+    ],
+    "region": "pakistan",
+    "verified": false,
+    "httpStatus": 404,
+    "hasImages": false,
+    "notes": "404; tier=skip"
+  },
+  {
+    "url": "https://www.nation.com.pk/feed",
+    "name": "The Nation - /feed",
+    "kind": "rss",
+    "taxonomy": [
+      "news.pakistan"
+    ],
+    "region": "pakistan",
+    "verified": false,
+    "httpStatus": 404,
+    "hasImages": false,
+    "notes": "404; tier=skip"
+  },
+  {
+    "url": "https://www.bolnews.com/feed/",
+    "name": "BOL News",
+    "kind": "rss",
+    "taxonomy": [
+      "news.pakistan"
+    ],
+    "region": "pakistan",
+    "verified": false,
+    "httpStatus": 404,
+    "hasImages": false,
+    "notes": "404; tier=skip"
+  },
+  {
+    "url": "https://hacker-news.firebaseio.com/v0/topstories.json",
+    "name": "Hacker News Firebase API",
+    "kind": "api",
+    "taxonomy": [
+      "technical.cs"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "official, no key, no documented rate limit; topstories returns up to 500 ids, then /v0/item/{id}.json; no images (fetch og:image of linked URL); tier=core"
+  },
+  {
+    "url": "https://dev.to/api/articles?top=1&per_page=30&tag=javascript",
+    "name": "DEV Community (Forem) API",
+    "kind": "api",
+    "taxonomy": [
+      "technical.cs",
+      "technical.cs.web-dev",
+      "technical.cs.languages-tools",
+      "technical.cs.ai-ml",
+      "technical.cs.devops-cloud"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": true,
+    "notes": "no key for reads; JSON includes cover_image/social_image, tag_list, reading_time_minutes, positive_reactions_count (better than the RSS, which lacks images); tier=core"
+  },
+  {
+    "url": "https://export.arxiv.org/api/query?search_query=cat:cs.LG&sortBy=submittedDate&sortOrder=descending&max_results=50",
+    "name": "arXiv API",
+    "kind": "api",
+    "taxonomy": [
+      "technical.cs.research",
+      "technical.cs.ai-ml"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "Atom; works on weekends when RSS is empty; arXiv asks for no more than 1 request every 3 s; no images; tier=extra"
+  },
+  {
+    "url": "https://lobste.rs/hottest.json",
+    "name": "Lobsters JSON",
+    "kind": "api",
+    "taxonomy": [
+      "technical.cs"
+    ],
+    "region": "global",
+    "verified": true,
+    "httpStatus": 200,
+    "hasImages": false,
+    "notes": "no key; includes tags and score; tier=extra"
+  },
+  {
+    "url": "https://content.guardianapis.com/search?api-key=YOUR_KEY&show-fields=thumbnail,trailText,bodyText",
+    "name": "Guardian Open Platform (Content API)",
+    "kind": "api",
+    "taxonomy": [
+      "news",
+      "arts",
+      "science",
+      "sports",
+      "lifestyle",
+      "business",
+      "technical"
+    ],
+    "region": "global",
+    "verified": false,
+    "httpStatus": 401,
+    "hasImages": true,
+    "notes": "needs free developer key (the old \"test\" key returned 401 today). Developer tier: non-commercial use such as hackathons, up to 1 call/s and 500 calls/day, includes article text (official access page); tier=extra"
+  },
+  {
+    "url": "https://api.nytimes.com/svc/topstories/v2/home.json?api-key=YOUR_KEY",
+    "name": "NYT Top Stories API",
+    "kind": "api",
+    "taxonomy": [
+      "news"
+    ],
+    "region": "global",
+    "verified": false,
+    "httpStatus": 0,
+    "hasImages": true,
+    "notes": "needs free key; limits and terms not verified (developer.nytimes.com could not be fetched); abstracts + images only; tier=skip"
+  },
+  {
+    "url": "https://www.reddit.com/r/worldnews/top.json?t=day&limit=25",
+    "name": "Reddit JSON",
+    "kind": "api",
+    "taxonomy": [
+      "news.global-affairs"
+    ],
+    "region": "global",
+    "verified": false,
+    "httpStatus": 403,
+    "hasImages": false,
+    "notes": "unauthenticated .json returned 403 today; /top/.rss returned 200. Reddit Data API needs OAuth and has its own terms; tier=skip"
+  },
+  {
+    "url": "https://api.gdeltproject.org/api/v2/doc/doc?query=pakistan%20sourcelang:english&mode=artlist&format=json&timespan=24h",
+    "name": "GDELT DOC 2.0 API",
+    "kind": "api",
+    "taxonomy": [
+      "news.pakistan",
+      "news.global-affairs"
+    ],
+    "region": "global",
+    "verified": false,
+    "httpStatus": 0,
+    "hasImages": true,
+    "notes": "timed out twice from our network (000); returns URL+title+socialimage, no text; tier=skip"
+  },
+  {
+    "url": "https://newsapi.org/v2/top-headlines?country=us&apiKey=YOUR_KEY",
+    "name": "NewsAPI.org (Developer plan)",
+    "kind": "api",
+    "taxonomy": [
+      "news"
+    ],
+    "region": "global",
+    "verified": false,
+    "httpStatus": 0,
+    "hasImages": true,
+    "notes": "pricing page: 100 requests/day, 24 hour article delay, cannot be used in staging or production, CORS for localhost only; tier=skip"
+  },
+  {
+    "url": "https://gnews.io/api/v4/top-headlines?lang=en&country=pk&apikey=YOUR_KEY",
+    "name": "GNews (Free)",
+    "kind": "api",
+    "taxonomy": [
+      "news.pakistan",
+      "news"
+    ],
+    "region": "pakistan",
+    "verified": false,
+    "httpStatus": 0,
+    "hasImages": true,
+    "notes": "pricing page: 100 requests/day, up to 10 articles/request, 12-hour delay, non-commercial only, excerpt not full content; tier=skip"
+  },
+  {
+    "url": "https://newsdata.io/api/1/latest?country=pk&language=en&apikey=YOUR_KEY",
+    "name": "NewsData.io (Free)",
+    "kind": "api",
+    "taxonomy": [
+      "news.pakistan",
+      "news"
+    ],
+    "region": "pakistan",
+    "verified": false,
+    "httpStatus": 0,
+    "hasImages": true,
+    "notes": "(unverified, secondary sources) 200 credits/day, 10 articles/credit, possibly 12-hour delay; official pricing page did not render; tier=skip"
+  },
+  {
+    "url": "https://api.currentsapi.services/v1/latest-news?language=en&apiKey=YOUR_KEY",
+    "name": "Currents API (Free)",
+    "kind": "api",
+    "taxonomy": [
+      "news"
+    ],
+    "region": "global",
+    "verified": false,
+    "httpStatus": 0,
+    "hasImages": true,
+    "notes": "pricing page: 250 requests/day, max 20 results/request, 30 days history; redistribution and customer-facing AI summaries need separate terms; tier=skip"
+  },
+  {
+    "url": "http://api.mediastack.com/v1/news?access_key=YOUR_KEY",
+    "name": "Mediastack (Free)",
+    "kind": "api",
+    "taxonomy": [
+      "news"
+    ],
+    "region": "global",
+    "verified": false,
+    "httpStatus": 0,
+    "hasImages": true,
+    "notes": "pricing page: 100 calls/month, delayed data, non-commercial; tier=skip"
+  }
+]
