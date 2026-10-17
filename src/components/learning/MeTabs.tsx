@@ -6,6 +6,7 @@ import { SectionHeader } from '@/components/morrow';
 import { DemoControls } from '@/components/streak/DemoControls';
 import { SettingsPanel } from '@/components/streak/SettingsPanel';
 import { StreakPanel } from '@/components/streak/StreakPanel';
+import { FastForward } from './FastForward';
 import { LearnedTab } from './LearnedTab';
 import { ME_TABS, nextTab, type MeData, type MeTab } from './me-tabs';
 
@@ -77,7 +78,13 @@ export function MeTabs({ initialTab, data }: MeTabsProps) {
 function panel(tab: MeTab, data: MeData): ReactNode {
   switch (tab) {
     case 'learned':
-      return <LearnedTab initial={data.learning} nowIso={data.nowIso} />;
+      return (
+        <LearnedTab
+          initial={data.learning}
+          nowIso={data.nowIso}
+          after={<FastForward weights={data.learning?.weights ?? []} demoMode={data.demoMode} initial={data.simulation ?? undefined} />}
+        />
+      );
     case 'interests':
       return <p className="ui-text text-ink-soft">Your interests, with their weights.</p>;
     case 'streak':

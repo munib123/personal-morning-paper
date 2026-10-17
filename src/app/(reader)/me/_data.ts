@@ -3,7 +3,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type { MeData } from '@/components/learning/me-tabs';
-import { FIXTURE_LEARNING, FIXTURE_PROFILE, FIXTURE_STREAK, FIXTURE_TAXONOMY } from '@/contracts/fixtures';
+import { FIXTURE_LEARNING, FIXTURE_PROFILE, FIXTURE_SIMULATION, FIXTURE_STREAK, FIXTURE_TAXONOMY } from '@/contracts/fixtures';
 import { getSessionUser } from '@/server/auth/session';
 import { getLearningView } from '@/server/learn';
 import { getTaxonomy } from '@/server/onboarding';
@@ -49,6 +49,7 @@ export async function loadMeData(sp: SearchParams): Promise<MeData> {
       nextMorning: nextMorningIso(now, FIXTURE_PROFILE.tz),
       clockIso,
       nowIso: now.toISOString(),
+      simulation: FIXTURE_SIMULATION,
       fixtures: true,
     };
   }
@@ -75,6 +76,7 @@ export async function loadMeData(sp: SearchParams): Promise<MeData> {
     nextMorning: nextMorningIso(now, profile.tz),
     clockIso,
     nowIso: now.toISOString(),
+    simulation: null,
     fixtures: false,
   };
 }
