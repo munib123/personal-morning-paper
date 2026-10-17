@@ -2,6 +2,7 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { ArchiveCalendar } from '@/components/archive/ArchiveCalendar';
+import { Button } from '@/components/morrow';
 import { StreakStrip } from '@/components/streak/StreakStrip';
 import type { ArchiveEntry } from '@/contracts/edition';
 import { FIXTURE_ARCHIVE, FIXTURE_STREAK } from '@/contracts/fixtures';
@@ -45,6 +46,11 @@ export default async function ArchivePage({ searchParams }: { searchParams: Sear
         <p className="dateline text-ink-muted">{entries.length === 1 ? '1 edition' : `${entries.length} editions`}</p>
         <h1 className="headline-lg text-ink">Past editions</h1>
         <p className="ui-text text-ink-soft">Every paper exactly as it was published, newest first.</p>
+        <div className="mt-1">
+          <Button size="sm" variant="secondary" icon="bookmark" href="/saved">
+            Saved stories
+          </Button>
+        </div>
       </header>
       <section aria-label="Your last 7 mornings" className="flex flex-col gap-2">
         <StreakStrip last7={streak.last7} />
