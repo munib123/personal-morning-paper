@@ -1,9 +1,10 @@
 // L0 smoke test for the §9.3 server stubs. Each owner deletes or adapts the case for their module when replacing its stub.
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import { SIGNAL_TYPES } from '@/contracts/signals';
 import { FIXTURE_USER_ID } from '@/contracts/fixtures';
 import { callLLM, geminiStatus } from '@/server/ai';
+import { __setUsageStore } from '@/server/ai/usage';
 import { buildEdition, getEdition } from '@/server/edition';
 import { writeEditorNote, type EditorNoteInput } from '@/server/enrich';
 import { DEFAULT_PARAMS, RANK_VERSION } from '@/server/rank';
@@ -14,8 +15,25 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 
-describe('ai stub (L2)', () => {
+describe('ai (L2) with no Gemini key and no database', () => {
+  // The real geminiStatus() reads today's llm_usage row through Supabase. CI only has a placeholder
+  // project, where that read retries for seconds, so these cases run against an in-memory store.
+  const usage = new Map<string, number>();
+  beforeEach(() => {
+    usage.clear();
+    __setUsageStore({
+      get: async (day, model) => usage.get(`${day}|${model}`) ?? 0,
+      add: async (day, model, d) => {
+        const n = (usage.get(`${day}|${model}`) ?? 0) + d.requests;
+        usage.set(`${day}|${model}`, n);
+        return n;
+      },
+    });
+  });
+  afterEach(() => __setUsageStore(null));
+
   it('callLLM returns the fallback without calling fetch', async () => {
+    vi.stubEnv('GEMINI_API_KEY', '');
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() => Promise.reject(new Error('fetch must not be called')));
     const fallback = vi.fn(() => ({ note: 'template note' }));
     const res = await callLLM('editor_note', { instructions: 'i', prompt: 'p' }, z.object({ note: z.string() }), { fallback, model: 'smart' });
