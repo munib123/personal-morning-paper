@@ -2,12 +2,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import { SIGNAL_TYPES } from '@/contracts/signals';
+import { FIXTURE_USER_ID } from '@/contracts/fixtures';
 import { callLLM, geminiStatus } from '@/server/ai';
 import { buildEdition, getEdition } from '@/server/edition';
 import { writeEditorNote, type EditorNoteInput } from '@/server/enrich';
 import { DEFAULT_PARAMS, RANK_VERSION } from '@/server/rank';
 
-const USER_ID = '00000000-0000-4000-8000-000000000001';
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -42,15 +42,17 @@ describe('rank stub (L3)', () => {
   });
 });
 
-describe('edition stub (L3)', () => {
+// L3 replaced its stub (adapted by L3): real readers hit Supabase (covered in src/server/edition); the
+// fixture reader (FIXTURE_USER_ID) keeps the L0 fixtures, so other lanes' stub pages keep rendering.
+describe('edition (L3) fixture mode', () => {
   it('buildEdition resolves to an edition with 20 items', async () => {
-    const edition = await buildEdition(USER_ID, new Date('2026-10-17T02:00:00Z'));
+    const edition = await buildEdition(FIXTURE_USER_ID, new Date('2026-10-17T02:00:00Z'));
     expect(edition.items).toHaveLength(20);
   });
 
   it('getEdition resolves the fixture for 2026-10-17 and null for any other date', async () => {
-    await expect(getEdition(USER_ID, '1999-01-01')).resolves.toBeNull();
-    expect((await getEdition(USER_ID, '2026-10-17'))?.date).toBe('2026-10-17');
+    await expect(getEdition(FIXTURE_USER_ID, '1999-01-01')).resolves.toBeNull();
+    expect((await getEdition(FIXTURE_USER_ID, '2026-10-17'))?.date).toBe('2026-10-17');
   });
 });
 
