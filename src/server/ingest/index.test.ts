@@ -29,11 +29,16 @@ interface FeedEntry {
   title: string;
   hoursAgo: number;
 }
-const rss = (items: FeedEntry[]) =>
+// Full items (image + 120-word content:encoded) need no page fetch; thin ones (no image, short text) do.
+const rss = (items: FeedEntry[], { thin = false } = {}) =>
   `<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:media="http://search.yahoo.com/mrss/"><channel><title>T</title>${items
     .map(
       (i) =>
-        `<item><title>${i.title}</title><link>${i.link}</link><description>A short description.</description><content:encoded><![CDATA[<p>${longText}</p>]]></content:encoded><media:content url="https://i.example.com/${encodeURIComponent(i.title)}.jpg" medium="image"/><pubDate>${pubDate(i.hoursAgo)}</pubDate></item>`,
+        `<item><title>${i.title}</title><link>${i.link}</link><description>A short description.</description>${
+          thin
+            ? ''
+            : `<content:encoded><![CDATA[<p>${longText}</p>]]></content:encoded><media:content url="https://i.example.com/${encodeURIComponent(i.title)}.jpg" medium="image"/>`
+        }<pubDate>${pubDate(i.hoursAgo)}</pubDate></item>`,
     )
     .join('')}</channel></rss>`;
 
@@ -139,6 +144,23 @@ describe('runIngest', () => {
     expect(stats.failedSources).toEqual([]);
     expect(stats.ms).toBeGreaterThanOrEqual(0);
     expect(store.recordSourceHealth).toHaveBeenCalledTimes(3);
+  });
+
+  it('fetches the page of a story carried by two feeds once, and takes its og:image', async () => {
+    const story = 'https://www.dawn.com/news/5';
+    const page = { status: 200, type: 'text/html; charset=utf-8', body: '<!doctype html><html><head><meta property="og:image" content="https://i.dawn.com/5.jpg"></head><body><p>Short.</p></body></html>' };
+    serve({
+      [DAWN_HOME]: rss([{ link: `${story}?utm_source=rss`, title: 'Five', hoursAgo: 2 }], { thin: true }),
+      [DAWN_LATEST]: rss([{ link: story, title: 'Five', hoursAgo: 2 }], { thin: true }),
+      [story]: page,
+      [`${story}?utm_source=rss`]: page, // the page phase fetches the publisher's own link
+    });
+    useSources([src('dawn-home', DAWN_HOME), src('dawn-latest', DAWN_LATEST)]);
+    const stats = await runIngest();
+    const pageCalls = fetchMock.mock.calls.filter((c) => String(c[0]).startsWith(story));
+    expect(pageCalls).toHaveLength(1);
+    expect(stats.inserted).toBe(1);
+    expect(insertedRows()[0].imageUrl).toBe('https://i.dawn.com/5.jpg');
   });
 
   it('respects maxPerSource and sourceIds', async () => {

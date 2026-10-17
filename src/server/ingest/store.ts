@@ -110,6 +110,36 @@ export async function insertArticles(rows: PreparedArticle[]): Promise<{ inserte
   return out;
 }
 
+// ── Image backfill (run-cli --backfill-images) ────────────────────────────────────────────────
+
+/** Rows published in the last `sinceHours` that still have no image, newest first. */
+export async function listImageless(sinceHours: number, limit: number): Promise<{ urlHash: string; url: string }[]> {
+  const cutoff = new Date(Date.now() - sinceHours * 3_600_000).toISOString();
+  const { data, error } = await db()
+    .from('articles')
+    .select('url_hash,url')
+    .is('image_url', null)
+    .gte('published_at', cutoff)
+    .order('published_at', { ascending: false })
+    .limit(limit);
+  if (error) throw new Error(`imageless articles: ${error.message}`);
+  return (data ?? []).map((r) => ({ urlHash: r.url_hash, url: r.url }));
+}
+
+/** Sets image_url where it is still null; returns how many rows changed. A failing row is skipped. */
+export async function updateArticleImages(rows: { urlHash: string; imageUrl: string }[]): Promise<number> {
+  let updated = 0;
+  for (const r of rows) {
+    const { data, error } = await db().from('articles').update({ image_url: r.imageUrl }).eq('url_hash', r.urlHash).is('image_url', null).select('id');
+    if (error) {
+      console.warn(`ingest: image not saved for ${r.urlHash} (${error.message})`);
+      continue;
+    }
+    updated += data?.length ?? 0;
+  }
+  return updated;
+}
+
 /** Health after each fetch: last_fetched_at and the FeedCache JSON in last_status. */
 export async function recordSourceHealth(source: IngestSource, result: SourceResult): Promise<void> {
   const patch = {

@@ -44,7 +44,7 @@ vi.mock('@/server/db/admin', () => ({
   }),
 }));
 
-import { findExistingHashes, insertArticles, loadSources, recordSourceHealth } from './store';
+import { findExistingHashes, insertArticles, listImageless, loadSources, recordSourceHealth, updateArticleImages } from './store';
 
 const has = (chain: Chain, method: string) => chain.calls.some((c) => c.method === method);
 const argsOf = (chain: Chain, method: string) => chain.calls.find((c) => c.method === method)?.args;
@@ -155,6 +155,38 @@ describe('loadSources', () => {
     expect(sources.map((s) => s.id)).toEqual(['dawn-home', 'hacker-news']); // unknown kinds are skipped
     expect(sources[0]).toMatchObject({ kind: 'rss', cache, failCount: 2 });
     expect(sources[1].cache).toBeNull();
+  });
+});
+
+describe('image backfill', () => {
+  it('listImageless reads recent rows without an image, newest first', async () => {
+    respond = () => ({ data: [{ url_hash: 'h1', url: 'https://a.com/1' }], error: null });
+    const before = Date.now();
+    const rows = await listImageless(48, 300);
+    expect(rows).toEqual([{ urlHash: 'h1', url: 'https://a.com/1' }]);
+    const chain = chains[0];
+    expect(chain.table).toBe('articles');
+    expect(argsOf(chain, 'is')).toEqual(['image_url', null]);
+    const [col, cutoff] = argsOf(chain, 'gte') as [string, string];
+    expect(col).toBe('published_at');
+    expect(Math.abs(Date.parse(cutoff) - (before - 48 * 3_600_000))).toBeLessThan(60_000);
+    expect(argsOf(chain, 'order')).toEqual(['published_at', { ascending: false }]);
+    expect(argsOf(chain, 'limit')).toEqual([300]);
+  });
+
+  it('updateArticleImages sets image_url only where it is still null and counts the updated rows', async () => {
+    respond = (chain) => {
+      const [, hash] = argsOf(chain, 'eq') as [string, string];
+      return { data: hash === 'gone' ? [] : [{ id: hash }], error: null };
+    };
+    const n = await updateArticleImages([
+      { urlHash: 'h1', imageUrl: 'https://cdn/1.jpg' },
+      { urlHash: 'gone', imageUrl: 'https://cdn/2.jpg' },
+    ]);
+    expect(n).toBe(1);
+    expect(chains).toHaveLength(2);
+    expect(argsOf(chains[0], 'update')).toEqual([{ image_url: 'https://cdn/1.jpg' }]);
+    expect(argsOf(chains[0], 'is')).toEqual(['image_url', null]);
   });
 });
 

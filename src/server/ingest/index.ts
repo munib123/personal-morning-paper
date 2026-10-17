@@ -3,7 +3,8 @@
 // runIngest itself never writes job_runs (§9.7).
 import pLimit from 'p-limit';
 import { requestNow } from '@/server/time';
-import { prepareArticle } from './prepare';
+import { enrichFromPages } from './page';
+import { needsPage, prepareArticle } from './prepare';
 import { failedResult, processSource } from './source';
 import { ensureApiSources, findExistingHashes, insertArticles, loadSources, recordSourceHealth } from './store';
 import type { PreparedArticle, SourceResult } from './types';
@@ -64,9 +65,13 @@ export async function runIngest(opts?: { sourceIds?: string[]; maxPerSource?: nu
     }
   }
   const existing = byHash.size ? await findExistingHashes([...byHash.keys()]) : new Set<string>();
-  const fresh = [...byHash.values()].filter((a) => !existing.has(a.urlHash));
+  const drafts = [...byHash.values()].filter((a) => !existing.has(a.urlHash));
 
-  // 3. Insert (ON CONFLICT (url_hash) DO NOTHING).
+  // 3. Article pages, for new items only: og:image / twitter:image, and Readability when the text is thin.
+  const fresh = await enrichFromPages(drafts, now);
+  const pageFetches = drafts.filter(needsPage).length;
+
+  // 4. Insert (ON CONFLICT (url_hash) DO NOTHING).
   const { inserted, errors, bySource } = fresh.length ? await insertArticles(fresh) : { inserted: 0, errors: [], bySource: {} };
 
   const stats: IngestStats = {
@@ -82,6 +87,8 @@ export async function runIngest(opts?: { sourceIds?: string[]; maxPerSource?: nu
     `ingest detail ${JSON.stringify({
       imageShare: fresh.length ? Number((withImage / fresh.length).toFixed(3)) : null,
       candidates: fresh.length,
+      neededPage: pageFetches,
+      stillThin: fresh.filter((a) => a.needsText).length,
       insertedBySource: bySource ?? {},
       insertErrors: errors,
     })}`,
