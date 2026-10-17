@@ -34,6 +34,12 @@ describe('scraped boilerplate', () => {
     'Please enable JavaScript to view the comments.',
     'Copyright 2026 Example Media. All rights reserved.',
     'Click here to subscribe to our newsletter.',
+    'To watch this content, you may need to disable it on this site.',
+    'You’re reading the web edition of STAT’s Health Tech newsletter.',
+    'This is today’s edition of The Download, our weekday newsletter that provides a daily dose of what’s going on.',
+    'Want to stay on top of the science and politics driving biotech today?',
+    'Get your daily dose of health and medicine every weekday with our free Morning Rounds newsletter.',
+    'Photo: (dcr).',
   ];
 
   it('never uses a consent, cookie or subscribe banner as the key fact or summary', () => {
