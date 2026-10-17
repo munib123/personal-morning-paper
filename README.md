@@ -25,7 +25,7 @@ The five-minute walkthrough in [`docs/DEMO.md`](docs/DEMO.md), in six steps:
 2. On `/today`: answer a Morning Recall question, read a why-tag, open the "Why this story?" breakdown, skip a story and watch a reserve story take its place, open a story sheet and follow "Read original".
 3. Download the PDF: a five-page A4 newspaper with the lead sized by her top interest, sections in her order, a QR code per story, and a back page with "three things you learned".
 4. On `/me`: the change summary, the movers, the signal timeline, the interest editor, and "Fast-forward 7 days" against two baselines; then "Next morning" moves the demo clock and builds a new edition with recall questions about today's reads.
-5. In a private window, `/start`: pick broad areas, drill into Technical, then Computer Science, then AI, describe yourself in a sentence, choose a paper length, and see the first front page before the account exists.
+5. In a private window, `/start`: pick broad areas, drill into Technical, then Computer Science, then AI, describe yourself in a sentence, choose a paper length, and see the first front page before any sign-up.
 6. Close on the "How this paper was made" panel (articles considered, build time, zero per-reader LLM calls, AI versus extractive share), this diagram, and the pull-request list.
 
 ## Architecture
@@ -65,7 +65,7 @@ Source: [`docs/architecture-diagram.mmd`](docs/architecture-diagram.mmd) (PNG: [
 - **Budget guard.** `callLLM` counts requests per model per Pacific day in `llm_usage` and skips a model that has reached `GEMINI_RPD_*` before Google would return a 429; a 429 waits the body's `retryDelay` once, then steps down the ladder; the extractive summary and the template note are always available, and the receipt and `/api/health` report which one was used. The whole pipeline is designed to stay under about 250 requests a day on the free tier.
 - **Embeddings cost nothing.** gte-small runs on the CPU (about 34 MB, downloaded once into `MODEL_CACHE_DIR`), and the topic embeddings are computed once by `npm run embed:topics`.
 - **Ranking is small.** Scoring is N × 384 multiply-adds and MMR is 20 × 200 × 384; the unit test ranks 1,000 candidates in under 50 ms. A full `buildEdition` against the real database measured 3,567 ms cold and 1,219 ms warm, almost all of it database round trips; the pool is cached for ten minutes.
-- **Demo safety.** `/today/preview`, `/me/preview` and `?fixtures=1` render the contract fixtures without a database; `public/demo/sample.pdf` is committed; the entire corpus always has an extractive fallback, so the paper builds when Gemini is out of quota; `DEMO_FALLBACK=1` returns neutral fixtures for streaks when storage fails.
+- **Demo safety.** With `DEMO_MODE=1`, `/today/preview`, `/me/preview` and `?fixtures=1` render the contract fixtures without a database; `public/demo/sample.pdf` is committed; the entire corpus always has an extractive fallback, so the paper builds when Gemini is out of quota; `DEMO_FALLBACK=1` returns neutral fixtures for streaks when storage fails.
 
 ## How this was built
 
@@ -74,7 +74,7 @@ One developer orchestrated parallel Claude Code agents, one git worktree and bra
 - **Contracts first.** Lane L0 wrote `src/contracts/*` (types, zod schemas for every request and response, the `ROUTES` constants, fixtures that pass their schemas), the 15-table migration, and a stub for every cross-lane function, component and route, so every lane compiled from minute one and replaced only its own stubs.
 - **Eight lanes in parallel.** L0 Foundation, L1 Ingest, L2 AI and NLP, L3 Engine, L4 Reader UI, L5 Onboarding, L6 PDF, L7 Engagement, each with its own folders, dev-server port, plan and handoff file in [`docs/handoff/`](docs/handoff/); the wave-2 lanes (ship kit, tell your editor, audio, design pass, docs, QA) were planned from what shipped.
 - **Tests first for pure modules.** The ranker, learner, streak machine, guardrails, extractive builder, URL canonicaliser and time helpers all have Vitest suites written before the code; `tests/l0/routes.test.ts` pins every API route to its contract schema and to sanctioned status codes.
-- **Rolling integration.** The integrator merged at three checkpoints in dependency order with merge commits, never squashes, left a review comment on each PR, and CI (`.github/workflows/ci.yml`: typecheck, lint, Vitest, `next build`) runs on every push and pull request without a Gemini key.
+- **Rolling integration.** The integrator merged at three checkpoints in dependency order with merge commits, never squashes, opening integration PRs for the later slices, and CI (`.github/workflows/ci.yml`: typecheck, lint, Vitest, `next build`) runs on every push and pull request without a Gemini key.
 
 Measured from the repository at the 14:45 PKT merge (`e4bfb24`): 143 commits between 11:12 and 14:45, 22 pull requests (21 merged, one superseded by its integration PR), 122 test files, 2 migrations, 8 lane plans, 53 screenshots. Two more numbers from the data: the first ingest stored 1,676 articles, which the NLP pass turned into 1,338 story clusters, 137 of them covered by two or more outlets.
 
@@ -119,7 +119,7 @@ The UI is composed only from the Morrow components and tokens in [`design/projec
 |---|---|
 | Innovation and originality | Morning Recall and "three things you learned" (`src/components/recall`); a finite, dated edition rather than a feed; why-tags and the "How this paper was made" receipt; explore and serendipity slots. |
 | Technical complexity | The pipeline from 117 feeds to embeddings, clusters, guarded enrichment and a budgeted LLM ladder (`src/server/{ingest,nlp,enrich,ai}`); the pure ranker and learner (`src/server/{rank,learn}`); the A4 PDF renderer (`src/server/pdf`). |
-| Practical impact and usability | Onboarding in four steps before any account; the first front page shown before sign-up; "Read original" on every story; the PDF; the archive; the print fallback. |
+| Practical impact and usability | Onboarding in four steps with no sign-up form; the first front page shown at the end of it; "Read original" on every story; the PDF; the archive; the print fallback. |
 | Model and algorithm efficiency | One Gemini pass per article shared by all readers; zero per-reader LLM calls on the request path; local 384-d embeddings; the `llm_usage` budget guard; the receipt on every edition. |
 | Presentation clarity | This README, the diagram, [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) with one sentence per box, [`docs/DEMO.md`](docs/DEMO.md). |
 | Team collaboration | The pull-request list and commit history, the contracts in `src/contracts`, the per-lane plans and handoff notes, CI on every push. |
