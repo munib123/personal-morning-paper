@@ -41,20 +41,22 @@ export function PaperMasthead({ readerName, city, compactOnly = false, onHowMade
     persistView(next);
   };
 
+  const toggle = (name: string) => (
+    <div role="group" aria-label="View">
+      <Segmented name={name} options={VIEW_OPTIONS} value={view} onChange={choose} />
+    </div>
+  );
+
   const compactBar = (
     <div className="mx-auto max-w-(--page-max)">
-      <Masthead
-        variant="compact"
-        title={BRAND.nameplate}
-        date={date}
-        actions={
-          // On a phone the Front page keeps its toggle in the full masthead; Bytes has only this one.
-          <div role="group" aria-label="View" className={compactOnly ? undefined : 'hidden sm:block'}>
-            <Segmented name="view-compact" options={VIEW_OPTIONS} value={view} onChange={choose} />
-          </div>
-        }
-      />
-      <div className="px-6 pt-1 pb-2">
+      {/* The TopBar above already shows the nameplate, so on a phone the compact Masthead (a second
+          nameplate, and a toggle squeezed onto two lines) gives way: the Front page keeps just the
+          progress (its toggle stays in the full masthead) and Bytes keeps its toggle on its own row. */}
+      <div className="hidden sm:block">
+        <Masthead variant="compact" title={BRAND.nameplate} date={date} actions={toggle('view-compact')} />
+      </div>
+      {compactOnly ? <div className="flex justify-end px-4 pt-3 sm:hidden">{toggle('view-compact-phone')}</div> : null}
+      <div className="px-4 pt-2 pb-2 sm:px-6 sm:pt-1">
         <ReadingProgress value={progress.total > 0 ? progress.read / progress.total : 0} label={progressLabel(progress)} />
       </div>
     </div>
@@ -73,7 +75,8 @@ export function PaperMasthead({ readerName, city, compactOnly = false, onHowMade
             storyCount={state.items.length}
             readingTime={readingTimeLabel(edition.presentation.timeBudget)}
             actions={
-              <div className="flex flex-wrap items-end justify-center gap-2 sm:justify-end">
+              // The ear is a dateline (uppercase, tracked); the controls inside it keep their own sentence case.
+              <div className="flex flex-wrap items-end justify-center gap-2 tracking-normal normal-case sm:justify-end">
                 <Segmented label="View" name="view-full" options={VIEW_OPTIONS} value={view} onChange={choose} />
                 <Button variant="ghost" size="sm" href={HOW_MADE_HREF} onClick={onHowMade}>
                   How this paper was made
