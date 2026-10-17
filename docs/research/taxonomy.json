@@ -1,0 +1,420 @@
+{
+  "version": "2026-10-17",
+  "slugFormat": "dot-separated path of lowercase kebab segments; a parent slug is a prefix of its children",
+  "roots": [
+    {
+      "slug": "news",
+      "name": "World & Pakistan",
+      "description": "Hard news: Pakistani national affairs and international events, politics, diplomacy and conflict.",
+      "children": [
+        {
+          "slug": "news.pakistan",
+          "name": "Pakistan",
+          "description": "National news from Pakistan: federal and provincial politics, governance, courts, security and society.",
+          "children": [
+            {
+              "slug": "news.pakistan.politics",
+              "name": "Pakistani Politics",
+              "description": "Parliament, parties, elections, government decisions and political leaders in Pakistan.",
+              "children": []
+            },
+            {
+              "slug": "news.pakistan.law-security",
+              "name": "Law, Courts & Security",
+              "description": "Supreme Court and high court rulings, policing, terrorism and security operations in Pakistan.",
+              "children": []
+            },
+            {
+              "slug": "news.pakistan.cities",
+              "name": "Cities & Society",
+              "description": "Local news from Karachi, Lahore, Islamabad, Peshawar, Quetta and other cities: civic issues, weather, transport, society.",
+              "children": []
+            }
+          ]
+        },
+        {
+          "slug": "news.south-asia",
+          "name": "South Asia",
+          "description": "India, Afghanistan, Bangladesh, Sri Lanka, Iran and regional relations with Pakistan.",
+          "children": []
+        },
+        {
+          "slug": "news.middle-east",
+          "name": "Middle East",
+          "description": "Gulf states, Saudi Arabia, Iran, Israel-Palestine and the wider Middle East and North Africa.",
+          "children": []
+        },
+        {
+          "slug": "news.global-affairs",
+          "name": "Global Affairs",
+          "description": "United States, Europe, China, Russia, Africa, the UN and geopolitics shaping the world.",
+          "children": []
+        },
+        {
+          "slug": "news.opinion",
+          "name": "Opinion & Analysis",
+          "description": "Editorials, columns and long-form analysis of current events.",
+          "children": []
+        }
+      ]
+    },
+    {
+      "slug": "business",
+      "name": "Business & Economy",
+      "description": "Economy, markets, companies and money, in Pakistan and globally.",
+      "children": [
+        {
+          "slug": "business.pakistan-economy",
+          "name": "Pakistan Economy",
+          "description": "IMF programme, budget, inflation, State Bank policy rate, rupee exchange rate, taxes and energy prices in Pakistan.",
+          "children": []
+        },
+        {
+          "slug": "business.markets",
+          "name": "Markets",
+          "description": "Stock markets including the PSX KSE-100, commodities, gold, oil and currency markets.",
+          "children": []
+        },
+        {
+          "slug": "business.global-economy",
+          "name": "Global Economy",
+          "description": "World economic trends, central banks, trade, supply chains and multinational corporations.",
+          "children": []
+        },
+        {
+          "slug": "business.startups",
+          "name": "Startups & Venture",
+          "description": "Startup funding, founders, venture capital and new companies, including Pakistani startups.",
+          "children": []
+        },
+        {
+          "slug": "business.personal-finance",
+          "name": "Personal Finance",
+          "description": "Saving, investing, banking, loans, prices and household money decisions.",
+          "children": []
+        },
+        {
+          "slug": "business.crypto",
+          "name": "Crypto & Web3",
+          "description": "Bitcoin, cryptocurrencies, blockchain projects and digital-asset regulation.",
+          "children": []
+        }
+      ]
+    },
+    {
+      "slug": "technical",
+      "name": "Technical",
+      "description": "Technology, engineering and software: from consumer gadgets to deep developer topics.",
+      "children": [
+        {
+          "slug": "technical.cs",
+          "name": "Computer Science",
+          "description": "Software engineering and computer science for developers, DevBytes-style.",
+          "children": [
+            {
+              "slug": "technical.cs.web-dev",
+              "name": "Web Development",
+              "description": "Frontend and backend web development: JavaScript, TypeScript, React, CSS, Node.js, browsers and web standards.",
+              "children": []
+            },
+            {
+              "slug": "technical.cs.mobile-dev",
+              "name": "Mobile Development",
+              "description": "Android, iOS, Kotlin, Swift, Flutter and React Native app development.",
+              "children": []
+            },
+            {
+              "slug": "technical.cs.ai-ml",
+              "name": "AI & Machine Learning",
+              "description": "Large language models, machine learning, deep learning, AI tools, research and AI products.",
+              "children": []
+            },
+            {
+              "slug": "technical.cs.devops-cloud",
+              "name": "DevOps & Cloud",
+              "description": "Cloud platforms (AWS, Azure, GCP), Kubernetes, Docker, CI/CD, infrastructure and site reliability.",
+              "children": []
+            },
+            {
+              "slug": "technical.cs.security",
+              "name": "Cybersecurity",
+              "description": "Vulnerabilities, data breaches, malware, privacy and secure software practices.",
+              "children": []
+            },
+            {
+              "slug": "technical.cs.languages-tools",
+              "name": "Languages & Open Source",
+              "description": "Programming languages (Python, Rust, Go, Java), compilers, developer tools, GitHub and open-source projects.",
+              "children": []
+            },
+            {
+              "slug": "technical.cs.data-databases",
+              "name": "Data & Databases",
+              "description": "Databases, SQL, PostgreSQL, data engineering, analytics and big data systems.",
+              "children": []
+            },
+            {
+              "slug": "technical.cs.research",
+              "name": "CS Research",
+              "description": "Computer science research papers and preprints from arXiv and academic labs.",
+              "children": []
+            }
+          ]
+        },
+        {
+          "slug": "technical.gadgets",
+          "name": "Gadgets & Devices",
+          "description": "Smartphones, laptops, wearables, reviews and consumer electronics launches.",
+          "children": []
+        },
+        {
+          "slug": "technical.industry",
+          "name": "Tech Industry & Policy",
+          "description": "Big tech companies, regulation, antitrust, tech business and the future of work.",
+          "children": []
+        },
+        {
+          "slug": "technical.pakistan-tech",
+          "name": "Pakistan Tech",
+          "description": "Telecom, internet, IT exports, freelancing, fintech and digital policy in Pakistan.",
+          "children": []
+        },
+        {
+          "slug": "technical.engineering",
+          "name": "Engineering & Hardware",
+          "description": "Chips, electric vehicles, robotics, energy technology and hardware engineering.",
+          "children": []
+        }
+      ]
+    },
+    {
+      "slug": "science",
+      "name": "Science",
+      "description": "Discoveries and research across the natural sciences.",
+      "children": [
+        {
+          "slug": "science.space",
+          "name": "Space & Astronomy",
+          "description": "NASA, SpaceX, space missions, planets, stars, telescopes and cosmology.",
+          "children": []
+        },
+        {
+          "slug": "science.physics-math",
+          "name": "Physics & Mathematics",
+          "description": "Physics breakthroughs, quantum science, mathematics and theoretical computer science.",
+          "children": []
+        },
+        {
+          "slug": "science.life-sciences",
+          "name": "Life Sciences",
+          "description": "Biology, genetics, evolution, neuroscience, animals and the human body.",
+          "children": []
+        },
+        {
+          "slug": "science.climate-environment",
+          "name": "Climate & Environment",
+          "description": "Climate change, floods, heatwaves, air pollution, energy transition and conservation, with focus on Pakistan.",
+          "children": []
+        },
+        {
+          "slug": "science.discoveries",
+          "name": "Discoveries & Research",
+          "description": "General science news, new studies and scientific culture.",
+          "children": []
+        }
+      ]
+    },
+    {
+      "slug": "health",
+      "name": "Health",
+      "description": "Medicine, wellbeing and public health.",
+      "children": [
+        {
+          "slug": "health.medicine",
+          "name": "Medicine & Research",
+          "description": "Medical research, treatments, drugs, diseases and healthcare systems.",
+          "children": []
+        },
+        {
+          "slug": "health.public-health",
+          "name": "Public Health",
+          "description": "Epidemics, vaccines, polio and dengue campaigns, WHO and health policy.",
+          "children": []
+        },
+        {
+          "slug": "health.mental-health",
+          "name": "Mental Health",
+          "description": "Stress, anxiety, depression, sleep and psychological wellbeing.",
+          "children": []
+        },
+        {
+          "slug": "health.fitness-nutrition",
+          "name": "Fitness & Nutrition",
+          "description": "Exercise, diet, nutrition science and healthy habits.",
+          "children": []
+        }
+      ]
+    },
+    {
+      "slug": "sports",
+      "name": "Sports",
+      "description": "Scores, results and stories from cricket and the wider sporting world.",
+      "children": [
+        {
+          "slug": "sports.cricket",
+          "name": "Cricket",
+          "description": "Cricket news, matches, players and boards worldwide.",
+          "children": [
+            {
+              "slug": "sports.cricket.pakistan",
+              "name": "Pakistan Cricket",
+              "description": "The Pakistan national team, PCB decisions, selection, domestic cricket and Pakistani players.",
+              "children": []
+            },
+            {
+              "slug": "sports.cricket.international",
+              "name": "International Cricket",
+              "description": "Test, ODI and T20I cricket, ICC events and other national teams.",
+              "children": []
+            },
+            {
+              "slug": "sports.cricket.leagues",
+              "name": "T20 Leagues",
+              "description": "PSL, IPL, Big Bash, The Hundred and other franchise leagues.",
+              "children": []
+            }
+          ]
+        },
+        {
+          "slug": "sports.football",
+          "name": "Football",
+          "description": "Premier League, Champions League, World Cup, transfers and global football.",
+          "children": []
+        },
+        {
+          "slug": "sports.tennis",
+          "name": "Tennis",
+          "description": "ATP, WTA and Grand Slam tennis.",
+          "children": []
+        },
+        {
+          "slug": "sports.motorsport",
+          "name": "Motorsport",
+          "description": "Formula 1, MotoGP and other racing series.",
+          "children": []
+        },
+        {
+          "slug": "sports.other",
+          "name": "Other Sports",
+          "description": "Hockey, squash, athletics, javelin, Olympics, boxing, MMA and other sports.",
+          "children": []
+        }
+      ]
+    },
+    {
+      "slug": "entertainment",
+      "name": "Entertainment",
+      "description": "Film, TV, music, gaming and celebrity culture.",
+      "children": [
+        {
+          "slug": "entertainment.film",
+          "name": "Film",
+          "description": "Movies, box office, Hollywood, Bollywood and Lollywood releases, reviews and awards.",
+          "children": []
+        },
+        {
+          "slug": "entertainment.tv-streaming",
+          "name": "TV & Streaming",
+          "description": "Television, Netflix and streaming series, and Pakistani TV dramas.",
+          "children": []
+        },
+        {
+          "slug": "entertainment.music",
+          "name": "Music",
+          "description": "Albums, artists, concerts, Coke Studio and the music industry.",
+          "children": []
+        },
+        {
+          "slug": "entertainment.pakistani-showbiz",
+          "name": "Pakistani Showbiz",
+          "description": "Pakistani actors, dramas, film stars and entertainment industry news.",
+          "children": []
+        },
+        {
+          "slug": "entertainment.gaming",
+          "name": "Gaming",
+          "description": "Video games, consoles, PC gaming and esports.",
+          "children": []
+        }
+      ]
+    },
+    {
+      "slug": "arts",
+      "name": "Arts & Culture",
+      "description": "Visual arts, design, literature and cultural heritage.",
+      "children": [
+        {
+          "slug": "arts.visual-arts",
+          "name": "Visual Arts",
+          "description": "Painting, sculpture, photography, galleries, museums, exhibitions and the art market.",
+          "children": []
+        },
+        {
+          "slug": "arts.design-architecture",
+          "name": "Design & Architecture",
+          "description": "Architecture, interior, product and graphic design.",
+          "children": []
+        },
+        {
+          "slug": "arts.books-literature",
+          "name": "Books & Literature",
+          "description": "Books, authors, poetry, Urdu literature, reviews and literary prizes.",
+          "children": []
+        },
+        {
+          "slug": "arts.culture-heritage",
+          "name": "Culture & Heritage",
+          "description": "History, heritage sites, traditions, festivals and ideas, including Pakistani culture.",
+          "children": []
+        }
+      ]
+    },
+    {
+      "slug": "lifestyle",
+      "name": "Lifestyle",
+      "description": "Everyday living: food, travel, style and home.",
+      "children": [
+        {
+          "slug": "lifestyle.food",
+          "name": "Food & Recipes",
+          "description": "Recipes, cooking, restaurants and food culture.",
+          "children": []
+        },
+        {
+          "slug": "lifestyle.travel",
+          "name": "Travel",
+          "description": "Destinations, tourism in Pakistan and abroad, travel tips.",
+          "children": []
+        },
+        {
+          "slug": "lifestyle.fashion-beauty",
+          "name": "Fashion & Beauty",
+          "description": "Fashion trends, designers, beauty and style.",
+          "children": []
+        },
+        {
+          "slug": "lifestyle.home-living",
+          "name": "Home & Living",
+          "description": "Home, relationships, parenting and everyday life advice.",
+          "children": []
+        },
+        {
+          "slug": "lifestyle.productivity",
+          "name": "Productivity & How-To",
+          "description": "Life hacks, productivity, apps and practical how-to guides.",
+          "children": []
+        }
+      ]
+    }
+  ]
+}

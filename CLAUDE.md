@@ -27,6 +27,12 @@ The architecture and build plan are written after the research. Once they exist,
 - **Hierarchical interest onboarding.** Readers pick broad areas first (e.g. Arts / Science / Technical …), then drill down only where they want depth (Technical → Computer Science → specific dev topics).
 - **UX is the top priority.** Mobile-first, fast, delightful and accessible. The team is preparing a design system inspired by DevBytes and other sites. Once it lands, UI must use its tokens instead of hard-coded colors, fonts or spacing. Keep the product visually original, because judges score originality.
 
+## Decisions made (2026-10-17)
+- **Builder:** one developer orchestrating many parallel Claude Code agents, one git worktree per lane.
+- **Stack:** Next.js and Supabase (Postgres, pgvector, Auth, Storage), deployed on Vercel. Details are in `docs/ARCHITECTURE.md`.
+- **AI provider:** Google Gemini only, the one key we have. The demo must survive Gemini rate limits, so every AI step needs a fallback.
+- **Repo:** https://github.com/munib123/personal-morning-paper. It is private now and becomes public at submission.
+
 ## How we are judged (optimize every decision for these)
 Innovation & Originality · Technical Complexity · Practical Impact & Usability · Model/Algorithm Efficiency · Presentation Clarity · Team Collaboration · UI/UX.
 Every team member must be able to explain the architecture, the models and the implementation. Prefer designs where each part can be explained in one sentence.
