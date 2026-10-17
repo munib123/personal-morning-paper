@@ -1,3 +1,4 @@
+import { fetchDevto } from './adapters/devto';
 import { fetchHackerNews } from './adapters/hn';
 import { errorMessage, fetchFeed } from './http';
 import { parseFeedXml } from './rss';
@@ -8,6 +9,9 @@ export interface SourceOptions {
   sinceHours: number;
   maxPerSource: number;
 }
+
+/** 5 tags × 15 = up to 75 Dev.to articles, capped at maxPerSource by filterAndCap. */
+export const DEVTO_PER_TAG = 15;
 
 const emptyCache = (src: IngestSource, now: Date): FeedCache => ({
   httpStatus: null,
@@ -56,8 +60,10 @@ export async function processSource(src: IngestSource, now: Date, o: SourceOptio
       return processRss(src, now, o);
     case 'hn':
       return processApi(src, now, o, () => fetchHackerNews(o.maxPerSource, src.id));
+    case 'devto':
+      return processApi(src, now, o, () => fetchDevto(DEVTO_PER_TAG, src.id));
     default:
-      // Dev.to and arXiv adapters land in Tasks 6-7.
+      // The arXiv adapter lands in Task 7.
       return { sourceId: src.id, items: [], fetched: 0, skippedOld: 0, ok: true, cache: emptyCache(src, now) };
   }
 }

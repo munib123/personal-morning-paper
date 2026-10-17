@@ -181,6 +181,23 @@ describe('runIngest', () => {
     expect(insertedRows()[0]).toMatchObject({ sourceId: 'hacker-news', url: 'https://x.com/a', author: 'pg', imageUrl: 'https://x.com/a.png', contentText: 'Show HN: A. A tiny database.' });
   });
 
+  it('runs the Dev.to adapter for a devto source', async () => {
+    const api = 'https://dev.to/api/articles';
+    const fresh = new Date(NOW.getTime() - 2 * HOUR).toISOString();
+    serve({
+      [`${api}?top=1&tag=javascript&per_page=15`]: {
+        status: 200,
+        type: 'application/json',
+        body: JSON.stringify([{ id: 1, title: 'Signals', description: longText, url: 'https://dev.to/a/signals', cover_image: 'https://media.dev.to/c.png', published_timestamp: fresh, user: { name: 'Ana' } }]),
+      },
+    });
+    useSources([{ ...src('dev-to', api), kind: 'devto' }]);
+    const stats = await runIngest();
+    expect(stats.failedSources).toEqual([]);
+    expect(insertedRows()).toHaveLength(1);
+    expect(insertedRows()[0]).toMatchObject({ sourceId: 'dev-to', url: 'https://dev.to/a/signals', imageUrl: 'https://media.dev.to/c.png', author: 'Ana' });
+  });
+
   it('respects maxPerSource and sourceIds', async () => {
     const stats = await runIngest({ sourceIds: ['dawn-home'], maxPerSource: 1 });
     expect(store.loadSources).toHaveBeenCalledWith(['dawn-home']);
