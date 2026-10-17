@@ -169,7 +169,6 @@ describe('buildEdition', () => {
     const e = await buildEdition(U, REAL, { force: true });
     expect(e.number).toBe(5);
     expect(vi.mocked(db.writeEditionRow)).toHaveBeenCalledWith(expect.objectContaining({ number: 5 }), true);
-    expect(vi.mocked(db.countEditionsBefore)).not.toHaveBeenCalled();
     expect(vi.mocked(db.deleteEditionItems)).toHaveBeenCalledWith('ed-0');
   });
 

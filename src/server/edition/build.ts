@@ -94,12 +94,12 @@ export async function persistEdition(i: PersistInput & { existingId?: string }):
   return id;
 }
 
-/** θ̂ moves of at least 0.02 between two snapshots, biggest first, named from the taxonomy. */
-export function moversBetween(before: Record<TopicSlug, number> | null, after: Record<TopicSlug, number>, taxonomy: TopicNode[], max = 5): WeightDelta[] {
+/** θ̂ moves of at least `minMove` (0.02) between two snapshots, biggest first, named from the taxonomy. */
+export function moversBetween(before: Record<TopicSlug, number> | null, after: Record<TopicSlug, number>, taxonomy: TopicNode[], max = 5, minMove = MIN_MOVE): WeightDelta[] {
   if (!before) return [];
   const names = new Map(taxonomy.map((t) => [t.slug, t.name]));
   return Object.keys(after)
-    .filter((s) => typeof before[s] === 'number' && Math.abs(after[s] - before[s]) >= MIN_MOVE)
+    .filter((s) => typeof before[s] === 'number' && Math.abs(after[s] - before[s]) >= minMove && after[s] !== before[s])
     .map((s) => ({ slug: s, name: names.get(s) ?? s, before: before[s], after: after[s] }))
     .sort((a, b) => Math.abs(b.after - b.before) - Math.abs(a.after - a.before) || (a.slug < b.slug ? -1 : 1))
     .slice(0, max);
@@ -118,16 +118,27 @@ async function waitForEdition(userId: string, date: string): Promise<Edition> {
 export async function buildEdition(userId: string, now: Date, opts: { force?: boolean; awaitNote?: boolean } = {}): Promise<Edition> {
   if (isFixtureUser(userId)) return FIXTURE_EDITION;
   const t0 = performance.now();
-  // The profile and today's row in one round trip: the date is guessed in the default timezone and
-  // re-checked once the profile's timezone is known.
-  const guess = localDate(now, DEFAULT_TZ);
-  const [profile, guessed] = await Promise.all([getProfile(userId), findEditionRow(userId, guess)]);
-  if (!profile) throw Response.json({ error: 'not_onboarded' }, { status: 409 });
-
   // §9.7 demo clock: `now` sets the date; the pool window and freshness never run ahead of real time.
-  const date = localDate(now, profile.tz);
   const realNow = new Date();
   const poolNow = now.getTime() <= realNow.getTime() ? now : realNow;
+  const loadAll = (d: string) =>
+    Promise.all([
+      loadTaxonomy(),
+      loadUserModel(userId, { targetDate: d }),
+      loadRecentEvents(userId, now),
+      loadCandidatePool(poolNow),
+      previousEditionForRecall(userId, d),
+      snapshotBefore(userId, d),
+      countEditionsBefore(userId, d),
+    ]);
+
+  // One round trip for the profile and today's row: the date is guessed in the default timezone and
+  // re-checked once the profile's timezone is known. A forced build also loads everything it needs
+  // in that same round trip (it never returns early).
+  const guess = localDate(now, DEFAULT_TZ);
+  const [profile, guessed, speculative] = await Promise.all([getProfile(userId), findEditionRow(userId, guess), opts.force ? loadAll(guess) : null]);
+  if (!profile) throw Response.json({ error: 'not_onboarded' }, { status: 409 });
+  const date = localDate(now, profile.tz);
 
   const existing = date === guess ? guessed : await findEditionRow(userId, date);
   if (existing && !opts.force) {
@@ -135,15 +146,8 @@ export async function buildEdition(userId: string, now: Date, opts: { force?: bo
     if (stored) return stored;
   }
 
-  const [taxonomy, model0, events, pool, recallSrc, prevSnap, before] = await Promise.all([
-    loadTaxonomy(),
-    loadUserModel(userId, { targetDate: date }),
-    loadRecentEvents(userId, now),
-    loadCandidatePool(poolNow),
-    previousEditionForRecall(userId, date),
-    snapshotBefore(userId, date),
-    existing ? Promise.resolve(existing.number - 1) : countEditionsBefore(userId, date),
-  ]);
+  const [taxonomy, model0, events, pool, recallSrc, prevSnap, countBefore] = speculative && date === guess ? speculative : await loadAll(date);
+  const before = existing ? existing.number - 1 : countBefore;
   const model = { ...refold(model0, events, now, DEFAULT_PARAMS), presentation: profile.presentation };
   const ranking = rankWithCounts(model, pool, DEFAULT_PARAMS, `${userId}|${date}`, poolNow, taxonomy, topicReadCounts(events, now));
   if (ranking.items.length === 0) throw Response.json({ error: 'no_candidates' }, { status: 503 });

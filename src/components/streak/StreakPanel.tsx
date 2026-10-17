@@ -33,6 +33,9 @@ export function StreakPanel({ streak, heatmap }: StreakPanelProps) {
       <p className="ui-meta text-ink-muted">
         Current {v.current} · Longest {v.longest} · {v.totalDays === 1 ? '1 reading day' : `${v.totalDays} reading days`}
       </p>
+      <p className="ui-meta text-ink-muted">
+        Freezes held: {v.freezesAvailable}. They cover a missed day automatically; you earn one every 7 days (max 2).
+      </p>
       {heatmap && heatmap.length > 0 ? <ReadingHeatmap days={heatmap} /> : null}
       {line ? <p className="body-sm text-ink-soft">{line}</p> : null}
       <ReadingProgress value={Math.min(v.todayStoriesRead / STORIES_FOR_COMPLETE, 1)} label={progressLabel(v)} />

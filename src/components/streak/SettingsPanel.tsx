@@ -7,7 +7,8 @@ import { toast } from 'sonner';
 import { Button, Segmented, TextField } from '@/components/morrow';
 import { ROUTES } from '@/contracts/api';
 import type { Depth, Profile, TimeBudget } from '@/contracts/profile';
-import { budgetOptions, depthOptions, themeOptions } from './settings';
+import { useHideStreak } from './prefs';
+import { budgetOptions, depthOptions, streakOptions, themeOptions } from './settings';
 
 const JSON_HEADERS = { 'content-type': 'application/json' };
 const noopSubscribe = () => () => {};
@@ -30,6 +31,7 @@ export function SettingsPanel({ profile }: { profile: Profile }) {
   const [depth, setDepth] = useState<string>(profile.presentation.depth);
   const [city, setCity] = useState(profile.city);
   const [state, setState] = useState<SaveState>('idle');
+  const [streakHidden, setStreakHidden] = useHideStreak();
 
   const night = mounted && (resolvedTheme === 'night' || resolvedTheme === 'dark');
   const cityError = city.trim().length === 0 ? 'Add a city for local news and weather' : undefined;
@@ -89,6 +91,7 @@ export function SettingsPanel({ profile }: { profile: Profile }) {
           {state === 'saved' || state === 'rebuilding' ? "Saved. Tomorrow's paper will use this." : ''}
         </p>
       </div>
+      <Segmented label="Streak" name="streak" options={streakOptions} value={streakHidden ? 'hide' : 'show'} onChange={(v) => setStreakHidden(v === 'hide')} />
       <Segmented label="Theme" name="theme" options={themeOptions} value={night ? 'night' : 'morning'} onChange={(v) => setTheme(v === 'night' ? 'night' : 'morning')} />
     </div>
   );

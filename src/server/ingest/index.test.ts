@@ -71,7 +71,8 @@ beforeEach(() => {
     if (hit === undefined) return new Response('not found', { status: 404, headers: { 'content-type': 'text/html' } });
     if (hit instanceof Error) throw hit;
     if (typeof hit === 'string') return new Response(hit, { status: 200, headers: { 'content-type': 'application/rss+xml; charset=utf-8' } });
-    return new Response(hit.body, { status: hit.status, headers: { 'content-type': hit.type ?? 'text/html' } });
+    const nullBody = hit.status === 204 || hit.status === 304; // the Response constructor rejects a body for these
+    return new Response(nullBody ? null : hit.body, { status: hit.status, headers: { 'content-type': hit.type ?? 'text/html' } });
   });
   vi.stubGlobal('fetch', fetchMock);
   serve({
@@ -133,6 +134,16 @@ describe('runIngest', () => {
     const stats = await runIngest();
     expect(stats.failedSources.sort()).toEqual(['akamai', 'espn']);
     expect(stats.inserted).toBe(1);
+  });
+
+  it('a 304 Not Modified feed is healthy, not failed', async () => {
+    serve({ ...served, 'https://quiet.example/feed': { status: 304, body: '' } });
+    useSources([{ ...src('quiet', 'https://quiet.example/feed'), cache: { httpStatus: 200, etag: '"abc"', lastModified: null, error: null, items: 5, at: '' } }, src('tribune', TRIBUNE)]);
+    const stats = await runIngest();
+    expect(stats.failedSources).toEqual([]);
+    const quiet = vi.mocked(store.recordSourceHealth).mock.calls.find((c) => c[0].id === 'quiet');
+    expect(quiet?.[1].ok).toBe(true);
+    expect(quiet?.[1].cache.etag).toBe('"abc"');
   });
 
   it('stats add up', async () => {

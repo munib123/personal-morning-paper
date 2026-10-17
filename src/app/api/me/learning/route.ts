@@ -1,26 +1,16 @@
-// STUB (L0) — owner: L3. Replace freely; keep the signature.
-import { LearningQuerySchema } from '@/contracts/api';
-import { FIXTURE_USER_ID } from '@/contracts/fixtures';
+// GET /api/me/learning?since=7 (L3, §9.2) → LearningView: weights, movers since a snapshot, one sentence, timeline.
+import { LearningQuerySchema, LearningViewSchema } from '@/contracts/api';
+import { requireUser } from '@/server/auth/session';
+import { route } from '@/server/edition/http';
 import { getLearningView } from '@/server/learn';
 import { requestNow } from '@/server/time';
 
-const MAX_SINCE_DAYS = 90;
+const MAX_SINCE_DAYS = 30;
 
-// GET ?since=7 → LearningView (weights, movers since N days ago, change summary, timeline).
-// Stub: no auth; getLearningView serves the fixture view.
-export async function GET(request: Request): Promise<Response> {
-  const parsed = LearningQuerySchema.safeParse(queryOf(request));
-  if (!parsed.success) return invalid(parsed.error.issues);
-  // The schema only coerces; clamping the range is the handler's job.
-  const since = Math.min(Math.max(parsed.data.since, 1), MAX_SINCE_DAYS);
-  return Response.json(await getLearningView(FIXTURE_USER_ID, since, await requestNow()));
-}
-
-// Query params as a plain object. An empty value (?since=) counts as absent, so the schema default applies.
-function queryOf(request: Request): Record<string, string> {
-  return Object.fromEntries([...new URL(request.url).searchParams].filter(([, v]) => v.trim() !== ''));
-}
-
-function invalid(issues: unknown): Response {
-  return Response.json({ error: 'invalid', issues }, { status: 400 });
-}
+export const GET = route(async (request: Request) => {
+  const { userId } = await requireUser();
+  const raw = new URL(request.url).searchParams.get('since');
+  const { since } = LearningQuerySchema.parse({ since: raw?.trim() ? raw : undefined });
+  const view = await getLearningView(userId, Math.min(Math.max(since, 1), MAX_SINCE_DAYS), await requestNow());
+  return Response.json(LearningViewSchema.parse(view));
+});
