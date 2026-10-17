@@ -127,8 +127,9 @@ export const PRINT_CSS = `
 
 /* On screen (the print route): sheets on a sunk desk, scaled to fit */
 @media screen {
+  .print-shell { min-height: 100vh; background: var(--paper-sunk); color: var(--ink); padding-top: 24px; }
   .print-root { padding: 24px 0 48px; background: var(--paper-sunk); }
-  .page { margin: 0 auto 24px; border: 1px solid var(--rule); }
+  .page { margin: 0 auto 24px; border: 1px solid var(--rule); height: auto; min-height: 297mm; }
   .screen-only { display: flex; justify-content: center; padding: 0 16px 24px; }
 }
 @media screen and (max-width: 840px) { .page { zoom: .85; } }

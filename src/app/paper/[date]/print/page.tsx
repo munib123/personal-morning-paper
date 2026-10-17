@@ -1,61 +1,48 @@
-// STUB (L0) — owner: L6. Replace freely; keep the route.
+// /paper/[date]/print: the printed paper as a page, outside the reader shell, always in the Morning theme.
+// It is the fallback when no stored PDF exists (Vercel) and prints to PDF from the browser's own dialog.
+// The app already serves the Morrow CSS and fonts, so nothing is inlined here.
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { Masthead } from '@/components/morrow';
-import { FIXTURE_USER_ID } from '@/contracts/fixtures';
-import { BRAND } from '@/lib/brand';
+import { notFound, redirect } from 'next/navigation';
+import { PrintButton } from '@/components/print/PrintButton';
+import { PrintEdition } from '@/components/print/PrintEdition';
+import type { Edition } from '@/contracts/edition';
+import { FIXTURE_EDITION } from '@/contracts/fixtures';
+import { getSessionUser } from '@/server/auth/session';
 import { getEdition } from '@/server/edition';
+import { isPaperDate, wantsFixture } from '@/server/pdf/access';
+import { fixtureExtras } from '@/server/pdf/fixture';
+import { preparePrintModel } from '@/server/pdf/model';
+import type { PrintExtras } from '@/server/pdf/types';
 import { getProfile } from '@/server/profile';
 
+export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Print edition' };
 
-// The print template: used for the PDF render and the window.print() fallback. It sits outside the reader shell,
-// always in the Morning theme, with no interactive affordances. Stub: the fixture edition as one long column list.
-export default async function PrintPage({ params }: PageProps<'/paper/[date]/print'>) {
+export default async function PrintPage({ params, searchParams }: PageProps<'/paper/[date]/print'>) {
   const { date } = await params;
-  const edition = await getEdition(FIXTURE_USER_ID, date);
-  if (!edition) notFound();
-  const profile = await getProfile(FIXTURE_USER_ID);
-  const reader = profile?.displayName?.trim().split(/\s+/)[0] || undefined;
-  const sources = new Set(edition.items.map((item) => item.article.sourceName)).size;
+  if (!isPaperDate(date)) notFound();
 
+  let edition: Edition;
+  let extras: PrintExtras;
+  if (wantsFixture((await searchParams).fixture)) {
+    edition = FIXTURE_EDITION;
+    extras = fixtureExtras();
+  } else {
+    const user = await getSessionUser();
+    if (!user) redirect('/start');
+    const profile = await getProfile(user.userId);
+    if (!profile) redirect('/start');
+    const found = await getEdition(user.userId, date);
+    if (!found) notFound();
+    edition = found;
+    extras = fixtureExtras();
+  }
+
+  const model = await preparePrintModel(edition, extras);
   return (
-    <main className="mx-auto flex w-full max-w-(--page-max) flex-col gap-6 px-4 py-8 md:px-6">
-      <Masthead
-        title={BRAND.nameplate}
-        date={longDate(edition.date)}
-        edition={edition.number}
-        reader={reader}
-        location={profile?.city}
-        storyCount={edition.items.length}
-      />
-      <ol className="list-none columns-1 gap-6 p-0 md:columns-3">
-        {edition.items.map((item) => (
-          <li key={item.article.id} className="mb-6 break-inside-avoid">
-            <p className="print-kicker text-press">{edition.sectionNames[item.sectionSlug]}</p>
-            <h2 className="print-headline">{item.article.headline}</h2>
-            <p className="print-body text-ink-soft">{item.article.summary.brief}</p>
-            <p className="ui-meta text-ink-muted">{item.article.sourceName}</p>
-          </li>
-        ))}
-      </ol>
-      <p className="dateline text-ink-muted">
-        {reader ? `Prepared for ${reader} · ` : ''}from {sources} sources
-      </p>
-      <p className="ui-meta text-ink-muted">Stub page · owner L6</p>
-    </main>
+    <div data-theme="morning" lang="en" className="print-shell">
+      <PrintButton />
+      <PrintEdition model={model} />
+    </div>
   );
-}
-
-// 'YYYY-MM-DD' → 'Saturday, 17 October 2026' (dates are written in full on the paper).
-function longDate(date: string): string {
-  const parts = new Intl.DateTimeFormat('en-GB', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    timeZone: 'UTC',
-  }).formatToParts(new Date(`${date}T00:00:00Z`));
-  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((p) => p.type === type)?.value ?? '';
-  return `${part('weekday')}, ${part('day')} ${part('month')} ${part('year')}`;
 }
