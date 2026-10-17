@@ -1,14 +1,12 @@
-// STUB (L0) — owner: L2. Replace freely; keep the signature.
+// L2 enrichment (ARCHITECTURE §9.3). runEnrich runs in the worker only; writeEditorNote and
+// mapTextToTopics are imported by the app, so this module's import graph stays free of model runtimes.
 /* eslint-disable @typescript-eslint/no-unused-vars -- stub: parameters are kept for the §9.3 signature */
 import type { TopicSlug } from '@/contracts/taxonomy';
 import type { WeightDelta } from '@/contracts/signals';
 
 export interface EnrichStats { enriched: number; fallback: number; unusable: number; llmCalls: number; ms: number; }
 
-// Zeroed stats; writes nothing and makes no LLM calls.
-export async function runEnrich(opts?: { limit?: number; batchSize?: number }): Promise<EnrichStats> {
-  return { enriched: 0, fallback: 0, unusable: 0, llmCalls: 0, ms: 0 };
-}
+export { runEnrich } from './run';
 
 export interface EditorNoteInput { paperName: string; displayName: string | null; date: string; number: number; headlines: { headline: string; section: string }[]; movers: WeightDelta[]; streak: number;
   preferSmart?: boolean; }   // true for demo personas (profile.is_demo) → SMART model; everyone else uses the FAST ladder

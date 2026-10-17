@@ -1,13 +1,15 @@
 // L2 dev CLI (worker only, never on Vercel):
 //   npx tsx --env-file=.env.local src/server/enrich/cli.ts <command>
-//   nlp [--limit n] | recluster | extractive | stats | ping
+//   nlp [--limit n] | recluster | extractive | enrich [--limit n] | reset-sample <n> | stats | ping
 import '../../../scripts/lib/env';
 
 import { createSupabaseAdminClient } from '@/server/db/admin';
 import { selectPaged } from '@/server/nlp/paged';
+import { pacificDay } from '@/server/ai/usage';
 import { extractiveBackfill } from './backfill';
+import { CANDIDATE_COLUMNS, enrichRows, type CandidateRow } from './run';
 
-const USAGE = 'usage: cli.ts nlp [--limit n] | recluster | extractive | stats | ping';
+const USAGE = 'usage: cli.ts nlp [--limit n] | recluster | extractive | enrich [--limit n] | reset-sample <n> | stats | ping';
 const STATUSES = ['raw', 'embedded', 'enriched', 'fallback', 'unusable'] as const;
 
 class UsageError extends Error {}
@@ -26,8 +28,33 @@ function limitArg(args: string[]): number | undefined {
   return n;
 }
 
+/**
+ * Puts n Gemini-enriched articles (one per cluster) back to `embedded` and enriches exactly those again:
+ * with llm_cache warm this costs no Gemini request (acceptance check 5: llmCalls 0).
+ */
+async function resetSample(n: number): Promise<void> {
+  const db = createSupabaseAdminClient();
+  const { data, error } = await db.from('articles').select('id, cluster_id').eq('status', 'enriched').order('enriched_at', { ascending: false }).limit(n * 4);
+  if (error) throw new Error(error.message);
+  const seen = new Set<string>();
+  const ids: string[] = [];
+  for (const r of data ?? []) {
+    const key = r.cluster_id ?? r.id;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    ids.push(r.id);
+    if (ids.length === n) break;
+  }
+  if (ids.length === 0) throw new UsageError('no enriched articles to reset yet: run cli.ts enrich first');
+  const { error: resetError } = await db.from('articles').update({ status: 'embedded' }).in('id', ids);
+  if (resetError) throw new Error(resetError.message);
+  const { data: rows, error: rowsError } = await db.from('articles').select(CANDIDATE_COLUMNS).in('id', ids).overrideTypes<CandidateRow[], { merge: false }>();
+  if (rowsError) throw new Error(rowsError.message);
+  console.log(JSON.stringify({ reset: ids.length, ...(await enrichRows(rows ?? [], { cap: ids.length })) }));
+}
+
 function pacificDayNow(): string {
-  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Los_Angeles', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+  return pacificDay(new Date());
 }
 
 async function stats(): Promise<void> {
@@ -90,6 +117,18 @@ async function main(argv: string[]): Promise<number> {
       case 'recluster': {
         const { reclusterAll } = await import('@/server/nlp/recluster');
         console.log(JSON.stringify(await reclusterAll()));
+        return 0;
+      }
+      case 'enrich': {
+        const { runEnrich } = await import('./index');
+        const limit = limitArg(args);
+        console.log(JSON.stringify(await runEnrich(limit ? { limit } : {})));
+        return 0;
+      }
+      case 'reset-sample': {
+        const n = Number(args[0]);
+        if (!Number.isInteger(n) || n < 1) throw new UsageError(`reset-sample needs a positive integer, got "${args[0] ?? ''}"`);
+        await resetSample(n);
         return 0;
       }
       case 'extractive':
