@@ -1,46 +1,41 @@
-// STUB (L0) — owner: L5. Replace freely; keep the route.
+// / (L5): the landing page is one hero, the paper's own masthead, and one thing to do.
+// Static, regenerated every 10 minutes so the date on the nameplate stays current. It reads the real
+// clock on purpose: no cookies here (that would make the page dynamic), and the demo clock only
+// matters inside the reader.
+import Link from 'next/link';
 import { Button, Masthead } from '@/components/morrow';
+import { longDate } from '@/components/onboarding/lib/dates';
 import { ROUTES } from '@/contracts/api';
 import { BRAND } from '@/lib/brand';
-import { localDate, requestNow } from '@/server/time';
+import { localDate } from '@/server/time';
+
+export const revalidate = 600;
 
 const SAMPLE_PDF = '/demo/sample.pdf';
+const PAPER_TZ = 'Asia/Karachi';
 
-export default async function LandingPage() {
-  const today = localDate(await requestNow(), 'Asia/Karachi');
+export default function LandingPage() {
+  const date = longDate(localDate(new Date(), PAPER_TZ));
   return (
-    <main className="mx-auto flex w-full max-w-(--page-max) flex-col gap-8 px-4 py-8 md:px-6 md:py-16">
-      <Masthead title={BRAND.nameplate} date={longDate(today)} />
-      <section className="flex max-w-(--measure) flex-col gap-6" aria-label="Get your paper">
-        <p className="deck text-ink-soft">{BRAND.tagline}</p>
-        <div className="flex flex-wrap items-center gap-4">
-          <Button variant="accent" size="lg" iconRight="arrow-right" href={ROUTES.start}>
-            Build my paper
-          </Button>
-        </div>
-        <div className="flex flex-wrap items-center gap-6">
-          <a className="ui-text text-pen underline underline-offset-4" href={ROUTES.demo}>
-            Try the demo reader
-          </a>
-          <a className="ui-text text-pen underline underline-offset-4" href={SAMPLE_PDF}>
-            See a sample PDF
-          </a>
+    <main className="mx-auto flex min-h-dvh w-full max-w-(--page-max) flex-col gap-10 bg-paper px-4 py-8 md:px-6 md:py-16">
+      <Masthead title={BRAND.nameplate} date={date} tagline="Every morning" />
+      <section aria-label="Get your paper" className="mx-auto flex w-full max-w-(--measure) flex-col items-center gap-6 text-center">
+        <p className="deck text-ink-soft">{BRAND.tagline}.</p>
+        <p className="ui-text text-ink-muted">Takes about a minute to set up. No account needed.</p>
+        <Button variant="primary" size="lg" iconRight="arrow-right" href={ROUTES.start}>
+          Build my paper
+        </Button>
+        {/* Pen (links) sits on an inner span: Morrow's unlayered `a { color: inherit }` outranks
+            Tailwind's layered text-* utilities on the <a> itself (reported to L0 in docs/handoff/L5.md). */}
+        <div className="flex flex-wrap items-center justify-center gap-x-8">
+          <Link href={ROUTES.demo} prefetch={false} className="ui-text inline-block py-3">
+            <span className="text-pen underline underline-offset-4">Try the demo reader</span>
+          </Link>
+          <Link href={SAMPLE_PDF} prefetch={false} target="_blank" rel="noopener noreferrer" className="ui-text inline-block py-3">
+            <span className="text-pen underline underline-offset-4">See a sample PDF</span>
+          </Link>
         </div>
       </section>
-      <p className="ui-meta text-ink-muted">Stub page · owner L5</p>
     </main>
   );
-}
-
-// 'YYYY-MM-DD' → 'Saturday, 17 October 2026' (dates are written in full on the paper).
-function longDate(date: string): string {
-  const parts = new Intl.DateTimeFormat('en-GB', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    timeZone: 'UTC',
-  }).formatToParts(new Date(`${date}T00:00:00Z`));
-  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((p) => p.type === type)?.value ?? '';
-  return `${part('weekday')}, ${part('day')} ${part('month')} ${part('year')}`;
 }
