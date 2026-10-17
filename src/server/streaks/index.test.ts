@@ -125,6 +125,17 @@ describe('freezes and repair', () => {
     expect(repo.streakRow?.lastRepairAt).toBe(MORNING.toISOString());
   });
 
+  it('a repair later in the day still brings the milestone it completes', async () => {
+    // Read today first (state stays repairable), then answer the recall: the repair makes it day 7.
+    const frozen: DayRecord = { date: '2026-10-15', status: 'frozen', qualifyingReads: 0, storiesRead: 0, editionComplete: false };
+    const repo = memoryStreakRepo({ days: [...reads(10, 14), frozen] });
+    const first = await recordActivityWith(repo, U, readEvents, MORNING, TZ);
+    expect(first).toMatchObject({ state: 'repairable', milestone: null });
+    insertLikeL3(repo, '2026-10-17', readEvents);
+    const repaired = await recordActivityWith(repo, U, [{ type: 'recall_answer', articleId: 'a2', value: 1, meta: { chosen: 0 } }], MORNING, TZ);
+    expect(repaired).toMatchObject({ state: 'done_today', current: 7, milestone: 7 });
+  });
+
   it('a recall answer repairs nothing when no day is repairable', async () => {
     const repo = memoryStreakRepo({ days: reads(15, 16) });
     await recordActivityWith(repo, U, [{ type: 'recall_answer', articleId: 'a2', value: 0, meta: { chosen: 1 } }], MORNING, TZ);

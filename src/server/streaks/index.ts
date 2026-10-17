@@ -62,8 +62,8 @@ export async function recordActivityWith(repo: StreakRepo, userId: string, event
     );
     await repo.upsertStatusDays(userId, next.autoFrozen, 'frozen');
     await repo.upsertStreakRow(userId, next, lastRepairAt);
-    // The milestone is news only on the read that crossed it.
-    return { ...next.view, milestone: !prior.view.todayQualified && next.view.todayQualified ? next.view.milestone : null };
+    // The milestone is news only on the call that made today a streak day (a read, or a repair).
+    return { ...next.view, milestone: prior.view.state !== 'done_today' && next.view.state === 'done_today' ? next.view.milestone : null };
   } catch (err) {
     console.error('[streaks] recordActivity failed', err);
     return fallbackView(now, tz);
