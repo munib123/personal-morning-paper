@@ -71,5 +71,9 @@ The 1280 onboarding preview is palette-compressed (sharp, quality 80) to stay un
 
 ## Gates
 
-See the PR description for the final run: `npm run typecheck`, `npm run lint` (the one pre-existing `<img>`
-warning in `src/components/morrow/index.tsx`), `npx vitest run`.
+These are the results on the branch after merging main at `fd110e5`:
+
+- `npm run typecheck`: passes.
+- `npm run lint`: passes, with 0 errors and 1 warning (the existing `<img>` warning in `src/components/morrow/index.tsx`).
+- `npx vitest run`: 154 files and 1346 tests pass. One test fails: `src/server/rank/build.test.ts > perf > 1000 candidates × 384-d rank in under 50 ms`, which took 476 ms under full-suite load. It is a wall-clock test, and re-run on its own the file passes 26/26.
+- `git diff next.config.ts` is empty.
