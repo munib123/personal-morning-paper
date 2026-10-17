@@ -163,6 +163,24 @@ describe('runIngest', () => {
     expect(insertedRows()[0].imageUrl).toBe('https://i.dawn.com/5.jpg');
   });
 
+  it('runs the Hacker News adapter for an hn source', async () => {
+    const top = 'https://hacker-news.firebaseio.com/v0/topstories.json';
+    const json = (v: unknown) => ({ status: 200, type: 'application/json', body: JSON.stringify(v) });
+    const t = Math.floor(NOW.getTime() / 1000) - 3600;
+    serve({
+      [top]: json([1, 2]),
+      'https://hacker-news.firebaseio.com/v0/item/1.json': json({ id: 1, type: 'story', score: 120, by: 'pg', time: t, title: 'Show HN: A', url: 'https://x.com/a' }),
+      'https://hacker-news.firebaseio.com/v0/item/2.json': json({ id: 2, type: 'story', score: 5, by: 'b', time: t, title: 'Low', url: 'https://x.com/b' }),
+      'https://x.com/a': { status: 200, type: 'text/html', body: '<!doctype html><html><head><meta property="og:description" content="A tiny database."><meta property="og:image" content="https://x.com/a.png"></head><body></body></html>' },
+    });
+    useSources([{ ...src('hacker-news', top), kind: 'hn' }]);
+    const stats = await runIngest();
+    expect(stats.fetched).toBe(1);
+    expect(stats.failedSources).toEqual([]);
+    expect(insertedRows()).toHaveLength(1);
+    expect(insertedRows()[0]).toMatchObject({ sourceId: 'hacker-news', url: 'https://x.com/a', author: 'pg', imageUrl: 'https://x.com/a.png', contentText: 'Show HN: A. A tiny database.' });
+  });
+
   it('respects maxPerSource and sourceIds', async () => {
     const stats = await runIngest({ sourceIds: ['dawn-home'], maxPerSource: 1 });
     expect(store.loadSources).toHaveBeenCalledWith(['dawn-home']);

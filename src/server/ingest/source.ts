@@ -1,6 +1,7 @@
+import { fetchHackerNews } from './adapters/hn';
 import { errorMessage, fetchFeed } from './http';
 import { parseFeedXml } from './rss';
-import type { FeedCache, IngestSource, SourceResult } from './types';
+import type { FeedCache, IngestSource, RawItem, SourceResult } from './types';
 import { filterAndCap } from './window';
 
 export interface SourceOptions {
@@ -37,13 +38,26 @@ async function processRss(src: IngestSource, now: Date, o: SourceOptions): Promi
   return { sourceId: src.id, items: kept, fetched: items.length, skippedOld, ok: true, cache: { ...res.cache, items: items.length } };
 }
 
+/** An API adapter run: its items go through the same window and cap as a feed's. */
+async function processApi(src: IngestSource, now: Date, o: SourceOptions, fetchItems: () => Promise<RawItem[]>): Promise<SourceResult> {
+  try {
+    const items = (await fetchItems()).map((i) => ({ ...i, sourceId: src.id }));
+    const { kept, skippedOld } = filterAndCap(items, now, o.sinceHours, o.maxPerSource);
+    return { sourceId: src.id, items: kept, fetched: items.length, skippedOld, ok: true, cache: { ...emptyCache(src, now), httpStatus: 200, items: items.length } };
+  } catch (err) {
+    return failedResult(src, now, err);
+  }
+}
+
 /** fetch → decode → parse → window/cap for one source, dispatched by kind. */
 export async function processSource(src: IngestSource, now: Date, o: SourceOptions): Promise<SourceResult> {
   switch (src.kind) {
     case 'rss':
       return processRss(src, now, o);
+    case 'hn':
+      return processApi(src, now, o, () => fetchHackerNews(o.maxPerSource, src.id));
     default:
-      // API adapters land in Tasks 5-7.
+      // Dev.to and arXiv adapters land in Tasks 6-7.
       return { sourceId: src.id, items: [], fetched: 0, skippedOld: 0, ok: true, cache: emptyCache(src, now) };
   }
 }

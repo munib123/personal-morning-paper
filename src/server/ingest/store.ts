@@ -51,8 +51,51 @@ export async function loadSources(sourceIds?: string[]): Promise<IngestSource[]>
     }));
 }
 
-/** Safety net for the L0-seeded API rows (§9.7). Real version lands with the HN adapter (Task 5). */
-export async function ensureApiSources(): Promise<void> {}
+/** The keyless API sources L1 has adapters for. L0 seeds them (§9.7); these rows are only the fallback. */
+export const API_SOURCES: TablesInsert<'sources'>[] = [
+  {
+    id: 'hacker-news',
+    name: 'Hacker News',
+    kind: 'hn',
+    url: 'https://hacker-news.firebaseio.com/v0/topstories.json',
+    homepage: 'https://news.ycombinator.com',
+    region: 'global',
+    topics: ['technical.cs'],
+  },
+  {
+    id: 'dev-to',
+    name: 'DEV Community',
+    kind: 'devto',
+    url: 'https://dev.to/api/articles',
+    homepage: 'https://dev.to',
+    region: 'global',
+    topics: ['technical.cs.web-dev', 'technical.cs.languages-tools'],
+  },
+  {
+    id: 'arxiv',
+    name: 'arXiv',
+    kind: 'arxiv',
+    url: 'https://export.arxiv.org/api/query',
+    homepage: 'https://arxiv.org',
+    region: 'global',
+    topics: ['technical.cs.research', 'technical.cs.ai-ml'],
+  },
+];
+
+/**
+ * Safety net for the L0-seeded API rows (§9.7): reads every source's kind (active or not) and
+ * inserts the API rows whose kind has no row at all (`ON CONFLICT (url) DO NOTHING`).
+ */
+export async function ensureApiSources(): Promise<void> {
+  const { data, error } = await db().from('sources').select('kind');
+  if (error) throw new Error(`api sources: ${error.message}`);
+  const present = new Set((data ?? []).map((r) => r.kind));
+  const missing = API_SOURCES.filter((s) => !present.has(s.kind));
+  if (missing.length === 0) return;
+  const { error: upsertError } = await db().from('sources').upsert(missing, { onConflict: 'url', ignoreDuplicates: true });
+  if (upsertError) throw new Error(`api sources: ${upsertError.message}`);
+  console.info(`ingest: ensureApiSources inserted ${missing.map((s) => s.id).join(', ')}`);
+}
 
 /** Which of these url_hashes are already in `articles`. Throws on a query error (never insert blind). */
 export async function findExistingHashes(hashes: string[]): Promise<Set<string>> {

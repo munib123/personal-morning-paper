@@ -44,7 +44,7 @@ vi.mock('@/server/db/admin', () => ({
   }),
 }));
 
-import { findExistingHashes, insertArticles, listImageless, loadSources, recordSourceHealth, updateArticleImages } from './store';
+import { ensureApiSources, findExistingHashes, insertArticles, listImageless, loadSources, recordSourceHealth, updateArticleImages } from './store';
 
 const has = (chain: Chain, method: string) => chain.calls.some((c) => c.method === method);
 const argsOf = (chain: Chain, method: string) => chain.calls.find((c) => c.method === method)?.args;
@@ -155,6 +155,39 @@ describe('loadSources', () => {
     expect(sources.map((s) => s.id)).toEqual(['dawn-home', 'hacker-news']); // unknown kinds are skipped
     expect(sources[0]).toMatchObject({ kind: 'rss', cache, failCount: 2 });
     expect(sources[1].cache).toBeNull();
+  });
+});
+
+describe('ensureApiSources', () => {
+  const kinds = (...ks: string[]) => (chain: Chain): Result =>
+    has(chain, 'upsert') ? { data: null, error: null } : { data: ks.map((kind) => ({ kind })), error: null };
+
+  it('inserts nothing when every API kind has a row, active or not', async () => {
+    respond = kinds('rss', 'hn', 'devto', 'arxiv'); // the seeded rows; one of them may be inactive
+    await ensureApiSources();
+    expect(chains.some((c) => has(c, 'upsert'))).toBe(false);
+    expect(chains[0].table).toBe('sources');
+    expect(has(chains[0], 'eq')).toBe(false); // inactive rows count as present
+  });
+
+  it('upserts only the missing kind, ignoring a url conflict', async () => {
+    respond = kinds('rss', 'hn', 'arxiv');
+    await ensureApiSources();
+    const upserts = chains.filter((c) => has(c, 'upsert'));
+    expect(upserts).toHaveLength(1);
+    const [rows, opts] = argsOf(upserts[0], 'upsert') as [Record<string, unknown>[], Record<string, unknown>];
+    expect(opts).toEqual({ onConflict: 'url', ignoreDuplicates: true });
+    expect(rows).toEqual([
+      {
+        id: 'dev-to',
+        name: 'DEV Community',
+        kind: 'devto',
+        url: 'https://dev.to/api/articles',
+        homepage: 'https://dev.to',
+        region: 'global',
+        topics: ['technical.cs.web-dev', 'technical.cs.languages-tools'],
+      },
+    ]);
   });
 });
 
