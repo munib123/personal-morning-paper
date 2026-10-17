@@ -1,10 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const cookieValue = { current: undefined as string | undefined };
+const cookieCalls = { count: 0 };
 vi.mock('next/headers', () => ({
-  cookies: async () => ({
-    get: (name: string) => (name === 'subah_now' && cookieValue.current !== undefined ? { name, value: cookieValue.current } : undefined),
-  }),
+  cookies: async () => {
+    cookieCalls.count += 1;
+    return {
+      get: (name: string) => (name === 'subah_now' && cookieValue.current !== undefined ? { name, value: cookieValue.current } : undefined),
+    };
+  },
 }));
 
 import { addDays, localDate, requestNow } from './index';
@@ -56,6 +60,14 @@ describe('requestNow', () => {
     cookieValue.current = '2026-10-18T02:00:00.000Z';
     expect((await requestNow()).toISOString()).toBe(fixed.toISOString());
   });
+  it('reads request cookies even without DEMO_MODE, so pages using it render per request', async () => {
+    // Next prerenders a page at build time unless it touches a request API; a page whose only
+    // request-time input is requestNow() would otherwise freeze the build day's date forever.
+    cookieCalls.count = 0;
+    await requestNow();
+    expect(cookieCalls.count).toBe(1);
+  });
+
   it('ignores a garbage or empty cookie', async () => {
     process.env.DEMO_MODE = '1';
     cookieValue.current = 'yesterday';

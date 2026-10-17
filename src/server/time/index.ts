@@ -11,15 +11,17 @@ const ROLLOVER_MS = 3 * 60 * 60 * 1000;
  */
 export async function requestNow(): Promise<Date> {
   const real = new Date();
-  if (process.env.DEMO_MODE !== '1') return real;
+  let raw: string | undefined;
   try {
-    const raw = (await cookies()).get(DEMO_COOKIE)?.value;
-    if (!raw) return real;
-    const t = Date.parse(raw);
-    return Number.isNaN(t) ? real : new Date(t);
+    // Always read cookies: touching a request API makes every page that uses requestNow() render
+    // per request, instead of being prerendered with the build day's date frozen in.
+    raw = (await cookies()).get(DEMO_COOKIE)?.value;
   } catch {
-    return real;
+    return real; // outside a request scope (scripts, jobs)
   }
+  if (process.env.DEMO_MODE !== '1' || !raw) return real;
+  const t = Date.parse(raw);
+  return Number.isNaN(t) ? real : new Date(t);
 }
 
 function formatDate(at: Date, timeZone: string): string {
