@@ -9,6 +9,7 @@
 // the text does not name (Gemini mapped "the stars" to Space & Astronomy) takes the first clause whose
 // direction fits it: a pick the first "more", a blocked topic the first "less" or "never".
 import type { mapTextToTopics } from '@/server/enrich';
+import type { InterestEdit } from '@/server/learn';
 import type { InterestWeight } from '@/contracts/profile';
 import type { TopicNode, TopicSlug } from '@/contracts/taxonomy';
 import { DEFAULT_PARAMS } from '@/server/rank/params';
@@ -213,6 +214,33 @@ function reasonFor(action: EditorAction, quote: string): string {
 }
 
 const actionFor = (dir: Direction, absent: boolean): EditorAction => (dir === 'raise' && absent ? 'add' : dir);
+
+/**
+ * The /me edits (the same ones the interest editor sends to PATCH /api/me/interests) that carry out one
+ * change, read against the reader's weights as they are now: a raise on a muted topic unmutes it first,
+ * a mute on a pinned topic unpins it, and the 'set' value is recomputed so θ̂ lands on `after`.
+ */
+export function editsFor(c: EditorChange, w: InterestWeight | undefined): InterestEdit[] {
+  const muted = w?.muted ?? false;
+  const pinned = w?.pinned ?? false;
+  const base = w ?? { theta: UNPICKED_MEAN, alpha: 1, beta: 3, level: Math.min(3, c.slug.split('.').length) };
+  const set = (): InterestEdit => ({ slug: c.slug, action: 'set', value: setValueFor(base, c.after).value });
+  switch (c.action) {
+    case 'mute':
+      return [...(pinned ? [{ slug: c.slug, action: 'unpin' as const }] : []), ...(muted ? [] : [{ slug: c.slug, action: 'mute' as const }])];
+    case 'pin':
+      return [...(muted ? [{ slug: c.slug, action: 'unmute' as const }] : []), ...(pinned ? [] : [{ slug: c.slug, action: 'pin' as const }])];
+    case 'raise':
+    case 'add':
+      return [...(muted ? [{ slug: c.slug, action: 'unmute' as const }] : []), set()];
+    case 'lower':
+      return [set()];
+    default: {
+      const never: never = c.action;
+      return never;
+    }
+  }
+}
 
 export function proposeChanges({ text, picks, interests, topics = [] }: ProposeInput): EditorProposal {
   const clean = text.replace(/[’‘]/g, "'").replace(/\s+/g, ' ').trim();

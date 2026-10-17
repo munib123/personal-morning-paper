@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { FIXTURE_TAXONOMY } from '@/contracts/fixtures';
 import type { InterestWeight } from '@/contracts/profile';
-import { ADD_WEIGHT, MAX_CHANGES, STEP, proposeChanges, setValueFor } from '@/server/editor/propose';
+import { ADD_WEIGHT, MAX_CHANGES, STEP, editsFor, proposeChanges, setValueFor } from '@/server/editor/propose';
 
 const node = (slug: string) => {
   const n = FIXTURE_TAXONOMY.find((t) => t.slug === slug);
@@ -215,6 +215,33 @@ describe('proposeChanges: no match, cap and clamping', () => {
     const { changes } = propose('more cricket, but never cricket', ['sports.cricket']);
     expect(changes).toHaveLength(1);
     expect(changes[0].action).toBe('raise');
+  });
+});
+
+describe('editsFor: the /me edits that carry out one change, read against the weights as they are now', () => {
+  const change = (slug: string, action: 'raise' | 'lower' | 'pin' | 'mute' | 'add', before: number, after: number) => ({ slug, name: slug, before, after, action, reason: 'You said "x".' });
+
+  it('raise / add / lower become one set whose value lands θ̂ on `after`', () => {
+    expect(editsFor(change('sports.cricket', 'raise', 0.6, 0.75), w('sports.cricket', 0.6))).toEqual([{ slug: 'sports.cricket', action: 'set', value: 0.825 }]);
+    expect(editsFor(change('entertainment', 'lower', 0.4, 0.25), w('entertainment', 0.4))).toEqual([{ slug: 'entertainment', action: 'set', value: 0.25 }]);
+  });
+
+  it('a raise on a muted topic unmutes it first; a lower leaves the mute alone', () => {
+    const muted = w('business.crypto', 0.5, { muted: true });
+    expect(editsFor(change('business.crypto', 'add', 0.5, 0.65), muted).map((e) => e.action)).toEqual(['unmute', 'set']);
+    expect(editsFor(change('business.crypto', 'lower', 0.5, 0.35), muted).map((e) => e.action)).toEqual(['set']);
+  });
+
+  it('pin unmutes; mute unpins; nothing is sent twice', () => {
+    expect(editsFor(change('sports.cricket', 'pin', 0.6, 0.6), w('sports.cricket', 0.6, { muted: true })).map((e) => e.action)).toEqual(['unmute', 'pin']);
+    expect(editsFor(change('sports.cricket', 'mute', 0.6, 0), w('sports.cricket', 0.6, { pinned: true })).map((e) => e.action)).toEqual(['unpin', 'mute']);
+    expect(editsFor(change('sports.cricket', 'pin', 0.6, 0.6), w('sports.cricket', 0.6, { pinned: true }))).toEqual([]);
+  });
+
+  it('recomputes the set value from the fresh θ̂ (the proposal may be a few minutes old)', () => {
+    const [e] = editsFor(change('sports.cricket', 'raise', 0.6, 0.75), w('sports.cricket', 0.7));
+    expect(e.action).toBe('set');
+    expect(e.value).toBeCloseTo(0.7 + 0.05 * 1.5, 4);
   });
 });
 
