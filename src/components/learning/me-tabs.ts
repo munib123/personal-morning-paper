@@ -1,7 +1,7 @@
 // The three /me tabs (ARCHITECTURE §3), synced to ?tab=.
 import type { LearningView, SimulationResult } from '@/contracts/learning';
 import type { Profile } from '@/contracts/profile';
-import type { StreakView } from '@/contracts/streak';
+import type { HeatmapDay, StreakView } from '@/contracts/streak';
 import type { TopicNode } from '@/contracts/taxonomy';
 
 export type MeTab = 'learned' | 'interests' | 'streak';
@@ -10,6 +10,7 @@ export type MeTab = 'learned' | 'interests' | 'streak';
 export interface MeData {
   profile: Profile;
   streak: StreakView;
+  heatmap: HeatmapDay[] | null; // 12 weeks of reading for the streak tab
   learning: LearningView | null; // null when getLearningView failed: the tab offers Try again
   taxonomy: TopicNode[];
   demoMode: boolean;

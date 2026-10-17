@@ -93,7 +93,7 @@ function panel(tab: MeTab, data: MeData): ReactNode {
         <div className="flex flex-col gap-10">
           <section className="flex max-w-(--measure) flex-col">
             <SectionHeader title="Your streak" />
-            <StreakPanel streak={data.streak} />
+            <StreakPanel streak={data.streak} heatmap={data.heatmap} />
           </section>
           <section className="flex max-w-(--measure) flex-col">
             <SectionHeader title="Settings" />
