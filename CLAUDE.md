@@ -50,10 +50,20 @@ Every team member must be able to explain the architecture, the models and the i
 - Time-box: if something is blocked for more than ~20 minutes, switch to the simpler fallback in `docs/PLAN.md` and note the switch.
 - Dev machines run Windows (PowerShell and Git Bash). Keep scripts cross-platform: use npm scripts, and no bash-only tooling inside the app.
 
+## Build conventions (read before writing code)
+- **Contracts are binding.** The types, signatures and routes in `src/contracts/*` (`docs/ARCHITECTURE.md` §9) are fixed: import them, never redefine them. Your lane owns only its folders (§6); use the stubs for everything else.
+- **Next.js 16:** use `src/proxy.ts`, not `middleware.ts`. `params` and `searchParams` are Promises. Use `after()` for work after the response. Default to Server Components.
+- **AI SDK v7:** use `generateText({ model, instructions, prompt, output: Output.object({ schema }) })` and read `result.output`. Never use `generateObject` or `system:`. Gemini is the only provider; model ids come from env.
+- **Gemini stays off the request path.** The only exception is `describe`, which has a timeout and a keyword fallback. Every AI step has a deterministic fallback.
+- **Time:** never call `new Date()` in route logic. Use `requestNow()` (it respects the demo clock) and pass `now` down into pure functions.
+- **Supabase:** use the publishable/secret keys and `getClaims()`. Vectors come back as strings, so parse them with `src/server/db/vector.ts`.
+- **UI:** use only semantic token classes (`bg-paper`, `text-ink`, `border-rule`, `bg-sec-<root>`, `font-headline/body/ui`). Read the frontend-design skill (path in ARCHITECTURE §3). Check pages in a real browser at 390 px and 1280 px.
+- **Tests:** write Vitest tests first for pure modules. Before saying "done", `npm run typecheck && npm run lint && npm test && npm run build` must all pass.
+
 ## Parallel agent workflow
 Several Claude Code sessions build in parallel.
-- Each workstream owns its folders (listed in `docs/PLAN.md`). Do not edit another workstream's files; leave a note in `docs/HANDOFF.md` instead.
-- Shared contracts (DB schema, shared TypeScript types, API shapes) change only in a commit of their own, announced in `docs/HANDOFF.md`.
+- Each workstream owns its folders (listed in `docs/PLAN.md`). Do not edit another workstream's files; leave a note in your lane's `docs/handoff/L<n>.md` instead.
+- Shared contracts (DB schema, shared TypeScript types, API shapes) change only in a commit of their own, announced in your lane's `docs/handoff/L<n>.md`.
 - Use one branch or git worktree per workstream. Rebase on `main` often and merge small.
 - Commit format: `feat(scope): …`, `fix(scope): …`, `docs: …`, `chore: …`.
 

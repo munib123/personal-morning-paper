@@ -26,7 +26,7 @@ There is one developer (you), with many Claude Code agents running in parallel. 
 | **L5 Onboarding** | `plans/L5-onboarding.md` | `/` landing, `/start`, `/demo`, `components/onboarding`, `api/taste`, `api/onboarding/describe` | 4-step onboarding (picker drill-down, taste test, how-you-read, printing reveal), guest auth, demo sign-in, landing | 1 | 3 |
 | **L6 PDF** | `plans/L6-pdf.md` | `server/pdf`, `paper/[date]/print`, `components/print`, `components/pdf`, `api/editions/[date]/pdf`, `public/demo` | 4-page newspaper PDF with QR codes, storage cache, on-demand render, print fallback, sample PDF | 1 | 3 |
 | **L7 Engagement** | `plans/L7-engagement.md` | `server/streaks`, `(reader)/archive`, `(reader)/me`, `components/{streak,recall,learning,archive}`, `api/me/streak`, `api/demo/clock` | Streak engine + UI, Morning Recall + "3 things you learned" + Done-for-today, the learning page (bars, movers, timeline, sim chart), interest editor, archive calendar, demo controls | 1 | 3.5 |
-| **W2 lanes** | planned at T+6:15 from what actually shipped | audio + Urdu · perspectives + describe + tell-your-editor · ship (snapshot/personas/fallback/PWA/status) · docs (README, diagram, Loom) · QA · design-system pass | the extras and polish | 2 | — |
+| **W2 lanes** | planned at Checkpoint C (16:30) from what actually shipped | tell-your-editor (L2 + L7 code) · audio (browser TTS) · design-system pass · ship kit hardening (snapshot, `DEMO_FALLBACK`, persona PDFs) · docs (README "How this was built", FigJam diagram) · QA | the extras and polish | 2 | — |
 
 **Design system:** when your DevBytes-inspired system lands, drop it in `design/` and tell the session. One agent then maps it onto `src/styles/tokens.css`, the token names fixed in L0. UI lanes only ever use the semantic token classes (`bg-paper`, `text-ink`, `border-rule`, `text-accent`, `bg-sec-{root}`, `font-headline`, `font-body`, `font-ui`), so the reskin is one file. **Keep the brand visually original** (name, logo, accent colour). Judges score originality.
 
@@ -38,7 +38,10 @@ There is one developer (you), with many Claude Code agents running in parallel. 
    - Account → Access Tokens: create a **personal access token** (lets the agent run `npx supabase db push`).
    - Keep the **DB password** you set.
    - Authentication → Sign In / Providers: **enable Anonymous sign-ins**. Rate limits: raise "anonymous sign-ins per hour" (e.g. 1000).
-2. **Gemini:** in AI Studio, create an API key. On the AI Studio rate-limits page, **note the free-tier RPM/RPD for `gemini-3.1-flash-lite` and the flash model** and tell the session.
+2. **Gemini:** in AI Studio, create an API key.
+   - Open **aistudio.google.com/rate-limit** and tell the session your real RPM/RPD for `gemini-3.5-flash-lite`, `gemini-3.1-flash-lite`, `gemini-3.8-flash` and `gemini-3.8-flash-tts`. These numbers set the `GEMINI_RPD_*` budget guards.
+   - *Optional:* Tier-1 billing ($5 prepay, about $1–2/day) lifts the Flash 20-requests/day limit and makes the podcast audio reliable. The plan works without it.
+   - The free quota resets at **12:00 PKT**, so the big enrichment run happens after noon.
 3. **Vercel** (vercel.com → Add New → Project → import `munib123/personal-morning-paper`):
    - Skip the env vars for now; L0 will give you the list. Alternatively, run `! vercel login` here and the agent links it.
 4. **Paste the keys into this session.** The agent writes `.env.local` (git-ignored) and sets the GitHub Actions secrets with `gh secret set`.
@@ -48,19 +51,21 @@ There is one developer (you), with many Claude Code agents running in parallel. 
 
 > T0 = hackathon start (about 10:30 PKT). Times assume a **20:00 PKT deadline**; if yours differs, shift every row. Rows marked ⛳ are checkpoints.
 
-| Clock (PKT) | T+ | Phase | Exit criteria |
-|---|---|---|---|
-| 11:05–12:10 | 0:35–1:40 | Research → spec → plans *(done)* | `docs/ARCHITECTURE.md`, `docs/PLAN.md` and `docs/plans/*` committed |
-| 12:10–12:55 | 1:40–2:25 | **L0 Foundation** (one agent: the main session), plus your setup actions | `npm run build` passes · migration applied · taxonomy and sources seeded · every page renders its stub · CI green · L0 pushed to `main` |
-| 12:55–16:15 | 2:25–5:45 | **Wave 1: 7 lanes in parallel** (L1–L7 in worktrees) | Each lane's plan is done, with its tests green, pushed and a PR open |
-| ⛳ 14:15 | 3:45 | **Checkpoint A** (5 min) | L1 has a real ingest in the DB (≥ 500 articles), L2 has a first enrichment run (≥ 100 enriched), every UI lane renders fixtures. Red lanes apply their cut line. |
-| 16:15–17:00 | 5:45–6:30 | ⛳ **Integration** (integrator agent + you) | Merge order L1 → L2 → L3 → L7 → L6 → L5 → L4 (merge commits, CI after each). Real-data end-to-end: onboarding → today → open, skip → PDF → archive → me. **Deploy to Vercel.** |
-| 17:00–18:20 | 6:30–7:50 | **Wave 2** (4–6 lanes, planned at 16:45 from what shipped) | Extras (audio, Urdu, perspectives, describe), ship kit (snapshot, personas, fallback), design-system pass, diagram, README |
-| ⛳ 18:20 | 7:50 | **FEATURE FREEZE** | Only fixes, copy, polish and performance after this |
-| 18:20–19:00 | 7:50–8:30 | QA: Playwright smoke + Chrome check at 390 and 1280 px, a11y and LCP pass, offline/fallback test, final deploy | Demo persona + a fresh-user flow both work on the deployed URL **and** locally with the network off (snapshot) |
-| 19:00–19:40 | 8:30–9:10 | **Record the Loom** (target 4:40; script in `docs/DEMO.md`, written in wave 2) + FigJam diagram export | Loom link works in incognito |
-| 19:40–19:50 | 9:10–9:20 | **Submit**: make the repo public, fill in the form (repo, Loom, diagram) | Screenshot of the confirmation |
-| 19:50–20:00 | — | Buffer | — |
+| Clock (PKT) | Phase | Exit criteria |
+|---|---|---|
+| 11:05–12:20 | Research → spec → plans → review *(done)* | `docs/ARCHITECTURE.md`, `docs/PLAN.md`, `docs/DEMO.md` and `docs/plans/*` committed |
+| 12:20–13:20 | **L0 Foundation** (the main session; plan for ~1 h, not 45 min), plus your setup actions | Tasks 1–4 pushed first (scaffold, deps, contracts, stubs). That push unblocks the lanes; migration, seed and CI land right after. |
+| 13:20–16:30 | **Wave 1: 7 lanes in parallel** (L1–L7 in worktrees) | Each lane's plan done, tests green, pushed, PR open |
+| ⛳ 14:30 | **Checkpoint A: first merge round** | Every lane merges its **first vertical slice** (fixtures are fine). L1 has a real ingest (≥ 500 articles) and L2 has embeddings plus the first enrichment. **Deploy to Vercel**, stubbed is fine. |
+| ⛳ 15:30 | **Checkpoint B: second merge round** | L3 has seeded the **demo persona with 7 days of real history**, and the archive, streak, recall and movers show real data. The design system is mapped, if it has landed. |
+| ⛳ 16:30 | **Checkpoint C: end-to-end green** | Real-data path on the deployed URL: onboard → today → open/skip → PDF → archive → me. Whatever is red gets its cut line. |
+| 16:30–18:00 | **Wave 2** (§5a list) + start recording | "Tell your editor", browser audio, design-system pass, ship kit hardening, README, diagram. **Record each Loom segment as soon as it passes QA (from ~17:30).** |
+| ⛳ 18:00 | **FEATURE FREEZE** | Only fixes, copy, polish and performance after this |
+| 18:00–18:45 | QA (Playwright smoke, Chrome at 390 and 1280 px, a11y/LCP, offline fallback) + **final Loom take** (a re-record, not a first attempt) | Demo persona and fresh-user flows work deployed **and** locally with the network off |
+| 18:45–19:15 | **Submit**: final deploy, FigJam diagram export, make the repo public, fill in the form | Screenshot of the confirmation |
+| 19:15–20:00 | Buffer | — |
+
+**Rolling integration (not big-bang).** The integrator merges at every checkpoint, in the order L1 → L2 → L3 → L7 → L6 → L5 → L4, with merge commits and CI after each merge. It leaves a **short human-written review comment on each PR**, so the process is visible to the judges.
 
 ## 4. Integration protocol (applies to every lane)
 
@@ -83,6 +88,29 @@ There is one developer (you), with many Claude Code agents running in parallel. 
 - **Merging:** the integrator merges PRs with **merge commits, never squash** (this keeps every commit visible), in the order above, and runs CI and a smoke test after each merge.
 - **No secrets in git.** No `package.json` edits outside L0 and the integrator.
 
+## 5a. Scope decisions applied at planning (from the simulated judge-panel review)
+The panel scored the plan about 8–9 on technical depth and efficiency, but warned it was **about 25% overscoped** for one human in about 7 h. These changes are already applied:
+
+**Trimmed** (moved to "stretch, only if green"):
+- archive month calendar (wave 1 ships a list plus a 7-day strip)
+- streak freezes and repair
+- Vercel on-demand Chromium (PDFs are pre-rendered by the local/Actions job and served from Storage; on a miss, the print route)
+- the describe-yourself onboarding step and search-to-add
+- Urdu, perspectives, the 2-host podcast, PWA and `/status`
+
+**Kept:** the Bytes card view, since it is the DevBytes-style mobile experience. It is L4's last core task, with its own cut line.
+
+**Added** (high value per hour):
+- **Seeded 7-day demo persona** (L3, by Checkpoint B): real past editions, events, snapshots, streak days and recall answers, generated by the simulator's learning arm against the real pool.
+- **"How this paper was made"** panel replaces the plain receipt footer (L4): a funnel of fetched → stories → shortlist → 20 + 8, build ms, LLM calls per reader = 0, and the AI vs extractive share.
+- **Source-faithfulness badge** on every story (L4), from `aiProvider`: "AI summary · facts checked against source" or "Publisher's excerpt".
+- **"Tell your editor"** (wave 2, L2 + L7). The reader types free text, sees a proposed diff on the interest bars, confirms it, and the paper rebuilds live. This is the best 20-second Loom moment.
+- **`docs/DEMO.md`** is written now: a 4-beat Loom plus the Q&A cheat sheet.
+- **Collaboration legibility:**
+  - GitHub issues `req-1..req-5` are created at L0.
+  - Each PR gets a human-written review comment.
+  - The README gets a "How this was built" section: one human orchestrating N agent lanes, with links to the PRs and handoff files.
+
 ## 5. Cut lines (apply when a checkpoint is red; never cut the "never cut" list)
 
 1. **Checkpoint A red on L1/L2:**
@@ -99,14 +127,12 @@ There is one developer (you), with many Claude Code agents running in parallel. 
    - The archive is a list instead of a calendar.
 5. **L5 late:** the onboarding drops the taste test (picker → preferences → reveal).
 6. **Wave 2:** take the extras in this order of value per hour, and stop at the freeze:
-   1. ship kit (snapshot, personas, fallback)
-   2. audio (Web Speech)
-   3. describe-yourself
-   4. perspectives
-   5. Urdu web toggle
-   6. tell-your-editor
-   7. PWA
-   8. `/status`
+   1. ship kit hardening (snapshot export, `DEMO_FALLBACK`, persona PDFs in `public/demo`)
+   2. "Tell your editor"
+   3. design-system pass
+   4. audio (Web Speech)
+   5. README + diagram
+   6. Only then the stretch list: archive calendar, streak freezes, Urdu, perspectives, podcast, PWA, `/status`
 
 **Never cut:**
 - onboarding (picker + reveal)
