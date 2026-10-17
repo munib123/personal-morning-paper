@@ -16,6 +16,7 @@
     "embed:topics": "tsx scripts/embed-topics.ts",
     "simulate": "tsx scripts/simulate.ts",
     "snapshot": "tsx scripts/snapshot.ts",
+    "demo:snapshot": "tsx --env-file=.env.local scripts/snapshot-demo.ts",
     "db:types": "supabase gen types typescript --linked --schema public > src/contracts/database.types.ts"
   },
   "dependencies": {
