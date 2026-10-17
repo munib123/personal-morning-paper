@@ -54,6 +54,7 @@ export function EditionReader({ edition, nowIso, initialView, streak, readOnly, 
   // Replay this browser's reads and skips after mount (the server never sees localStorage).
   useEffect(() => {
     dispatch({ type: 'hydrate', memory: loadEditionMemory(edition.id) });
+    rootRef.current?.setAttribute('data-reader-ready', ''); // keys and handlers are live from here on
   }, [edition.id]);
 
   // Persist reads and skips once they differ from the server-rendered state.
