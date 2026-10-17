@@ -358,7 +358,7 @@ create index articles_cluster_idx on articles (cluster_id);
 create table profiles (
   user_id      uuid primary key references auth.users(id) on delete cascade,
   display_name text,
-  paper_name   text not null default 'Your Morning Paper',
+  paper_name   text not null default 'The Morrow',
   tz           text not null default 'Asia/Karachi',
   city         text not null default 'Islamabad',
   time_budget  smallint not null default 15 check (time_budget in (5,15,30)),
