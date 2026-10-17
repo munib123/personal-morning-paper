@@ -23,7 +23,8 @@ const TOAST_OFFSET = { bottom: 'calc(72px + env(safe-area-inset-bottom))' };
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
-    <ThemeProvider attribute="data-theme" themes={THEMES} defaultTheme="system" enableSystem value={THEME_VALUE}>
+    // Morning (light) by default, whatever the OS prefers: a reader switches to Night with the toggle.
+    <ThemeProvider attribute="data-theme" themes={THEMES} defaultTheme="morning" enableSystem={false} value={THEME_VALUE}>
       {children}
       <Toaster position="bottom-center" offset={TOAST_OFFSET} mobileOffset={TOAST_OFFSET} style={TOASTER_STYLE} toastOptions={TOAST_OPTIONS} />
     </ThemeProvider>

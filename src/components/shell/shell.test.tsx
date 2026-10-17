@@ -112,7 +112,7 @@ describe('Providers', () => {
   it.each([
     ['night', false, 'night'],
     ['morning', true, 'morning'],
-    [null, true, 'night'],
+    [null, true, 'morning'], // light by default, even on a dark system: readers opt into Night
     [null, false, 'morning'],
   ])('stored theme %s with system dark %s gives data-theme="%s"', (stored, dark, expected) => {
     systemDark = dark;
