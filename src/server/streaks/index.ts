@@ -9,6 +9,7 @@ import { buildHeatmap, READING_TYPES, summarizeDay, toDayEvent } from './activit
 import { localHour } from './clock';
 import { computeStreak, type DayRecord } from './compute';
 import { supabaseStreakRepo, type StreakRepo } from './repo';
+import { isDemoFallback, snapshotGetHeatmap, snapshotGetStreak } from '@/server/demo';
 
 const RECORD_COMPLETE_STORIES = 5;
 
@@ -96,13 +97,16 @@ export async function getHeatmapWith(repo: StreakRepo, userId: string, days: num
 
 // ── §9.3 (exact signatures) ─────────────────────────────────────────────────────────────────────
 export function recordActivity(userId: string, events: SignalEvent[], now: Date, tz: string): Promise<StreakView> {
+  if (isDemoFallback()) return snapshotGetStreak(userId, now, tz);
   return recordActivityWith(supabaseStreakRepo(), userId, events, now, tz);
 }
 
 export function getStreak(userId: string, now: Date, tz: string): Promise<StreakView> {
+  if (isDemoFallback()) return snapshotGetStreak(userId, now, tz);
   return getStreakWith(supabaseStreakRepo(), userId, now, tz);
 }
 
 export function getHeatmap(userId: string, days: number, now: Date, tz: string): Promise<HeatmapDay[]> {
+  if (isDemoFallback()) return snapshotGetHeatmap(userId, days, now, tz);
   return getHeatmapWith(supabaseStreakRepo(), userId, days, now, tz);
 }

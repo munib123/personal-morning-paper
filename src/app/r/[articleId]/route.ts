@@ -9,6 +9,7 @@ import { getSessionUser } from '@/server/auth/session';
 import { createSupabaseAdminClient } from '@/server/db/admin';
 import { processSignals } from '@/server/learn';
 import { requestNow } from '@/server/time';
+import { isDemoFallback, snapshotGetArticle, snapshotPersonaId } from '@/server/demo';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -26,6 +27,7 @@ function httpUrl(raw: string | null | undefined): string | null {
 }
 
 async function articleUrl(articleId: string): Promise<string | null> {
+  if (isDemoFallback()) return snapshotGetArticle(articleId)?.url ?? null;
   try {
     const { data } = await createSupabaseAdminClient().from('articles').select('url').eq('id', articleId).maybeSingle();
     return data?.url ?? null;
@@ -36,6 +38,7 @@ async function articleUrl(articleId: string): Promise<string | null> {
 }
 
 async function editionOwner(editionId: string): Promise<string | null> {
+  if (isDemoFallback()) return snapshotPersonaId();
   try {
     const { data } = await createSupabaseAdminClient().from('editions').select('user_id').eq('id', editionId).maybeSingle();
     return data?.user_id ?? null;

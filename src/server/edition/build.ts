@@ -32,6 +32,7 @@ import { loadCandidatePool } from './pool';
 import { assembleEdition, getEdition, loadArticleCards, toEditionItems } from './read';
 import { selectRecall } from './recall';
 import { loadTaxonomy } from './taxonomy';
+import { isDemoFallback, snapshotBuildEdition } from '@/server/demo';
 
 const MIN_MOVE = 0.02;
 const DEFAULT_TZ = 'Asia/Karachi';
@@ -116,6 +117,7 @@ async function waitForEdition(userId: string, date: string): Promise<Edition> {
 }
 
 export async function buildEdition(userId: string, now: Date, opts: { force?: boolean; awaitNote?: boolean } = {}): Promise<Edition> {
+  if (isDemoFallback()) return snapshotBuildEdition(userId, now, opts);
   if (isFixtureUser(userId)) return FIXTURE_EDITION;
   const t0 = performance.now();
   // §9.7 demo clock: `now` sets the date; the pool window and freshness never run ahead of real time.

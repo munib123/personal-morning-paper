@@ -16,6 +16,7 @@ import { localDate } from '@/server/time';
 import { toastFor } from './copy';
 import { applySignal, mergeDeltas, withNames } from './signal';
 import { loadUserModel, saveUserModel } from './store';
+import { isDemoFallback, snapshotProcessSignals } from '@/server/demo';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DEFAULT_TZ = 'Asia/Karachi';
@@ -46,6 +47,7 @@ const effectOf = (d: WeightDelta[]): string | null => {
 };
 
 export async function processSignals(userId: string, events: SignalEvent[], now: Date): Promise<EventsResult> {
+  if (isDemoFallback()) return snapshotProcessSignals(userId, events, now);
   if (isFixtureUser(userId)) return { ...FIXTURE_EVENTS_RESULT, accepted: events.length };
   const db = createSupabaseAdminClient();
   const profile = await getProfile(userId);
