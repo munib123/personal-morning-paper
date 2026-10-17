@@ -67,7 +67,9 @@ The 1280 onboarding preview is palette-compressed (sharp, quality 80) to stay un
 - With a `node_modules` junction, Turbopack needs `turbopack.root` pointed at the main checkout (local only,
   never committed). That root makes Turbopack watch every other worktree and `node_modules/.vitest-cache`, so a
   test run elsewhere triggers recompiles and "The server could not finish this Suspense boundary" in the
-  browser. A fresh dev server with nothing else writing shows no such error.
+  browser. With 18 active worktrees this happened again and again ("✓ Compiled in 1ms" in a loop). A
+  production build (`next build && next start`) shows no such error, so check pages there when other lanes
+  are busy.
 
 ## Gates
 
@@ -76,4 +78,7 @@ These are the results on the branch after merging main at `fd110e5`:
 - `npm run typecheck`: passes.
 - `npm run lint`: passes, with 0 errors and 1 warning (the existing `<img>` warning in `src/components/morrow/index.tsx`).
 - `npx vitest run`: 154 files and 1346 tests pass. One test fails: `src/server/rank/build.test.ts > perf > 1000 candidates × 384-d rank in under 50 ms`, which took 476 ms under full-suite load. It is a wall-clock test, and re-run on its own the file passes 26/26.
+- `npx next build`: passes. I ran it locally with the worktree's `turbopack.root` override, which is not committed.
+- Production check (`next start`) after the merge: the end of the paper and `/me` Interests, both of which now carry
+  Tell your editor from main, have no page errors and no horizontal overflow at 390 or 1280.
 - `git diff next.config.ts` is empty.
