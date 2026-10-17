@@ -75,6 +75,15 @@ describe('selectForEnrichment', () => {
     expect(llm.map((c) => c.id)).toEqual([newer.id, big.id, older.id]);
   });
 
+  it('keeps articles too short for Gemini extractive and prefers a member with enough text as representative', () => {
+    const thin = cand({ clusterId: null, wordCount: 18 });
+    const thinButBest = cand({ clusterId: 'pair', sourceQuality: 0.95, wordCount: 12 });
+    const fuller = cand({ clusterId: 'pair', sourceQuality: 0.6, wordCount: 400 });
+    const { llm, extractive } = selectForEnrichment([thin, thinButBest, fuller], FIXTURE_TAXONOMY, now);
+    expect(llm.map((c) => c.id)).toEqual([fuller.id]);
+    expect(extractive.map((c) => c.id).sort()).toEqual([thin.id, thinButBest.id].sort());
+  });
+
   it('respects a custom cap', () => {
     const rows = Array.from({ length: 30 }, () => cand());
     expect(selectForEnrichment(rows, FIXTURE_TAXONOMY, now, { cap: 10 }).llm).toHaveLength(10);

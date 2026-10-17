@@ -20,6 +20,8 @@ export interface EnrichCandidate {
 
 export const ENRICH_CAP = 400;
 export const PER_LEVEL2 = 3;
+// Gemini marks shorter texts unusable (which drops them from the paper); kept extractive, they stay rankable.
+export const MIN_WORDS_FOR_GEMINI = 40;
 
 const priority = (c: EnrichCandidate, now: Date) => c.importance + Math.exp(-Math.max(0, now.getTime() - c.publishedAt.getTime()) / 3_600_000 / 24);
 
@@ -52,9 +54,13 @@ export function selectForEnrichment(
   }
   const reps: EnrichCandidate[] = [];
   const extractive: EnrichCandidate[] = [];
+  const enough = (c: EnrichCandidate) => (c.wordCount >= MIN_WORDS_FOR_GEMINI ? 1 : 0);
   for (const members of groups.values()) {
-    const [rep, ...rest] = [...members].sort((a, b) => b.sourceQuality - a.sourceQuality || b.wordCount - a.wordCount || a.id.localeCompare(b.id));
-    reps.push(rep);
+    const [rep, ...rest] = [...members].sort(
+      (a, b) => enough(b) - enough(a) || b.sourceQuality - a.sourceQuality || b.wordCount - a.wordCount || a.id.localeCompare(b.id),
+    );
+    if (enough(rep)) reps.push(rep);
+    else extractive.push(rep);
     extractive.push(...rest);
   }
 
