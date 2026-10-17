@@ -76,8 +76,8 @@ describe('selectForEnrichment', () => {
   });
 
   it('keeps articles too short for Gemini extractive and prefers a member with enough text as representative', () => {
-    const thin = cand({ clusterId: null, wordCount: 18 });
-    const thinButBest = cand({ clusterId: 'pair', sourceQuality: 0.95, wordCount: 12 });
+    const thin = cand({ clusterId: null, wordCount: 100 }); // under 120: Gemini cannot write a 110–140-word deep summary from it
+    const thinButBest = cand({ clusterId: 'pair', sourceQuality: 0.95, wordCount: 90 });
     const fuller = cand({ clusterId: 'pair', sourceQuality: 0.6, wordCount: 400 });
     const { llm, extractive } = selectForEnrichment([thin, thinButBest, fuller], FIXTURE_TAXONOMY, now);
     expect(llm.map((c) => c.id)).toEqual([fuller.id]);

@@ -44,7 +44,17 @@ vi.mock('@/server/db/admin', () => ({
   }),
 }));
 
-import { ensureApiSources, findExistingHashes, insertArticles, listImageless, loadSources, recordSourceHealth, updateArticleImages } from './store';
+import {
+  ensureApiSources,
+  findExistingHashes,
+  insertArticles,
+  latestJobRun,
+  listArticleStats,
+  listImageless,
+  loadSources,
+  recordSourceHealth,
+  updateArticleImages,
+} from './store';
 
 const has = (chain: Chain, method: string) => chain.calls.some((c) => c.method === method);
 const argsOf = (chain: Chain, method: string) => chain.calls.find((c) => c.method === method)?.args;
@@ -223,6 +233,32 @@ describe('image backfill', () => {
   });
 });
 
+describe('report reads', () => {
+  it('listArticleStats pages through articles 1,000 rows at a time', async () => {
+    const page = (n: number) => Array.from({ length: n }, () => ({ source_id: 's', image_url: null, fetched_at: '2026-10-17T05:00:00Z' }));
+    respond = (chain) => {
+      const [from] = argsOf(chain, 'range') as [number, number];
+      return { data: from === 0 ? page(1000) : page(250), error: null };
+    };
+    const rows = await listArticleStats();
+    expect(rows).toHaveLength(1250);
+    expect(chains.map((c) => argsOf(c, 'range'))).toEqual([
+      [0, 999],
+      [1000, 1999],
+    ]);
+    expect(argsOf(chains[0], 'select')).toEqual(['source_id,image_url,fetched_at']);
+  });
+
+  it('latestJobRun returns the newest row of a job, or null', async () => {
+    respond = () => ({ data: [{ id: 7, job: 'ingest-cron', status: 'ok' }], error: null });
+    await expect(latestJobRun('ingest-cron')).resolves.toMatchObject({ id: 7, status: 'ok' });
+    expect(argsOf(chains[0], 'eq')).toEqual(['job', 'ingest-cron']);
+    expect(argsOf(chains[0], 'order')).toEqual(['id', { ascending: false }]);
+    respond = () => ({ data: [], error: null });
+    await expect(latestJobRun('ingest')).resolves.toBeNull();
+  });
+});
+
 describe('recordSourceHealth', () => {
   it('writes last_fetched_at and last_status as JSON for the source', async () => {
     const source: IngestSource = { id: 'dawn-home', name: 'Dawn', url: 'u', kind: 'rss', homepage: null, cache: null, failCount: 0 };
@@ -235,5 +271,16 @@ describe('recordSourceHealth', () => {
     const [patch] = argsOf(chain, 'update') as [Record<string, unknown>];
     expect(patch.last_fetched_at).toBe('2026-10-17T06:00:00.000Z');
     expect(JSON.parse(String(patch.last_status))).toEqual(cache);
+    expect(patch.fail_count).toBe(0);
+    expect(patch.active).toBe(true);
+  });
+
+  it('counts a failure and deactivates the source on the 5th in a row', async () => {
+    const source: IngestSource = { id: 'espn', name: 'ESPN', url: 'u', kind: 'rss', homepage: null, cache: null, failCount: 4 };
+    const cache: FeedCache = { httpStatus: 403, etag: null, lastModified: null, error: 'HTTP 403', items: 0, at: '2026-10-17T06:00:00.000Z' };
+    await recordSourceHealth(source, { sourceId: 'espn', items: [], fetched: 0, skippedOld: 0, ok: false, cache });
+    const [patch] = argsOf(chains[0], 'update') as [Record<string, unknown>];
+    expect(patch.fail_count).toBe(5);
+    expect(patch.active).toBe(false);
   });
 });

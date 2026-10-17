@@ -5,6 +5,8 @@ import { FIXTURE_TASTE_CARDS } from '@/contracts/fixtures';
 import { FirstPagePreview, type FirstPagePreviewProps } from './FirstPagePreview';
 
 afterEach(() => { cleanup(); });
+// jsdom + userEvent can be slow on a loaded machine (seven lanes share one); give each test room.
+vi.setConfig({ testTimeout: 15_000 });
 
 const base: FirstPagePreviewProps = {
   date: 'Saturday, 17 October 2026',

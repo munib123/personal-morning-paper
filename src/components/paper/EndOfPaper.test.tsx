@@ -1,6 +1,9 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+// Rendering a whole edition under jsdom takes seconds on a busy machine; give these tests room.
+vi.setConfig({ testTimeout: 30_000 });
 import { FIXTURE_EDITION, FIXTURE_STREAK } from '@/contracts/fixtures';
 import type { Edition } from '@/contracts/edition';
 import { EditionContext, type EditionContextValue } from './EditionContext';

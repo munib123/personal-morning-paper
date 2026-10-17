@@ -3,17 +3,14 @@
 import { Masthead, TakeawayBox } from '@/components/morrow';
 import type { EditionItem } from '@/contracts/edition';
 import { BRAND } from '@/lib/brand';
-import { firstSentence, formatPaperDate, insideIndex, pageCount, pickSummary, teasers } from '@/server/pdf/layout';
+import { formatPaperDate, insideIndex, pageCount, pickSummary, teasers } from '@/server/pdf/layout';
 import type { PrintModel } from '@/server/pdf/types';
-import { firstName, hrefOf, ImageOrFallback, kickerOf, PageFoot, StoryBlock, StorySource, Teaser } from './parts';
+import { deckOf, firstName, hrefOf, ImageOrFallback, kickerOf, PageFoot, StoryBlock, StorySource, takeawayOf, Teaser } from './parts';
+
+export { takeawayOf };
 
 const uniqueById = (items: EditionItem[]) =>
   items.filter((item, k) => items.findIndex((i) => i.article.id === item.article.id) === k);
-
-/** One sentence a reader can carry away: the key fact, else the first sentence of the brief. */
-export function takeawayOf(item: EditionItem): string {
-  return item.article.keyFact?.trim() || firstSentence(item.article.summary.brief);
-}
 
 /** The stories behind "Three things to know": lead and rail in rank order, padded from the section leads. */
 export function knowItems(model: PrintModel): EditionItem[] {
@@ -31,6 +28,8 @@ export function FrontPage({ model }: { model: PrintModel }) {
   const total = pageCount(layout);
   const lead = layout.lead;
   const href = hrefOf(model, lead);
+  const body = pickSummary(lead, 'lead', layout.budgets);
+  const deck = deckOf(lead, body);
   return (
     <section className="page page--front" id="page-1">
       <Masthead
@@ -48,9 +47,9 @@ export function FrontPage({ model }: { model: PrintModel }) {
           <h3 className="print-lead">
             <a href={href}>{lead.article.headline}</a>
           </h3>
-          <p className="deck front__deck">{lead.article.whyItMatters ?? firstSentence(lead.article.summary.brief)}</p>
+          {deck ? <p className="deck front__deck">{deck}</p> : null}
           <ImageOrFallback model={model} item={lead} size="lead" />
-          <p className="print-body lead-body">{pickSummary(lead, 'lead', layout.budgets)}</p>
+          <p className="print-body lead-body">{body}</p>
           <StorySource model={model} item={lead} />
         </article>
         <div className="front__rail">

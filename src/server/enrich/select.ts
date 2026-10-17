@@ -20,8 +20,10 @@ export interface EnrichCandidate {
 
 export const ENRICH_CAP = 400;
 export const PER_LEVEL2 = 3;
-// Gemini marks shorter texts unusable (which drops them from the paper); kept extractive, they stay rankable.
-export const MIN_WORDS_FOR_GEMINI = 40;
+// The first real run (400 articles) by source length: 40–80 words 11% enriched, 80–120 46%, 120–200 62%,
+// 200+ 70–83%. Shorter texts cannot carry a 110–140-word deep summary, so Gemini calls them unusable (which
+// drops them from the paper) or fails the length guardrails twice. Kept extractive, they stay rankable.
+export const MIN_WORDS_FOR_GEMINI = 120;
 
 const priority = (c: EnrichCandidate, now: Date) => c.importance + Math.exp(-Math.max(0, now.getTime() - c.publishedAt.getTime()) / 3_600_000 / 24);
 

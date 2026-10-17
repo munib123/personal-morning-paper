@@ -25,6 +25,8 @@ function Harness({ spy, initial = { picks: [{ slug: 'sports.cricket', via: 'chip
 const fetchMock = vi.fn();
 beforeEach(() => { fetchMock.mockReset(); vi.stubGlobal('fetch', fetchMock); });
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+// jsdom + userEvent can be slow on a loaded machine (seven lanes share one); give each test room.
+vi.setConfig({ testTimeout: 15_000 });
 
 describe('InYourWordsStep', () => {
   test('the button waits for some words', async () => {

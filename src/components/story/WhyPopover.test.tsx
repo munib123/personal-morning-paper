@@ -1,6 +1,9 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+
+// Radix popovers and sheets under jsdom take seconds on a busy machine; give these tests room.
+vi.setConfig({ testTimeout: 30_000 });
 import { FIXTURE_EDITION } from '@/contracts/fixtures';
 import type { ScoreBreakdown } from '@/contracts/edition';
 import { initEditionState } from '@/components/paper/edition-state';

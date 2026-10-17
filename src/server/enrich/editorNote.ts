@@ -48,7 +48,7 @@ export function inputStrings(input: EditorNoteInput): string[] {
 function instructions(paperName: string): string {
   return [
     `Write the editor's note that opens the reader's personal morning paper, ${paperName}.`,
-    'Write 60–90 words, calm, short and concrete, like a good newspaper editor.',
+    'Write 60–90 words: five sentences of 12 to 18 words each, calm, short and concrete, like a good newspaper editor.',
     'Speak to the reader as "you" and call the paper "your paper". Never write "I", "we" or "our AI".',
     'No exclamation marks, no emoji, no flattery.',
     'Mention 2–3 of the given headlines by name.',
@@ -59,9 +59,14 @@ function instructions(paperName: string): string {
   ].join(' ');
 }
 
-function passes(note: string, input: EditorNoteInput): boolean {
+/** Why a Gemini note is rejected ([] when it passes). */
+function problems(note: string, input: EditorNoteInput): string[] {
   const n = wordCount(note);
-  return n >= MIN_WORDS && n <= MAX_WORDS && numbersFaithful([note], JSON.stringify(input)) && noteVoiceOk(note, inputStrings(input));
+  const out: string[] = [];
+  if (n < MIN_WORDS || n > MAX_WORDS) out.push(`length ${n}`);
+  if (!numbersFaithful([note], JSON.stringify(input))) out.push('numbers');
+  if (!noteVoiceOk(note, inputStrings(input))) out.push('voice');
+  return out;
 }
 
 export async function writeEditorNote(input: EditorNoteInput): Promise<{ text: string; source: 'gemini' | 'template' }> {
@@ -74,7 +79,11 @@ export async function writeEditorNote(input: EditorNoteInput): Promise<{ text: s
       fallback: () => ({ note: template }),
     });
     const note = result.output.note.trim();
-    if (result.provider === 'gemini' && passes(note, input)) return { text: note, source: 'gemini' };
+    if (result.provider === 'gemini') {
+      const why = problems(note, input);
+      if (why.length === 0) return { text: note, source: 'gemini' };
+      console.log(`[enrich] editor note rejected (${why.join(', ')}): ${note}`);
+    }
   } catch (err) {
     console.warn(`[enrich] editor note fell back to the template: ${err instanceof Error ? err.message : String(err)}`);
   }

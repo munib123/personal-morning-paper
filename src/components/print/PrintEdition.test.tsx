@@ -173,11 +173,53 @@ describe('takeaway lists', () => {
     expect(threeThingsToKnow(m)[0]).toBe(m.layout.lead.article.keyFact);
   });
 
-  it('fall back to the first sentence of the brief when there is no key fact', () => {
+  it('fall back to the first sentence of the brief (or, past 25 words, the headline) when there is no key fact', () => {
     const noFacts: Edition = { ...E, items: E.items.map((i) => ({ ...i, article: { ...i.article, keyFact: null } })) };
     const nm = modelOf(noFacts);
-    const firstSentences = nm.edition.items.map((i) => i.article.summary.brief.split(/(?<=[.!?])\s/)[0]);
-    for (const t of [...threeThingsToKnow(nm), ...threeThingsLearned(nm)]) expect(firstSentences).toContain(t);
+    const fallbacks = nm.edition.items.map((i) => {
+      const first = i.article.summary.brief.split(/(?<=[.!?])\s/)[0];
+      return first.split(/\s+/).length <= 25 ? first : i.article.headline;
+    });
+    const all = [...threeThingsToKnow(nm), ...threeThingsLearned(nm)];
+    expect(all).toHaveLength(6);
+    for (const t of all) expect(fallbacks).toContain(t);
+  });
+});
+
+describe('copy that real (extractive) editions bring', () => {
+  const LONG =
+    'WASHINGTON: President Donald Trump waived key Russia-related US sanctions and tariffs days before they were to take effect under a law he signed last month, including duties on the country’s goods and penalties for buying its oil and gas.';
+  const words = (t: string) => t.split(/\s+/).filter(Boolean).length;
+  /** The fixture with one story's copy replaced. */
+  const withCopy = (id: string, patch: Partial<EditionItem['article']>): Edition => ({
+    ...E,
+    items: E.items.map((i) => (i.article.id === id ? { ...i, article: { ...i.article, ...patch } } : i)),
+  });
+
+  it('never sets a takeaway longer than 25 words (the TakeawayBox rule)', () => {
+    expect(words(LONG)).toBeGreaterThan(25);
+    const lead = E.items.find((i) => i.article.id === E.leadArticleId)!;
+    const shortBrief = 'Small open models now match last year’s best systems at a tenth of the cost.';
+    const m = modelOf(withCopy(lead.article.id, { keyFact: LONG, summary: { ...lead.article.summary, brief: shortBrief } }));
+    expect(threeThingsToKnow(m)[0]).toBe(shortBrief);
+    const m2 = modelOf(withCopy(lead.article.id, { keyFact: LONG, summary: { ...lead.article.summary, brief: LONG } }));
+    expect(threeThingsToKnow(m2)[0]).toBe(lead.article.headline);
+  });
+
+  it('drops a deck that would repeat the start of the lead text', () => {
+    const lead = E.items.find((i) => i.article.id === E.leadArticleId)!;
+    const same = `${LONG} More words follow here.`;
+    const m = modelOf(withCopy(lead.article.id, { whyItMatters: null, summary: { brief: LONG, std: same, deep: same } }));
+    expect(html(m)).not.toContain('class="deck front__deck"');
+    expect(html(modelOf())).toContain('class="deck front__deck"');
+  });
+
+  it('pulls a quote only when it is short and not already in the story text', () => {
+    const layout = buildPrintLayout(E);
+    const sectionLead = layout.inner[0].items[0];
+    const longQuote = modelOf(withCopy(sectionLead.article.id, { whyItMatters: null, keyFact: LONG }));
+    expect(pages(html(longQuote))[1]).not.toContain('class="mw-pq"');
+    expect(pages(html(modelOf()))[1]).toContain('class="mw-pq"');
   });
 });
 

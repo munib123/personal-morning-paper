@@ -19,14 +19,14 @@ import { useSignals } from '@/hooks/useSignals';
 import { EditionContext, type EditionContextValue } from './EditionContext';
 import { loadEditionMemory, saveEditionMemory } from './edition-memory';
 import { editionReducer, initEditionState } from './edition-state';
+import { keyToAction } from './bytes-keys';
+import { BytesDeck } from './BytesDeck';
 import { FrontPage } from './FrontPage';
 import { useLiveAnnouncer } from './LiveAnnouncer';
-import type { ReaderView } from './view-pref';
+import { persistView, type ReaderView } from './view-pref';
 
 const NOTE_MS = 3000;
 const SKIP_UNDO_MS = 5000;
-/** A server "Got it…" toast this soon after our own note is the same message: show it once. */
-const SERVER_ECHO_MS = 6000;
 /** The same server toast again within this window is not shown twice. */
 const SERVER_REPEAT_MS = 30_000;
 const skipToastId = (articleId: string) => `skip-${articleId}`;
@@ -68,7 +68,6 @@ export function EditionReader({ edition, nowIso, initialView, streak, readOnly, 
   useEffect(() => {
     stateRef.current = state;
   }, [state]);
-  const noteAt = useRef(Number.NEGATIVE_INFINITY);
 
   // More / Less: the signal, then one calm line ("Got it. More Cricket tomorrow."). Toggling off is silent.
   const onFeedback = useCallback(
@@ -77,7 +76,6 @@ export function EditionReader({ edition, nowIso, initialView, streak, readOnly, 
       if (!f) return;
       track({ type: f, articleId: item.article.id });
       const note = feedbackNote(f, sectionLabel(item.sectionSlug, edition.sectionNames));
-      noteAt.current = performance.now();
       toast(note, { duration: NOTE_MS });
       announce(note);
     },
@@ -128,14 +126,14 @@ export function EditionReader({ edition, nowIso, initialView, streak, readOnly, 
     [track, edition.sectionNames, announce],
   );
 
-  // Toasts from the server (EventsResult.toast), unless it only repeats the note just shown or the
-  // same server line shown a moment ago (each flush returns the latest toast).
+  // Toasts from the server (EventsResult.toast). "Got it…" acknowledges More / Less, which the note
+  // above already did the moment the reader pressed it, so only other lines (milestones…) show, and
+  // the same line is not repeated by the next flush.
   const serverToast = useRef<{ text: string; at: number } | null>(null);
   useEffect(() => {
     const text = signals.lastResult?.toast;
-    if (!text) return;
+    if (!text || /^got it/i.test(text)) return;
     const now = performance.now();
-    if (/^got it/i.test(text) && now - noteAt.current < SERVER_ECHO_MS) return;
     if (serverToast.current?.text === text && now - serverToast.current.at < SERVER_REPEAT_MS) return;
     serverToast.current = { text, at: now };
     toast(text, { duration: NOTE_MS });
@@ -159,12 +157,36 @@ export function EditionReader({ edition, nowIso, initialView, streak, readOnly, 
       }
       track(whyActionEvent(a, item));
       const note = `Got it. No more stories from ${item.article.sourceName}.`;
-      noteAt.current = performance.now();
       toast(note, { duration: NOTE_MS });
       announce(note);
     },
     [track, onFeedback, announce],
   );
+
+  // b switches between the Front page and Bytes in both views (not while typing or in a dialog).
+  const viewRef = useRef(view);
+  useEffect(() => {
+    viewRef.current = view;
+  }, [view]);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const action = keyToAction({
+        key: e.key,
+        ctrlKey: e.ctrlKey,
+        metaKey: e.metaKey,
+        altKey: e.altKey,
+        target: e.target as { tagName?: string; isContentEditable?: boolean } | null,
+      });
+      if (action !== 'toggle' || document.querySelector('[role="dialog"]')) return;
+      e.preventDefault();
+      const next: ReaderView = viewRef.current === 'bytes' ? 'front' : 'bytes';
+      viewRef.current = next;
+      setView(next);
+      persistView(next);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   const openSheet = useCallback((id: string) => setSheetId(id), []);
   const sheetItem = sheetId ? (state.items.find((i) => i.article.id === sheetId) ?? null) : null;
@@ -178,7 +200,7 @@ export function EditionReader({ edition, nowIso, initialView, streak, readOnly, 
     <EditionContext.Provider value={value}>
       <MotionConfig reducedMotion="user">
         <div ref={rootRef}>
-          <FrontPage readerName={readerName} city={city} />
+          {view === 'bytes' ? <BytesDeck readerName={readerName} city={city} /> : <FrontPage readerName={readerName} city={city} />}
           <StorySheet
             item={sheetItem}
             editionId={edition.id}
