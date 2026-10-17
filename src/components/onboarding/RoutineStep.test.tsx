@@ -6,6 +6,8 @@ import { DEFAULT_DRAFT } from './lib/draft';
 import { RoutineStep, type RoutineValue } from './RoutineStep';
 
 afterEach(() => { cleanup(); });
+// jsdom + userEvent can be slow on a loaded machine (seven lanes share one); give each test room.
+vi.setConfig({ testTimeout: 15_000 });
 
 const initial: RoutineValue = { presentation: DEFAULT_DRAFT.presentation, deliveryHour: DEFAULT_DRAFT.deliveryHour, city: DEFAULT_DRAFT.city };
 

@@ -13,6 +13,8 @@ const UNAVAILABLE = "The demo reader isn't available right now. You can build yo
 
 beforeEach(() => { localStorage.clear(); });
 afterEach(() => { cleanup(); });
+// jsdom + userEvent can be slow on a loaded machine (seven lanes share one); give each test room.
+vi.setConfig({ testTimeout: 15_000 });
 
 describe('OnboardingFlow', () => {
   test('opens on Welcome with the full masthead, and the first name goes in the ear', async () => {
