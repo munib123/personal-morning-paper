@@ -59,7 +59,9 @@ export function PerspectivesPanel({ clusterId, sourceCount, editionId = null }: 
 
   const p = data?.perspectives ?? null;
   const rows = data ? angleRows(data.perspectives.angles, data.sources) : [];
-  const meta = [sourcesLabel(sourceCount), p ? differenceLabel(p.disagreements.length) : null].filter(Boolean).join(' · ');
+  // The card's count comes from alsoCoveredBy (at most 5 names); once loaded, the real source list wins.
+  const count = data && data.sources.length > 0 ? data.sources.length : sourceCount;
+  const meta = [sourcesLabel(count), p ? differenceLabel(p.disagreements.length) : null].filter(Boolean).join(' · ');
 
   return (
     <div className="border-t border-rule pt-3">
@@ -113,7 +115,7 @@ export function PerspectivesPanel({ clusterId, sourceCount, editionId = null }: 
                 </div>
               ) : null}
               <p className="ui-meta text-ink-muted">
-                Written from {sourcesLabel(data?.sources.length ?? sourceCount)} · {providerLabel(p.provider)}
+                Written from {sourcesLabel(count)} · {providerLabel(p.provider)}
               </p>
             </>
           ) : null}

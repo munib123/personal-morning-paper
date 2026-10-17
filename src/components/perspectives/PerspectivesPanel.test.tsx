@@ -101,7 +101,8 @@ describe('PerspectivesPanel', () => {
     resolve(Response.json(body));
     await waitFor(() => expect(screen.getByText(body.perspectives.summary)).toBeInTheDocument());
     expect(region).toHaveAttribute('aria-busy', 'false');
-    expect(screen.getByText('4 sources · 2 points of difference')).toBeInTheDocument();
+    // The card said 4 (alsoCoveredBy is capped at 5 names); the fetched source list is authoritative.
+    expect(screen.getByText('2 sources · 2 points of difference')).toBeInTheDocument();
 
     const links = screen.getAllByRole('link');
     expect(links).toHaveLength(2);
@@ -136,7 +137,7 @@ describe('PerspectivesPanel', () => {
     render(<PerspectivesPanel clusterId={CLUSTER} sourceCount={2} />);
     fireEvent.click(screen.getByRole('button', { name: 'Other angles' }));
     await waitFor(() => expect(screen.getByText("Written from 1 source · from the sources' own words")).toBeInTheDocument());
-    expect(screen.getByText('2 sources · no points of difference')).toBeInTheDocument();
+    expect(screen.getByText('1 source · no points of difference')).toBeInTheDocument();
     expect(screen.queryByText('Where they differ')).not.toBeInTheDocument();
     expect(screen.getByRole('link')).toHaveAttribute('href', 'https://www.bbc.com/news/1');
   });

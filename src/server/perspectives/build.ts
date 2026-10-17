@@ -155,6 +155,8 @@ export const PERSPECTIVES_INSTRUCTIONS = [
   `- disagreements: up to ${MAX_DISAGREEMENTS} concrete points where the sources differ (a number, a cause, a name, a timing), ` +
     `each at most ${MAX_DISAGREEMENT_WORDS} words and naming the outlets. An empty list when they do not differ.`,
   '- confidence: high when three or more sources overlap clearly, medium when two do or the texts are short, low when the texts barely overlap.',
+  '- When a source has no summary, or its text is boilerplate (a cookie notice, a video player or advertising message), write its ' +
+    'angle from its headline alone and never describe the missing or broken text.',
   '',
   'Voice: calm, short, concrete, sentence case. Speak to the reader as "you" and never write "I", "we" or "our AI". ' +
     'No exclamation marks, no questions, no emoji.',

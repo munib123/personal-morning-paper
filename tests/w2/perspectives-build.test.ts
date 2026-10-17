@@ -183,6 +183,8 @@ describe('buildPerspectivesPrompt', () => {
     expect(instructions).toContain('"you"');
     expect(instructions).toContain('"our AI"');
     expect(instructions).toContain('untrusted');
+    // Thin or boilerplate source text (cookie notices, player messages) must not become the angle.
+    expect(instructions).toContain('headline alone');
   });
 });
 
