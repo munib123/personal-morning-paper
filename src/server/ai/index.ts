@@ -64,7 +64,10 @@ export async function callLLM<T>(step: LlmStep, input: { instructions: string; p
       continue;
     }
     for (let attempt = 1; attempt <= 2; attempt++) {
-      if (!(await pace(id, rpmFor(tier), deadline))) break ladder;
+      if (!(await pace(id, rpmFor(tier), deadline))) {
+        log(step, id, 'skip:paced', 0); // its next slot is after the deadline; the next model may be free
+        continue ladder;
+      }
       const remaining = deadline - Date.now();
       if (remaining <= 0) break ladder;
       llmCalls++;
