@@ -22,6 +22,9 @@ jobs:
     timeout-minutes: 20
     env:
       PUPPETEER_SKIP_DOWNLOAD: 'true'
+      # onnxruntime-node downloads optional binaries (GPU) from a Microsoft CDN that times out on runners;
+      # the CPU runtime is bundled in the package and tests mock embeddings anyway.
+      ONNXRUNTIME_NODE_INSTALL: skip
       NEXT_TELEMETRY_DISABLED: '1'
       NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_placeholder
