@@ -95,4 +95,44 @@ describe.skipIf(!run)('buildEdition against the shared Supabase', () => {
     process.stdout.write(`[L3 int] buildMs ${JSON.stringify(measured)} pool=${warm.receipt.articlesConsidered} clusters=${warm.receipt.clustersConsidered}\n`);
     expect(warm.receipt.buildMs).toBeLessThan(1500);
   }, 120_000);
+
+  it('a "more" through processSignals moves the weights, and the next rebuild changes the paper', async () => {
+    const { buildEdition, getEdition } = await import('./index');
+    const { processSignals, getLearningView } = await import('@/server/learn');
+    const now = new Date();
+    const { localDate } = await import('@/server/time');
+    const before = await getEdition(userId, localDate(now, 'Asia/Karachi'));
+    if (!before) throw new Error('the first test builds today’s paper');
+    // "More" on a reserve story from outside the lead's section, "less" on the lead: the paper must move.
+    const lead = before.items[0];
+    const target = before.reserve.find((i) => i.article.labels.length > 0 && i.sectionSlug !== lead.sectionSlug) ?? before.reserve[0];
+    const r = await processSignals(userId, [{ type: 'more', articleId: target.article.id, editionId: before.id }], now);
+    expect(r.accepted).toBe(1);
+    expect(r.deltas.length).toBeGreaterThan(0);
+    expect(r.deltas[0].after).toBeGreaterThan(r.deltas[0].before);
+    expect(r.toast).toMatch(/^Got it\. More .+ tomorrow\.$/);
+    const l = await processSignals(userId, [{ type: 'less', articleId: lead.article.id, editionId: before.id }], now);
+    expect(l.deltas[0].after).toBeLessThan(l.deltas[0].before);
+
+    const view = await getLearningView(userId, 7, now);
+    expect(view.timeline[0]).toMatchObject({ type: 'more' });
+    expect(view.weights.length).toBeGreaterThan(60);
+
+    const after = await buildEdition(userId, now, { force: true, awaitNote: true });
+    const ids = (e: { items: { article: { id: string } }[] }) => e.items.map((i) => i.article.id).join(',');
+    expect(ids(after)).not.toBe(ids(before));
+  }, 120_000);
+});
+
+describe.skipIf(!run)('the seeded demo persona (scripts/seed-demo-persona.ts)', () => {
+  it('getLearningView has movers from the seeded snapshots', async () => {
+    const { createSupabaseAdminClient } = await import('@/server/db/admin');
+    const { getLearningView } = await import('@/server/learn');
+    const { data } = await createSupabaseAdminClient().from('profiles').select('user_id').eq('is_demo', true).limit(1).maybeSingle();
+    if (!data) return; // not seeded on this database
+    const view = await getLearningView(data.user_id, 7, new Date());
+    expect(view.movers.length).toBeGreaterThan(0);
+    expect(view.changeSummary).toMatch(/based on what you read\.$/);
+    process.stdout.write(`[L3 int] demo movers: ${view.changeSummary} (since ${view.sinceDate})\n`);
+  }, 60_000);
 });
