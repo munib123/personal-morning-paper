@@ -1,13 +1,13 @@
 // L2 dev CLI (worker only, never on Vercel):
 //   npx tsx --env-file=.env.local src/server/enrich/cli.ts <command>
-//   nlp [--limit n] | recluster | extractive | stats
+//   nlp [--limit n] | recluster | extractive | stats | ping
 import '../../../scripts/lib/env';
 
 import { createSupabaseAdminClient } from '@/server/db/admin';
 import { selectPaged } from '@/server/nlp/paged';
 import { extractiveBackfill } from './backfill';
 
-const USAGE = 'usage: cli.ts nlp [--limit n] | recluster | extractive | stats';
+const USAGE = 'usage: cli.ts nlp [--limit n] | recluster | extractive | stats | ping';
 const STATUSES = ['raw', 'embedded', 'enriched', 'fallback', 'unusable'] as const;
 
 class UsageError extends Error {}
@@ -73,6 +73,19 @@ async function main(argv: string[]): Promise<number> {
         const limit = limitArg(args);
         console.log(JSON.stringify(await runNlp(limit ? { limit } : {})));
         return 0;
+      }
+      case 'ping': {
+        // One FAST request (live): proves the key, the model id and the llm_usage RPC.
+        const { z } = await import('zod');
+        const { callLLM, geminiStatus } = await import('@/server/ai');
+        const result = await callLLM('describe', { instructions: 'Reply with JSON.', prompt: 'Say ok' }, z.object({ ok: z.string() }), {
+          model: 'fast',
+          fallback: () => ({ ok: 'fallback' }),
+          cacheKey: `ping-${Date.now()}`,
+        });
+        const { data: usage } = await createSupabaseAdminClient().from('llm_usage').select('*').eq('usage_day', pacificDayNow());
+        console.log(JSON.stringify({ result, status: await geminiStatus(), llmUsageToday: usage ?? [] }, null, 2));
+        return result.provider === 'gemini' ? 0 : 1;
       }
       case 'recluster': {
         const { reclusterAll } = await import('@/server/nlp/recluster');
