@@ -15,6 +15,7 @@ export interface MeData {
   demoMode: boolean;
   nextMorning: string; // UTC ISO of the next edition day at 07:00 local
   clockIso: string | null; // the demo clock, or null for real time
+  nowIso: string; // the request's now (requestNow), for 'time ago' labels
   fixtures: boolean;
 }
 

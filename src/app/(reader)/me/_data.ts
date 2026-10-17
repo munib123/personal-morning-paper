@@ -48,6 +48,7 @@ export async function loadMeData(sp: SearchParams): Promise<MeData> {
       demoMode,
       nextMorning: nextMorningIso(now, FIXTURE_PROFILE.tz),
       clockIso,
+      nowIso: now.toISOString(),
       fixtures: true,
     };
   }
@@ -65,5 +66,15 @@ export async function loadMeData(sp: SearchParams): Promise<MeData> {
     }),
     getTaxonomy().catch(() => FIXTURE_TAXONOMY),
   ]);
-  return { profile, streak, learning, taxonomy, demoMode, nextMorning: nextMorningIso(now, profile.tz), clockIso, fixtures: false };
+  return {
+    profile,
+    streak,
+    learning,
+    taxonomy,
+    demoMode,
+    nextMorning: nextMorningIso(now, profile.tz),
+    clockIso,
+    nowIso: now.toISOString(),
+    fixtures: false,
+  };
 }

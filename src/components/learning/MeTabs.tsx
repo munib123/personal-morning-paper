@@ -6,6 +6,7 @@ import { SectionHeader } from '@/components/morrow';
 import { DemoControls } from '@/components/streak/DemoControls';
 import { SettingsPanel } from '@/components/streak/SettingsPanel';
 import { StreakPanel } from '@/components/streak/StreakPanel';
+import { LearnedTab } from './LearnedTab';
 import { ME_TABS, nextTab, type MeData, type MeTab } from './me-tabs';
 
 export interface MeTabsProps {
@@ -76,7 +77,7 @@ export function MeTabs({ initialTab, data }: MeTabsProps) {
 function panel(tab: MeTab, data: MeData): ReactNode {
   switch (tab) {
     case 'learned':
-      return <p className="ui-text text-ink-soft">What your paper learned from your reading this week.</p>;
+      return <LearnedTab initial={data.learning} nowIso={data.nowIso} />;
     case 'interests':
       return <p className="ui-text text-ink-soft">Your interests, with their weights.</p>;
     case 'streak':
