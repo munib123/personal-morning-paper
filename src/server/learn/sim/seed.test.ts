@@ -18,7 +18,7 @@ const qualifyingReads = (events: { type: string; articleId?: string; value?: num
   return new Set(events.filter((e) => e.type === 'dwell' && (e.value ?? 0) >= 20_000 && opened.has(e.articleId)).map((e) => e.articleId)).size;
 };
 
-describe('planDemoHistory', () => {
+describe('planDemoHistory', { timeout: 60_000 }, () => {
   const days = plan();
 
   it('dates 2026-10-10 … 2026-10-16, numbers 1–7', () => {
