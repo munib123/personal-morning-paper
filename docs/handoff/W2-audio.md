@@ -1,6 +1,6 @@
 # W2-audio: "Listen to today's paper" handoff
 
-Status: ready for merge (branch `lane/W2-audio`). Nothing outside this lane's folders was edited; the two mounts below are for the integrator.
+Status: ready for merge (branch `lane/W2-audio`, PR #46). Nothing outside this lane's folders was edited; the two mounts below are for the integrator. Gates on the branch: `npm run typecheck` 0, `npm run lint` 0 (one pre-existing Morrow warning), `npm test` 1072 passed (two L4 dom files hit the 5 s cold-start timeout and passed on the single re-run), `npm run build` 0.
 
 The paper reads itself on the commute with the browser's own voice (`SpeechSynthesis`): no server, no Gemini quota, works offline. It reads the edition in page order; for each story the section kicker once when it changes, then the headline, then the summary of the tier the card shows. Skipped stories are not read. A story read to its end is reported to the page, so it counts as read and the paper keeps learning while you listen.
 
