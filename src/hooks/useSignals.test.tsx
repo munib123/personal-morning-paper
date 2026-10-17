@@ -96,7 +96,8 @@ describe('useSignals', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe(ROUTES.events);
-    expect(init).toMatchObject({ method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' } });
+    // A timed flush is a plain fetch; keepalive is kept for hidden-tab and teardown flushes.
+    expect(init).toMatchObject({ method: 'POST', keepalive: false, headers: { 'Content-Type': 'application/json' } });
     expect(bodyOf(0)).toEqual({ events: [{ type: 'open', articleId: 'a' }, { type: 'open', articleId: 'a' }] });
     expect(result.current.lastResult).toEqual(FIXTURE_EVENTS_RESULT);
     expect(screen.getByTestId('streak').textContent).toBe(JSON.stringify(FIXTURE_EVENTS_RESULT.streak));
@@ -204,9 +205,9 @@ describe('useSignals', () => {
       result.current.observeImpression(lead, 'a');
     });
     expect(io.observed.has(lead)).toBe(true);
-    await tick(1000); // t=1500: the impression is queued
+    await tick(1000); // t=1500: the impression is queued, which arms the 2 s flush timer
     expect(fetchMock).not.toHaveBeenCalled();
-    await tick(500); // t=2000: the flush sends it
+    await tick(2000); // t=3500: the flush sends it
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(bodyOf(0)).toEqual({ events: [{ type: 'impression', articleId: 'a', meta: { slot: 'lead' } }] });
