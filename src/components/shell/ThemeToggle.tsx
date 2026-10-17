@@ -15,10 +15,11 @@ const useMounted = () =>
   );
 
 // One edition of the pair, drawn like a Morrow Segmented option: the current one is filled in ink.
-// The word shows from lg up; below that the sun and the moon carry it.
+// The word shows from lg up; below that the sun and the moon carry it. Under sm the cells are 20px
+// wide so the switch (42px) fits the 390px header beside the nameplate and the streak chip.
 function Edition({ on, icon, label }: { on: boolean; icon: 'sun' | 'moon'; label: string }) {
   return (
-    <span className={`flex items-center gap-1.5 px-2 transition-colors duration-150 ${on ? 'bg-ink text-on-ink' : 'text-ink-muted group-hover:text-ink'}`}>
+    <span className={`flex items-center gap-1.5 px-0.5 transition-colors duration-150 sm:px-2 ${on ? 'bg-ink text-on-ink' : 'text-ink-muted group-hover:text-ink'}`}>
       <Icon name={icon} size={16} />
       <span className="ui-meta hidden lg:inline">{label}</span>
     </span>
@@ -44,7 +45,7 @@ export function ThemeToggle() {
       onClick={() => setTheme(night ? 'morning' : 'night')}
       className="group inline-flex h-11 shrink-0 cursor-pointer items-center rounded-control border-0 bg-transparent p-0 font-ui outline-none focus-visible:shadow-(--focus-ring)"
     >
-      <span aria-hidden="true" className="flex h-8 items-stretch overflow-hidden rounded-control border border-rule-strong transition-colors duration-150 group-hover:border-ink">
+      <span aria-hidden="true" className="flex h-7 items-stretch overflow-hidden sm:h-8 rounded-control border border-rule-strong transition-colors duration-150 group-hover:border-ink">
         <Edition on={!night} icon="sun" label="Morning" />
         <Edition on={night} icon="moon" label="Night" />
       </span>
