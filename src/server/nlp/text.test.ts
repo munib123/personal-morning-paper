@@ -27,6 +27,15 @@ describe('splitSentences', () => {
     expect(splitSentences('   ')).toEqual([]);
   });
 
+  it('splits after a closing quote or bracket', () => {
+    expect(splitSentences('He said "prices will settle." Markets rose. (It was Friday.) Then it rained.')).toEqual([
+      'He said "prices will settle."',
+      'Markets rose.',
+      '(It was Friday.)',
+      'Then it rained.',
+    ]);
+  });
+
   it('returns unpunctuated text as one sentence', () => {
     expect(splitSentences('  A title without a full stop  ')).toEqual(['A title without a full stop']);
   });

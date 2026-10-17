@@ -1,12 +1,13 @@
 // L2 dev CLI (worker only, never on Vercel):
 //   npx tsx --env-file=.env.local src/server/enrich/cli.ts <command>
-//   nlp [--limit n] | stats
+//   nlp [--limit n] | extractive | stats
 import '../../../scripts/lib/env';
 
 import { createSupabaseAdminClient } from '@/server/db/admin';
 import { selectPaged } from '@/server/nlp/paged';
+import { extractiveBackfill } from './backfill';
 
-const USAGE = 'usage: cli.ts nlp [--limit n] | stats';
+const USAGE = 'usage: cli.ts nlp [--limit n] | extractive | stats';
 const STATUSES = ['raw', 'embedded', 'enriched', 'fallback', 'unusable'] as const;
 
 class UsageError extends Error {}
@@ -73,6 +74,9 @@ async function main(argv: string[]): Promise<number> {
         console.log(JSON.stringify(await runNlp(limit ? { limit } : {})));
         return 0;
       }
+      case 'extractive':
+        console.log(JSON.stringify({ fallback: await extractiveBackfill() }));
+        return 0;
       case 'stats':
         await stats();
         return 0;

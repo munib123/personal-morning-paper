@@ -1,7 +1,8 @@
 // Sentence splitting and the embedding input (ARCHITECTURE §10.2: title + ". " + first 2 sentences). Pure.
 
-// A sentence ends at . ! or ? followed by whitespace and an uppercase letter, a digit or an opening quote.
-const BOUNDARY = /(?<=[.!?])\s+(?=[A-Z0-9"“‘'])/;
+// A sentence ends at . ! or ? (plus any closing quotes or brackets) followed by whitespace and an
+// uppercase letter, a digit, an opening quote or an opening bracket.
+const BOUNDARY = /(?<=[.!?][)\]"'”’]*)\s+(?=[A-Z0-9"“‘'([])/;
 // A fragment that ends in one of these abbreviations was split too early: glue it to the next one.
 const ABBREVIATION = /\b(?:Mr|Mrs|Ms|Dr|St|vs|No|U\.S)\.$/;
 
