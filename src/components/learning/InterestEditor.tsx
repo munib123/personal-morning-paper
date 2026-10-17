@@ -18,6 +18,23 @@ export interface InterestEditorProps {
 
 const WeightsSchema = z.array(InterestWeightSchema);
 
+function orderOf(rows: BarRow[]): Map<string, number> {
+  const order = new Map<string, number>();
+  const walk = (list: BarRow[]) =>
+    list.forEach((r) => {
+      order.set(r.slug, order.size);
+      walk(r.children);
+    });
+  walk(rows);
+  return order;
+}
+
+/** Sort rows (and their children) by a fixed order; unknown topics go last, in their given order. */
+function keepOrder(rows: BarRow[], order: Map<string, number>): BarRow[] {
+  const rank = (r: BarRow) => order.get(r.slug) ?? Number.MAX_SAFE_INTEGER;
+  return [...rows].sort((a, b) => rank(a) - rank(b)).map((r) => ({ ...r, children: keepOrder(r.children, order) }));
+}
+
 /** One row's weight slider: moves freely, saves when released (pointer up, key up or blur). */
 function WeightSlider({ row, onCommit }: { row: BarRow; onCommit: (value: number) => void }) {
   const committed = Math.round(row.theta * 100);
@@ -74,7 +91,10 @@ export function InterestEditor({ weights: initial, movers = [] }: InterestEditor
     }
   };
 
-  const rows = barRows(weights, movers, undefined, { includeMuted: true });
+  // Rows keep the order they had when the tab opened: re-sorting by the edited weight would move the
+  // row under the reader's pointer (and take keyboard focus with it).
+  const [order] = useState(() => orderOf(barRows(initial, movers, undefined, { includeMuted: true })));
+  const rows = keepOrder(barRows(weights, movers, undefined, { includeMuted: true }), order);
 
   return (
     <section className="flex max-w-(--measure) flex-col gap-4">
@@ -95,7 +115,7 @@ export function InterestEditor({ weights: initial, movers = [] }: InterestEditor
             <Button variant="secondary" aria-pressed={row.muted} onClick={() => edit(row, row.muted ? 'unmute' : 'mute')}>
               {row.muted ? 'Muted' : 'Mute'}
             </Button>
-            <WeightSlider key={`${row.slug}-${row.theta}`} row={row} onCommit={(v) => edit(row, 'set', v)} />
+            <WeightSlider key={row.slug} row={row} onCommit={(v) => edit(row, 'set', v)} />
           </>
         )}
       />
