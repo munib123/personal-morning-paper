@@ -43,6 +43,13 @@ describe('streak copy', () => {
     }
   });
 
+  it('freeze and repair copy (Task 15)', () => {
+    expect(chipLabel(view({ state: 'frozen', current: 6 }))).toBe('Reading streak: 6 days. A freeze saved yesterday');
+    expect(chipText(view({ state: 'frozen', current: 6 }))).toBe('6-day streak · freeze used');
+    expect(chipText(view({ state: 'repairable', current: 12 }))).toBe('12-day streak · catch up today');
+    expect(sheetHeadline(view({ state: 'repairable', current: 12 }))).toBe("Catch up on yesterday's paper (3 questions) to keep your 12-day streak");
+  });
+
   it('milestoneLine', () => {
     expect(milestoneLine(3)).toBe('Three mornings in a row.');
     expect(milestoneLine(7)).toBe('A week of mornings.');
@@ -95,6 +102,9 @@ describe('streak components', () => {
     expect(html).toContain('Three mornings in a row.');
     expect(html).toContain('3 of 5 stories today');
     expect(html).toContain('role="progressbar"');
+    expect(html).toContain('Freezes held: 0.');
+    const held = renderToStaticMarkup(createElement(StreakPanel, { streak: view({ freezesAvailable: 2 }) }));
+    expect(held).toContain('Freezes held: 2. They cover a missed day automatically; you earn one every 7 days (max 2).');
     const complete = renderToStaticMarkup(createElement(StreakPanel, { streak: view({ editionComplete: true, todayStoriesRead: 6 }) }));
     expect(complete).toContain('Today&#x27;s paper is complete');
     const fresh = renderToStaticMarkup(createElement(StreakPanel, { streak: view({ state: 'new', current: 0, longest: 0, totalDays: 0 }) }));
