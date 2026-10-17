@@ -50,7 +50,9 @@ async function resetSample(n: number): Promise<void> {
   if (resetError) throw new Error(resetError.message);
   const { data: rows, error: rowsError } = await db.from('articles').select(CANDIDATE_COLUMNS).in('id', ids).overrideTypes<CandidateRow[], { merge: false }>();
   if (rowsError) throw new Error(rowsError.message);
-  console.log(JSON.stringify({ reset: ids.length, ...(await enrichRows(rows ?? [], { cap: ids.length })) }));
+  const stats = await enrichRows(rows ?? [], { cap: ids.length });
+  const { geminiStatus } = await import('@/server/ai');
+  console.log(JSON.stringify({ reset: ids.length, ids, ...stats, geminiStatus: await geminiStatus() }));
 }
 
 function pacificDayNow(): string {
